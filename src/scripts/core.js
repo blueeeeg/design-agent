@@ -51,7 +51,8 @@ export function resolve(sel) {
     const constraints = VISIBLE_AXES
       .map(a => ({ axis: a, opt: picked[a.key], e: picked[a.key].params?.[p] }))
       .filter(x => x.e && x.e.s === '제약');
-    let floor = constraints.length ? Math.max(...constraints.map(x => x.e.v)) : PARAM_META[p].fallback;
+    // 바닥은 제약(규격)만 만든다. 기본값(fallback)은 제약도 관례도 없을 때만 쓴다. 바닥으로 쓰면 관례(예: 매일 쓰는 표 행 32)가 늘 기본값에 덮인다
+    let floor = constraints.length ? Math.max(...constraints.map(x => x.e.v)) : 0;
     let floorFrom = constraints.find(x => x.e.v === floor);
     // 행 전체가 눌리는 영역이므로 행 높이는 최소 터치 영역 아래로 내려가지 않는다
     if (p === 'rowHeight' && params.targetMin.value > floor) {
@@ -62,7 +63,7 @@ export function resolve(sel) {
       .map(k => ({ axis: axisByKey[k], opt: picked[k], e: picked[k].params?.[p] }))
       .filter(x => x.e && x.e.s === '관례');
     const preferred = convs[0];
-    const value = Math.max(floor, preferred ? preferred.e.v : floor);
+    const value = preferred ? Math.max(floor, preferred.e.v) : (floor || PARAM_META[p].fallback);
     const from = preferred && preferred.e.v >= floor ? preferred : floorFrom;
     const overridden = convs.slice(1).filter(c => c.e.v !== value && c.e.v >= floor);
 
@@ -91,7 +92,8 @@ export const STRENGTH_LABEL = { 제약: '꼭 지킬 것', 관례: '보통 이렇
 export const STRENGTH_HINT = { 제약: '규격·접근성 기준이 있다', 관례: '흔히 이렇게 한다. 이유가 있으면 바꿔도 된다', 예시: '참고만' };
 export const describeFrom = f => {
   if (!f) return '정해진 기준이 없어 흔한 값';
-  return f.e.s === '제약' ? `${f.opt.label} 기준${f.e.src ? ' · ' + f.e.src : ''}` : `${f.opt.label}에서 흔한 값`;
+  // 관례 값도 근거 문서가 있으면 함께 적는다(예: 매일 쓴다에서 흔한 값 · IBM Carbon 표 행 sm 32px)
+  return f.e.s === '제약' ? `${f.opt.label} 기준${f.e.src ? ' · ' + f.e.src : ''}` : `${f.opt.label}에서 흔한 값${f.e.src ? ' · ' + f.e.src : ''}`;
 };
 export const comboText = sel => VISIBLE_AXES.map(a => findOpt(a.key, sel[a.key]).label).join(' · ');
 

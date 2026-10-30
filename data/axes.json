@@ -1,5 +1,5 @@
 {
-  "_about": "조건 축. hidden 축(domain)은 고르는 축이 아니라 예시 그림에 채울 샘플 내용을 정한다. action(작업의 무게)은 전체 축이 아니라 작업과 관련된 요소 안에서만 고른다. 화면에는 name 대신 question을 묻고, 선택지 아래 sub(예시)를 함께 보여 준다(2026-10-30)",
+  "_about": "조건 축. hidden 축(domain)은 고르는 축이 아니라 예시 그림에 채울 샘플 내용을 정한다. action(작업의 무게)은 전체 축이 아니라 작업과 관련된 요소 안에서만 고른다. 화면에는 name 대신 question을 묻고, 선택지 아래 sub(예시)를 함께 보여 준다(2026-10-30). 관례 값의 src는 2026-10-30에 각 시스템 공개 문서에서 확인한 숫자다(사진 행 88px, 글 중심 여백 20px은 아직 근거 없음)",
   "axes": [
     {
       "key": "platform",
@@ -19,7 +19,8 @@
             },
             "fontBase": {
               "v": 14,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 본문 body-01 14px"
             }
           },
           "nav": "왼쪽 고정 사이드바",
@@ -55,7 +56,8 @@
             },
             "fontBase": {
               "v": 16,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 본문 body-02 16px"
             }
           },
           "nav": "카테고리 레일을 왼쪽에 항상 노출",
@@ -129,11 +131,13 @@
           "params": {
             "rowHeight": {
               "v": 64,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 표 행 xl 64px"
             },
             "space": {
               "v": 24,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 여백 spacing-06 24px"
             }
           },
           "confirm": "최종 제출 전 내용을 한 번 요약",
@@ -163,7 +167,8 @@
           "params": {
             "rowHeight": {
               "v": 48,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 표 행 lg 48px"
             }
           },
           "confirm": "결제 전 확인",
@@ -185,7 +190,8 @@
           "params": {
             "rowHeight": {
               "v": 32,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 표 행 sm 32px"
             }
           },
           "confirm": "되돌릴 수 없는 작업 앞에서만 확인",
@@ -230,7 +236,8 @@
           "params": {
             "fontBase": {
               "v": 18,
-              "s": "관례"
+              "s": "관례",
+              "src": "누구나 쓰는 서비스는 크게: GOV.UK 본문 19px"
             }
           },
           "rules": [
@@ -267,7 +274,8 @@
             },
             "space": {
               "v": 16,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 여백 spacing-05 16px"
             }
           },
           "rules": [
@@ -297,11 +305,13 @@
           "params": {
             "rowHeight": {
               "v": 40,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 표 행 md 40px"
             },
             "space": {
               "v": 12,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 여백 spacing-04 12px"
             }
           },
           "rules": [
@@ -331,7 +341,8 @@
           "params": {
             "fontBase": {
               "v": 16,
-              "s": "관례"
+              "s": "관례",
+              "src": "IBM Carbon 긴 글 본문 body-02 16px"
             },
             "space": {
               "v": 20,

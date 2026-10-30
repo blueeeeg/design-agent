@@ -94,6 +94,8 @@ if (!args.includes('--design-md')) {
     });
     if (neutral) console.log('  (이 조건과 직접 걸리는 근거가 없어 가장 흔한 방식을 첫째로 둔다)');
     for (const g of guide(p.id)) console.log(`  디자인 시스템 공통: ${g.text} (${refsText(g)})`);
+    // 한 패턴 안에서 상황마다 답이 갈리면(cases) 상황별 방식을 같이 보인다. 상황을 묻고 상황마다 하나씩 고르게 한다
+    (p.cases || []).forEach(c => console.log(`  상황 「${c.name}」(${c.q}): ${c.options.map(id => p.options.find(o => o.id === id).name).join(' / ')}`));
     console.log(`  카탈로그: /elements/${p.id}/\n`);
   }
   process.exit(0);
@@ -102,13 +104,18 @@ if (!args.includes('--design-md')) {
 // ---------- DESIGN.md 초안 (카탈로그 「AI용 디자인 규칙 만들기」와 같은 틀) ----------
 const picked = Object.fromEntries(VISIBLE.map(a => [a.key, findOpt(a.key, sel[a.key])]));
 const params = {};
+const paramSrc = {}; // 값마다 근거 문서(있으면). DESIGN.md에 주석으로 붙인다
 for (const p of Object.keys(PARAM)) {
   const cons = VISIBLE.map(a => picked[a.key].params?.[p]).filter(e => e && e.s === '제약');
-  let floor = cons.length ? Math.max(...cons.map(e => e.v)) : PARAM[p][1];
-  if (p === 'rowHeight' && params.targetMin > floor) floor = params.targetMin;
+  const top = cons.length ? cons.reduce((x, y) => (y.v > x.v ? y : x)) : null;
+  let floor = top ? top.v : 0; // 바닥은 제약만. 기본값은 제약도 관례도 없을 때만(core.js resolve와 같다)
+  let floorSrc = top ? top.src : '';
+  if (p === 'rowHeight' && params.targetMin > floor) { floor = params.targetMin; floorSrc = `최소 터치 영역 · ${paramSrc.targetMin}`; }
   const conv = CONV_ORDER.map(k => picked[k].params?.[p]).find(e => e && e.s === '관례');
-  params[p] = Math.max(floor, conv ? conv.v : floor);
+  params[p] = conv ? Math.max(floor, conv.v) : (floor || PARAM[p][1]);
+  paramSrc[p] = (conv && conv.v === params[p] ? conv.src : floor === params[p] ? floorSrc : '') || '';
 }
+const srcNote = p => (paramSrc[p] ? `   # ${paramSrc[p]}` : '');
 const rules = { 제약: [], 관례: [], 예시: [] };
 const seen = new Set();
 VISIBLE.forEach(a => (picked[a.key].rules || []).forEach(r => { if (!seen.has(r.t)) { seen.add(r.t); rules[r.s].push(r); } }));
@@ -127,10 +134,10 @@ console.log([
   ...VISIBLE.map(a => `  ${a.key}: ${sel[a.key]}   # ${picked[a.key].label}`),
   `  action: ${action}   # ${actionLabel}`,
   'layout:',
-  `  target-min: ${params.targetMin}px`,
-  `  font-base: ${params.fontBase}px`,
-  `  row-height: ${params.rowHeight}px`,
-  `  spacing: ${params.space}px`,
+  `  target-min: ${params.targetMin}px${srcNote('targetMin')}`,
+  `  font-base: ${params.fontBase}px${srcNote('fontBase')}`,
+  `  row-height: ${params.rowHeight}px${srcNote('rowHeight')}`,
+  `  spacing: ${params.space}px${srcNote('space')}`,
   'brand: {}   # 색·서체·로고는 브랜드에서 채운다',
   '---',
   '',

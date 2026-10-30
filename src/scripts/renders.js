@@ -10,12 +10,12 @@ export const RENDERS = {
   loading: {
     skeleton: () => `<div class="fr-pad fr-stack">${[0, 1, 2].map(() => '<div class="sk-row"><span class="sk sk-thumb"></span><div class="sk-lines"><span class="sk" style="width:72%"></span><span class="sk" style="width:38%"></span></div></div>').join('')}</div>`,
     spinner: () => '<div class="fr-pad fr-center" style="min-height:190px"><span class="spin"></span><span class="m-sub">불러오는 중</span></div>',
-    progress: x => `<div class="fr-pad fr-stack" style="min-height:190px;justify-content:center"><b>${esc(x.T.progress)}</b><div class="pbar"><span style="width:62%"></span></div><span class="m-sub">3단계 중 2단계 · 창을 닫지 마세요</span></div>`,
+    progress: x => `<div class="fr-pad fr-stack" style="min-height:190px;justify-content:center"><b>${esc(x.T.making)}</b><div class="pbar"><span style="width:62%"></span></div><span class="m-sub">3단계 중 2단계 · 창을 닫지 마세요</span></div>`,
     optimistic: x => {
           const its = statusItems(x).slice(0, 3);
           return `<div>${its.map((it, i) => `<div class="fr-rowitem ${i === 0 ? 'hl' : ''}" style="min-height:${Math.max(x.t, 48)}px"><div class="m-cell" style="flex:1"><span class="m-name">${esc(it.n)}</span><span class="m-sub">${i === 0 ? '방금 바꿈 · 저장 중' : esc(it.sub)}</span></div>${i === 0 ? '<span class="m-st s-busy">조리 중</span>' : statusChip(it)}</div>`).join('')}</div>`;
         },
-    illus: x => `<div class="fr-pad fr-empty" style="min-height:220px"><div class="illus"><i></i><i></i><i></i></div><b>${esc(x.T.progress)}</b><span class="m-sub">거의 다 됐어요. 잠깐만 기다려 주세요</span><span class="spin sm"></span></div>`,
+    illus: x => `<div class="fr-pad fr-empty" style="min-height:220px"><div class="illus"><i></i><i></i><i></i></div><b>${esc(x.T.making)}</b><span class="m-sub">거의 다 됐어요. 잠깐만 기다려 주세요</span><span class="spin sm"></span></div>`,
   },
   busy: {
     inline: x => actionArea(x, full => `<span class="m-btn ${full ? 'block' : ''}" style="${btnStyle(x, ctaSize(x))};min-width:120px"><span class="spin sm inv"></span></span>`),

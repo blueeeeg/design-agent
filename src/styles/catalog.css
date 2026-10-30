@@ -795,3 +795,8 @@ main { justify-self: start; max-width: 1640px; }
 /* 왼쪽 목록 스크롤 막대: 평소에는 숨기고(자리는 남겨 흔들리지 않게) 마우스를 올리면 얇게 보인다 */
 .side { scrollbar-width: thin; scrollbar-color: transparent transparent; scrollbar-gutter: stable; }
 .side:hover, .side:focus-within { scrollbar-color: var(--line) transparent; }
+/* 한 패턴 안의 상황 제목: 카드 줄을 끊고 한 줄을 다 쓴다 */
+.ogrid-cat .case-head { grid-column: 1 / -1; display: grid; gap: 2px; padding-top: 12px; }
+.ogrid-cat .case-head:first-child { padding-top: 0; }
+.ogrid-cat .case-head h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
+.case-head p { margin: 0; font-size: 14px; color: var(--muted); }

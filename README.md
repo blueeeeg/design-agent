@@ -5,7 +5,7 @@ AI로 화면을 만들 때 누구든 보기 좋은 결과를 얻게 돕는 자�
 ## 폴더
 
 - `CLAUDE.md` — AI 작업 지침 / `HANDOFF.md` — 지금 상태와 다음 할 일 / `LEARNED.md` — 실제 화면과 리뷰에서 배운 관점 / `DESIGN.md` — 이 사이트 자체의 디자인 기준(design-agent 스킬로 만듦)
-- `.claude/skills/design-agent/` — 조건을 묻고 패턴마다 방식을 추천해 DESIGN.md를 쓰거나 화면을 만드는 스킬
+- `.claude/skills/design-agent/` — 조건을 묻고 패턴마다 방식을 추천해 DESIGN.md를 쓰거나 화면을 만드는 스킬. `SKILL.md`, `scripts/recommend.mjs`(추천·DESIGN.md), `scripts/component.mjs`(컴포넌트 이름 찾기), `scripts/check-screen.mjs`(만든 화면의 흔한 실수 검사, `scripts/fixtures/`에 나쁜 예·좋은 예), `evals/`(평가 사례. 결과는 `.claude/skills/design-agent-workspace/`에 두고 올리지 않는다)
 - `tools/` — 페이지 검사 스크립트, giting.kr 메뉴판 받기(`fetch-giting.mjs`)
 - `public/giting/ui-menu/` — 컴포넌트 사전이 띄우는 giting.kr 데모(MIT)
 - `screens/` — 실제 서비스 화면. 서비스마다 폴더 하나, 이름 규칙은 `SHOTLIST.md`

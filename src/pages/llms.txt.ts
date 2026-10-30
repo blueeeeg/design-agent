@@ -32,6 +32,8 @@ export function GET() {
     ...elementsData.elements.flatMap(el => [
       '',
       `### ${el.name} (${el.en}) — ${el.q}`,
+      // 상황마다 답이 갈리는 패턴은 상황과 그 상황의 방식을 먼저 적는다
+      ...((el as { cases?: { name: string; q: string; options: string[] }[] }).cases || []).map(c => `- 상황 「${c.name}」(${c.q}): ${c.options.map(id => el.options.find(o => o.id === id)?.name).join(' / ')}`),
       ...el.options.flatMap(o => [
         `- ${o.name} (${o.en}): ${o.desc}${o.giting ? ` · 이름·데모 https://giting.kr/menu/${o.giting}` : ''}`,
         ...live(o.fits as Rule[]).map(r => `  - 쓰는 곳: ${line(r)}`),

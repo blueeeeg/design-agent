@@ -1,0 +1,20 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>좋은 예</title>
+<style>
+body { font-family: "Pretendard", "Apple SD Gothic Neo", sans-serif; }
+button { min-height: 48px; }
+.sheet { position: fixed; bottom: 0; background: #fff; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
+button[aria-busy="true"] { opacity: .6; }
+</style></head><body>
+<header><h1>오늘의 빵</h1><button aria-label="장바구니">장바구니 2</button></header>
+<ul class="list">
+  <li class="card"><img src="a.jpg" alt="소금빵"><span>소금빵</span><span>3,000원</span><span class="status">품절 임박</span></li>
+  <li class="card"><img src="b.jpg" alt="크루아상"><span>크루아상</span><span>3,500원</span><span class="status">있음</span></li>
+  <li class="card"><img src="c.jpg" alt="바게트"><span>바게트</span><span>4,000원</span><span class="status">있음</span></li>
+</ul>
+<p class="empty" hidden>아직 담은 빵이 없어요. <a href="#menu">메뉴 보러 가기</a></p>
+<div class="sheet"><span>합계 7,000원</span><button id="pay">결제하기</button></div>
+<p id="pay-error" role="alert" hidden>결제에 실패했어요. 카드 정보를 확인하고 다시 시도해 주세요.</p>
+<script>
+document.getElementById('pay').addEventListener('click', e => { e.currentTarget.disabled = true; e.currentTarget.setAttribute('aria-busy', 'true'); });
+</script>
+</body></html>

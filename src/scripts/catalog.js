@@ -46,8 +46,10 @@ if (REFS) {
 const reasonsOf = fs => fs.map(f => `${axisLabel(f[0], f[1])}${f[3] ? `(${f[3]})` : ''}`).join(', ');
 // 마지막 글자에 받침이 있으면 「은」, 없으면 「는」
 const topicOf = w => { const c = w.charCodeAt(w.length - 1) - 0xac00; return c >= 0 && c < 11172 && c % 28 ? '은' : '는'; };
+const caseOf = (pat, o) => (pat.cases || []).find(c => c.options.includes(o.id));
 function promptOf(pat, o) {
-  const lines = [`${pat.name}(${pat.en})${topicOf(pat.name)} 「${o.name}」(${o.en}) 방식으로 만들어 줘. ${o.desc}.`];
+  const c = caseOf(pat, o);
+  const lines = [`${c ? `${c.name}, ` : ''}${pat.name}(${pat.en})${topicOf(pat.name)} 「${o.name}」(${o.en}) 방식으로 만들어 줘. ${o.desc}.`];
   if (o.fits.length) lines.push(`쓰는 곳: ${reasonsOf(o.fits)}.`);
   if (o.avoid.length) lines.push(`피하는 곳: ${reasonsOf(o.avoid)}.`);
   return lines.join('\n');
@@ -84,7 +86,8 @@ function renderCatalog(pat, idx) {
   // 카드마다 그 방식이 맞는 조건으로 그린다. 조건은 「쓰는 곳」이 말하니 머리에 따로 적지 않는다
   const typ = pat.options.map(o => typicalSel(pat, o));
   const actionOf = t => (t.sel.action ? findOpt('action', t.sel.action).label : '');
-  const cards = pat.options.map((o, i) => {
+  const cardOf = {};
+  pat.options.forEach((o, i) => { cardOf[o.id] = (() => {
     const t = typ[i];
     const x = ctxOf(t.sel);
     const row = (label, fs, kind) => (fs.length ? `<p class="cond kv ${kind}"><span class="fl">${label}</span><span class="cond-list">${fs.map(f => chip(f, kind)).join('<i aria-hidden="true"> · </i>')}</span></p>` : '');
@@ -97,7 +100,11 @@ function renderCatalog(pat, idx) {
       <div class="slot-prompt">${promptBox(pat, o)}</div>
       <div class="slot-links">${linksOf(pat, o)}</div>
     </div>`;
-  }).join('');
+  })(); });
+  // 상황(cases)이 있으면 상황마다 제목을 달고 그 상황의 방식만 모은다. 없으면 방식 순서대로
+  const cards = pat.cases
+    ? pat.cases.map(c => `<div class="case-head"><h2>${esc(c.name)}</h2><p>${esc(c.q)}</p></div>${c.options.map(id => cardOf[id]).join('')}`).join('')
+    : pat.options.map(o => cardOf[o.id]).join('');
   const prev = PATTERNS[idx - 1];
   const next = PATTERNS[idx + 1];
   document.getElementById('comps').innerHTML = `

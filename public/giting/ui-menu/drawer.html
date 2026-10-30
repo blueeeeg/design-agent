@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>드로어 Drawer / Side Panel · UI 메뉴판</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17171b; font-size: 13.5px; background: #fff; }
+  .center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 14px; }
+  .cap { color: #9a9aa4; font-size: 11px; text-align: center; margin: 10px 0 0; }
+  .bar { background: #ececf1; border-radius: 4px; height: 10px; }
+  .mut { color: #9a9aa4; font-size: 12px; }
+</style>
+</head>
+<body>
+<style>
+  .op { margin: 12px 14px; padding: 8px 14px; border: 1px solid #e0e0e8; border-radius: 8px; background: #fff; font-size: 13px; cursor: pointer; }
+  dialog.dr { border: 0; padding: 0; position: fixed; inset: 0 0 0 auto; height: 100vh; max-height: 100vh; width: 150px; margin: 0; box-shadow: -10px 0 30px rgba(0,0,0,.14); animation: sl .18s ease-out; }
+  @keyframes sl { from { transform: translateX(100%); } }
+  dialog.dr::backdrop { background: rgba(0,0,0,.32); }
+  .dr nav { display: grid; gap: 2px; padding: 14px 10px; }
+  .dr a { padding: 8px 10px; border-radius: 7px; color: #17171b; text-decoration: none; font-size: 13px; }
+  .dr a:hover { background: #f4f4f7; }
+</style>
+<button class="op" onclick="document.getElementById('d').showModal()">&#9776; 메뉴</button>
+<p class="cap">오른쪽에서 서랍처럼 밀려 나옵니다</p>
+<dialog class="dr" id="d" onclick="if (event.target === this) this.close()"><nav><a href="#">홈</a><a href="#">리포트</a><a href="#">매거진</a><a href="#">설정</a></nav></dialog>
+<script>
+// 데모용 빈 링크(href="#") 이동 차단 — 인앱 브라우저(스레드 등)에서 iframe 이 엉뚱한 곳으로 튀는 제보 대응 (2026-09-12)
+document.addEventListener('click', function (e) {
+  var a = e.target.closest('a[href="#"]');
+  if (a) e.preventDefault();
+});
+</script>
+</body>
+</html>

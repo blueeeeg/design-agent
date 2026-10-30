@@ -1,0 +1,1111 @@
+{
+  "name": "font-menu",
+  "title": "웹폰트 사전",
+  "formula": {
+    "pattern": "어떤 인상을 원하는지 말하기 → 사전에서 짝 고르기 → 로딩 스니펫째 시키기",
+    "bad": "폰트 예쁘게 넣어줘",
+    "good": "히어로 제목은 Instrument Serif, 본문은 Inter로. 둘 다 Google Fonts <link>로 불러오고 CSS 폴백 스택도 넣어줘",
+    "note": "'예쁘게'라고만 하면 AI는 늘 쓰던 Inter만 얹거나, Google Fonts에 없는 폰트(Satoshi·General Sans 등)를 Google 링크에 박아 조용히 시스템 폰트로 폴백시킵니다. 이 사전은 폰트마다 '어디서 어떻게 불러오는지'를 복사용 스니펫으로 주고, 짝·라이선스·안 쓸 때까지 붙였습니다."
+  },
+  "loaders": {
+    "Google Fonts": "Google에 있는 폰트. <link>로 불러오고 폴백 스택 필수. 파일 번들·상용 자유.",
+    "Fontshare": "Indian Type Foundry 배포. Google에 없음. api.fontshare.com 에서만 로드. 무료·상용은 되지만 파일 재배포·번들은 라이선스 위반. CDN <link>로만 쓴다.",
+    "jsDelivr": "Google에 없는 오픈 폰트(Pretendard 등)를 GitHub 저장소째 CDN으로 서빙. OFL이라 번들도 가능하지만 CDN <link>가 가장 간편."
+  },
+  "categories": [
+    {
+      "id": "body",
+      "ko": "국룰 · 본문 · UI",
+      "no": "01"
+    },
+    {
+      "id": "tech",
+      "ko": "AI · 테크 스타트업",
+      "no": "02"
+    },
+    {
+      "id": "landing",
+      "ko": "랜딩 히어로",
+      "no": "03"
+    },
+    {
+      "id": "serif",
+      "ko": "고급 · 에디토리얼",
+      "no": "04"
+    },
+    {
+      "id": "mono",
+      "ko": "코드 · 모노",
+      "no": "05"
+    },
+    {
+      "id": "ko",
+      "ko": "한글",
+      "no": "06"
+    },
+    {
+      "id": "ko-display",
+      "ko": "한글 제목 · 손글씨",
+      "no": "07"
+    }
+  ],
+  "items": [
+    {
+      "id": "inter",
+      "category": "body",
+      "family": "Inter",
+      "css": "'Inter', system-ui, sans-serif",
+      "role": "본문 · UI",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');",
+      "weights": "400 · 500 · 600 · 700",
+      "vibe": "중립 · 읽기 쉬움. 숫자·UI 라벨이 또렷하다.",
+      "use": "대시보드 · 앱 UI · 본문. '무난하게'가 필요할 때 기본값.",
+      "whenNot": "히어로에 개성이 필요할 때. Inter는 '안전'이지 '인상'이 아니다. 제목까지 Inter면 AI가 만든 티가 난다.",
+      "pairsWith": "제목에 Space Grotesk · Instrument Serif · Fraunces를 얹고 본문만 Inter.",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "geist",
+      "category": "body",
+      "family": "Geist",
+      "css": "'Geist', system-ui, sans-serif",
+      "role": "본문 · UI",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap');",
+      "weights": "400 · 500 · 600 · 700",
+      "vibe": "Vercel이 만든 현대적 산세리프. Inter보다 조금 더 각이 살아 있다.",
+      "use": "Inter가 식상할 때의 안전한 대안. 개발자 도구·SaaS UI.",
+      "whenNot": "따뜻함·클래식이 필요할 때. Geist는 차갑고 기하학적이다.",
+      "pairsWith": "본문 Geist + 코드 Geist Mono(같은 가족이라 자연스럽다).",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "ibm-plex-sans",
+      "category": "body",
+      "family": "IBM Plex Sans",
+      "css": "'IBM Plex Sans', system-ui, sans-serif",
+      "role": "본문 · UI",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');",
+      "weights": "400 · 500 · 600 · 700",
+      "vibe": "기업 신뢰감 + 은근한 개성. 네모난 몸통, 살짝 튀는 디테일.",
+      "use": "B2B·엔터프라이즈 톤. 한글판(IBM Plex Sans KR)이 있어 국문 병기도 일관된다.",
+      "whenNot": "가볍고 트렌디한 랜딩엔 다소 무겁다.",
+      "pairsWith": "IBM Plex Sans + IBM Plex Mono + IBM Plex Sans KR. 한 가족으로 다국어까지.",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "space-grotesk",
+      "category": "tech",
+      "family": "Space Grotesk",
+      "css": "'Space Grotesk', sans-serif",
+      "role": "제목 · 로고 · UI",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');",
+      "weights": "400 · 500 · 700",
+      "vibe": "요즘 AI 스타트업이 제일 많이 쓰는 기하학 산세리프. 미래적·또렷.",
+      "use": "제목·로고타입·수치 강조. 본문 Inter와 짝지으면 '테크 스타트업' 룩 완성.",
+      "whenNot": "긴 본문. 장문엔 피로하다. 제목·라벨용으로 아껴 쓴다. 이미 흔해서 개성은 약해지는 중.",
+      "pairsWith": "제목 Space Grotesk + 본문 Inter/Sora. 코드는 Space Mono(같은 가족감).",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "sora",
+      "category": "tech",
+      "family": "Sora",
+      "css": "'Sora', sans-serif",
+      "role": "제목 · 본문",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Sora:wght@400;500;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;700&display=swap');",
+      "weights": "400 · 500 · 700",
+      "vibe": "깔끔한 기하학. Space Grotesk보다 얌전해서 본문까지 버틴다.",
+      "use": "테크 톤이되 제목·본문을 한 폰트로 통일하고 싶을 때.",
+      "whenNot": "감성·따뜻함이 필요한 브랜드.",
+      "pairsWith": "제목·본문 Sora 단독, 또는 제목 Space Grotesk + 본문 Sora.",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "satoshi",
+      "category": "tech",
+      "family": "Satoshi",
+      "css": "'Satoshi', sans-serif",
+      "role": "제목 · 본문 · UI",
+      "source": "Fontshare",
+      "license": {
+        "name": "Fontshare (ITF) 무료",
+        "tone": "cdn",
+        "bundle": false,
+        "blurb": "무료·상용 OK · 파일 번들·재배포 금지 · CDN 로드만"
+      },
+      "load": "<link href=\"https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap');",
+      "weights": "400 · 500 · 700",
+      "vibe": "요즘 랜딩페이지에 자주 보이는 중립적 네오그로테스크. 군더더기 없다.",
+      "use": "제목·본문 통합 산세리프. 랜딩·SaaS 전반.",
+      "whenNot": "⚠️ Google Fonts에 없다. Google 링크에 family=Satoshi를 박으면 조용히 폴백된다. 반드시 위 Fontshare <link>로. 파일을 프로젝트에 넣어 재배포하면 안 된다.",
+      "pairsWith": "제목·본문 Satoshi 단독, 또는 제목 Clash Display + 본문 Satoshi.",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "plus-jakarta",
+      "category": "tech",
+      "family": "Plus Jakarta Sans",
+      "css": "'Plus Jakarta Sans', sans-serif",
+      "role": "제목 · 본문",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap');",
+      "weights": "400 · 500 · 700",
+      "vibe": "따뜻하고 둥근 기하학. 차가운 테크에 인간미를 더한다.",
+      "use": "스타트업 랜딩·앱. Space Grotesk가 너무 차가울 때.",
+      "whenNot": "격식·전통 브랜드.",
+      "pairsWith": "제목·본문 Plus Jakarta Sans 단독. Google에 있어 로드가 간편.",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "clash-display",
+      "category": "landing",
+      "family": "Clash Display",
+      "css": "'Clash Display', sans-serif",
+      "role": "히어로 제목 전용",
+      "source": "Fontshare",
+      "license": {
+        "name": "Fontshare (ITF) 무료",
+        "tone": "cdn",
+        "bundle": false,
+        "blurb": "무료·상용 OK · 파일 번들·재배포 금지 · CDN 로드만"
+      },
+      "load": "<link href=\"https://api.fontshare.com/v2/css?f[]=clash-display@400,600,700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,600,700&display=swap');",
+      "weights": "400 · 600 · 700",
+      "vibe": "크게 키우면 강렬한 디스플레이. 랜딩 히어로 한 문장을 각인시킨다.",
+      "use": "큰 제목·히어로 한 줄. 굵게 크게.",
+      "whenNot": "본문·작은 글씨엔 절대 금지(가독성 급락). ⚠️ Google에 없다. Fontshare <link>로만.",
+      "pairsWith": "히어로 Clash Display + 본문 Satoshi/Inter.",
+      "pan": "Design that ships",
+      "panKo": null
+    },
+    {
+      "id": "bricolage",
+      "category": "landing",
+      "family": "Bricolage Grotesque",
+      "css": "'Bricolage Grotesque', sans-serif",
+      "role": "제목 · 디스플레이",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap');",
+      "weights": "400 · 600 · 800",
+      "vibe": "일부러 삐뚤한 그로테스크. '틀에서 벗어난' 개성. AI가 만든 티를 확실히 지운다.",
+      "use": "개성 있는 제목이 필요한 랜딩·포트폴리오·에디토리얼.",
+      "whenNot": "보수적·엔터프라이즈 톤. 튀는 게 목적이라 격식과는 안 맞는다.",
+      "pairsWith": "제목 Bricolage + 본문 Inter/Manrope. Google에 있어 로드 간편.",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "general-sans",
+      "category": "landing",
+      "family": "General Sans",
+      "css": "'General Sans', sans-serif",
+      "role": "제목 · 본문",
+      "source": "Fontshare",
+      "license": {
+        "name": "Fontshare (ITF) 무료",
+        "tone": "cdn",
+        "bundle": false,
+        "blurb": "무료·상용 OK · 파일 번들·재배포 금지 · CDN 로드만"
+      },
+      "load": "<link href=\"https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap');",
+      "weights": "400 · 500 · 600",
+      "vibe": "요즘 랜딩에 자주 보이는 만능 산세리프. 제목·본문 다 받는다.",
+      "use": "한 폰트로 랜딩 전체를 통일하고 싶을 때.",
+      "whenNot": "⚠️ Latin 전용. 한글이 없다. 'Pretendard가 식상할 때'의 대안으로 얘기되지만 국문엔 못 쓴다(한글은 시스템 폰트로 폴백). Google에도 없으니 Fontshare <link>로만.",
+      "pairsWith": "영문 전용 프로젝트에서 제목·본문 General Sans 단독.",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "manrope",
+      "category": "landing",
+      "family": "Manrope",
+      "css": "'Manrope', sans-serif",
+      "role": "제목 · 본문",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap');",
+      "weights": "400 · 500 · 700 · 800",
+      "vibe": "깔끔하고 살짝 둥근 기하학. 랜딩 본문의 단골.",
+      "use": "제품 랜딩·SaaS 본문. 두께 폭이 넓어 위계 잡기 좋다.",
+      "whenNot": "강한 개성이 필요한 히어로. Manrope는 얌전한 쪽.",
+      "pairsWith": "제목 Clash Display/Bricolage + 본문 Manrope.",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "instrument-serif",
+      "category": "serif",
+      "family": "Instrument Serif",
+      "css": "'Instrument Serif', Georgia, serif",
+      "role": "제목 · 디스플레이 세리프",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');",
+      "weights": "400 · 400 italic",
+      "vibe": "제목만 이걸로 바꿔도 고급스러워진다. 크게 키운 얇은 세리프의 우아함.",
+      "use": "히어로 제목·인용구. 본문은 산세리프로 받친다.",
+      "whenNot": "본문·작은 글씨(단일 굵기라 위계가 약하다). 굵은 헤드라인이 필요하면 Playfair/Fraunces.",
+      "pairsWith": "제목 Instrument Serif + 본문 Inter/Satoshi. 요즘 프리미엄 랜딩 공식.",
+      "pan": "Elegant by default",
+      "panKo": null
+    },
+    {
+      "id": "fraunces",
+      "category": "serif",
+      "family": "Fraunces",
+      "css": "'Fraunces', Georgia, serif",
+      "role": "제목 · 본문 세리프",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&display=swap');",
+      "weights": "400 · 600 · 900",
+      "vibe": "말랑하고 살짝 삐뚠 '소프트 세리프'. 프리미엄 랜딩의 요즘 얼굴.",
+      "use": "감성·프리미엄 브랜드 제목. opsz(옵티컬 사이즈) 축이 있어 크게·작게 다 예쁘다.",
+      "whenNot": "차갑고 기술적인 톤.",
+      "pairsWith": "제목 Fraunces + 본문 Inter/Manrope.",
+      "pan": "Warm & premium",
+      "panKo": null
+    },
+    {
+      "id": "newsreader",
+      "category": "serif",
+      "family": "Newsreader",
+      "css": "'Newsreader', Georgia, serif",
+      "role": "본문 세리프 · 에디토리얼",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap');",
+      "weights": "400 · 500 · italic",
+      "vibe": "긴 글을 읽히려고 만든 세리프. 블로그·아티클 본문에 편안하다.",
+      "use": "긴 본문·매거진·아티클. 이탤릭이 예뻐 인용에 좋다.",
+      "whenNot": "짧은 UI 라벨·버튼.",
+      "pairsWith": "제목 Fraunces/Playfair + 본문 Newsreader, 또는 본문 Newsreader 단독.",
+      "pan": "The quick brown fox 0123",
+      "panKo": null
+    },
+    {
+      "id": "playfair",
+      "category": "serif",
+      "family": "Playfair Display",
+      "css": "'Playfair Display', Georgia, serif",
+      "role": "제목 · 럭셔리 세리프",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;800&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;800&display=swap');",
+      "weights": "400 · 600 · 800",
+      "vibe": "굵기 대비가 큰 클래식 세리프. 패션·뷰티·웨딩의 '고급' 신호.",
+      "use": "럭셔리·격식 브랜드 제목. 크게 굵게.",
+      "whenNot": "본문(가는 획이 작은 크기에서 뭉갠다). 이미 흔해서 신선함은 약하다. 개성 원하면 Fraunces.",
+      "pairsWith": "제목 Playfair Display + 본문 Inter/Newsreader.",
+      "pan": "Timeless Luxury",
+      "panKo": null
+    },
+    {
+      "id": "jetbrains-mono",
+      "category": "mono",
+      "family": "JetBrains Mono",
+      "css": "'JetBrains Mono', monospace",
+      "role": "코드 · 터미널",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');",
+      "weights": "400 · 500 · 700",
+      "vibe": "코드용 표준. 0과 O, 1과 l이 확실히 구분된다.",
+      "use": "코드 블록·터미널·기술 문서의 등폭.",
+      "whenNot": "일반 본문(등폭은 장문에 부적합).",
+      "pairsWith": "본문 산세리프 아무거나 + 코드 JetBrains Mono.",
+      "pan": "const x = 0; // O1lI",
+      "panKo": null
+    },
+    {
+      "id": "geist-mono",
+      "category": "mono",
+      "family": "Geist Mono",
+      "css": "'Geist Mono', monospace",
+      "role": "코드 · 데이터",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&display=swap');",
+      "weights": "400 · 500 · 700",
+      "vibe": "Geist의 등폭 짝. 현대적이고 데이터·숫자가 깔끔하다.",
+      "use": "본문이 Geist일 때의 코드·수치 등폭. 대시보드 숫자.",
+      "whenNot": "본문 산세리프가 Geist가 아니면 어색할 수 있다.",
+      "pairsWith": "본문 Geist + 코드 Geist Mono(한 가족).",
+      "pan": "const x = 0; // O1lI",
+      "panKo": null
+    },
+    {
+      "id": "space-mono",
+      "category": "mono",
+      "family": "Space Mono",
+      "css": "'Space Mono', monospace",
+      "role": "제목 · 라벨 · 코드",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');",
+      "weights": "400 · 700",
+      "vibe": "개성 강한 레트로 등폭. 코드보다 '분위기용'으로 더 쓴다.",
+      "use": "테크 브랜드의 라벨·태그·수치 강조. Space Grotesk와 한 가족감.",
+      "whenNot": "긴 코드 블록(가독성은 JetBrains Mono가 낫다).",
+      "pairsWith": "제목 Space Grotesk + 라벨 Space Mono.",
+      "pan": "[ SYSTEM 0x1F ]",
+      "panKo": null
+    },
+    {
+      "id": "ibm-plex-mono",
+      "category": "mono",
+      "family": "IBM Plex Mono",
+      "css": "'IBM Plex Mono', monospace",
+      "role": "코드 · 기술 문서",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');",
+      "weights": "400 · 500 · 600",
+      "vibe": "IBM Plex 가족의 등폭. 살짝 인간적인 코드 폰트.",
+      "use": "본문이 IBM Plex Sans일 때의 코드. 기술 백서·문서.",
+      "whenNot": "본문 가족이 Plex가 아닐 때는 굳이.",
+      "pairsWith": "IBM Plex Sans + IBM Plex Mono + IBM Plex Sans KR.",
+      "pan": "const x = 0; // O1lI",
+      "panKo": null
+    },
+    {
+      "id": "pretendard",
+      "category": "ko",
+      "family": "Pretendard",
+      "css": "'Pretendard Variable', Pretendard, system-ui, sans-serif",
+      "role": "한글 본문 · UI (국룰)",
+      "source": "jsDelivr",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능 · 국문 기본값"
+      },
+      "load": "<link rel=\"stylesheet\" as=\"style\" crossorigin href=\"https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css\">",
+      "import": "@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');",
+      "weights": "45~920 (Variable)",
+      "vibe": "한글 웹의 사실상 국룰. Apple 시스템 폰트 느낌을 웹에서.",
+      "use": "국문 본문·UI 기본값. dynamic-subset이라 필요한 글자만 받아 빠르다.",
+      "whenNot": "'모두가 쓰는 폰트'라 차별화는 없다. 개성이 필요하면 Wanted Sans/Gowun Batang.",
+      "pairsWith": "국문 Pretendard + 영문·숫자도 Pretendard가 받는다. 세리프 강조엔 Gowun Batang.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123"
+    },
+    {
+      "id": "wanted-sans",
+      "category": "ko",
+      "family": "Wanted Sans",
+      "css": "'Wanted Sans Variable', 'Wanted Sans', sans-serif",
+      "role": "한글 제목 · 본문",
+      "source": "jsDelivr",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link rel=\"stylesheet\" as=\"style\" crossorigin href=\"https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css\">",
+      "import": "@import url('https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css');",
+      "weights": "100~900 (Variable)",
+      "vibe": "원티드가 만든 현대적 한글 산세리프. Pretendard보다 살짝 또렷하고 개성 있다.",
+      "use": "'Pretendard가 식상할 때'의 국문 대안. 제목·본문 다 받는다.",
+      "whenNot": "jsDelivr 버전 경로가 바뀔 수 있으니 릴리스 버전 확인. 극도로 보수적인 기관 사이트엔 Noto Sans KR가 무난.",
+      "pairsWith": "국문 제목·본문 Wanted Sans 단독.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123"
+    },
+    {
+      "id": "noto-sans-kr",
+      "category": "ko",
+      "family": "Noto Sans KR",
+      "css": "'Noto Sans KR', sans-serif",
+      "role": "한글 본문 · UI (안전)",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');",
+      "weights": "400 · 500 · 700",
+      "vibe": "구글 범용 한글. 무난하고 어디서나 안전하게 뜬다.",
+      "use": "Google Fonts 하나로 한/영을 끝내고 싶을 때. jsDelivr를 못 쓰는 환경.",
+      "whenNot": "세련·트렌디한 인상. 그건 Pretendard/Wanted Sans가 낫다.",
+      "pairsWith": "제목 Noto Sans KR 700 + 본문 400. 영문은 Inter로 갈아도 자연스럽다.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123"
+    },
+    {
+      "id": "ibm-plex-sans-kr",
+      "category": "ko",
+      "family": "IBM Plex Sans KR",
+      "css": "'IBM Plex Sans KR', sans-serif",
+      "role": "한글 본문 (Plex 가족)",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap');",
+      "weights": "400 · 500 · 600",
+      "vibe": "IBM Plex의 한글판. 영문 IBM Plex Sans와 톤이 일관된다.",
+      "use": "영문 IBM Plex Sans를 쓰는 프로젝트의 국문 병기. 다국어 일관성.",
+      "whenNot": "Plex 가족을 안 쓰면 굳이.",
+      "pairsWith": "IBM Plex Sans + IBM Plex Sans KR + IBM Plex Mono.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123"
+    },
+    {
+      "id": "gowun-batang",
+      "category": "ko",
+      "family": "Gowun Batang",
+      "css": "'Gowun Batang', serif",
+      "role": "한글 세리프 · 감성",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap');",
+      "weights": "400 · 700",
+      "vibe": "부드러운 한글 명조. 감성·문학·에세이 톤.",
+      "use": "국문 제목·인용에 고급·서정 느낌. 본문 산세리프와 짝.",
+      "whenNot": "UI 라벨·버튼(명조는 작은 글씨에 약하다).",
+      "pairsWith": "제목 Gowun Batang + 본문 Pretendard.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123"
+    },
+    {
+      "id": "black-han-sans",
+      "category": "ko-display",
+      "family": "Black Han Sans",
+      "familyKo": "검은고딕",
+      "css": "'Black Han Sans', sans-serif",
+      "role": "한글 제목 · 굵은 고딕",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap');",
+      "weights": "400 한 가지",
+      "weightNums": [
+        400
+      ],
+      "vibe": "획이 아주 두꺼운 한글 고딕. 한 줄만 써도 포스터처럼 보인다.",
+      "use": "행사·이벤트 배너, 히어로 한 줄, 숫자 강조. 제목 전용으로 쓴다.",
+      "whenNot": "두께가 하나뿐이라 font-weight를 700으로 줘도 더 두꺼워지지 않고 브라우저가 가짜 굵기를 만든다. 본문·긴 문장엔 숨이 막힌다.",
+      "pairsWith": "제목 Black Han Sans + 본문 Pretendard 400. 굵기 차이가 커서 둘이 안 부딪힌다.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/google/fonts/blob/main/ofl/blackhansans/OFL.txt",
+      "checked": "2026-10-23"
+    },
+    {
+      "id": "do-hyeon",
+      "category": "ko-display",
+      "family": "Do Hyeon",
+      "familyKo": "도현",
+      "css": "'Do Hyeon', sans-serif",
+      "role": "한글 제목 · 좁은 고딕",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap');",
+      "weights": "400 한 가지",
+      "weightNums": [
+        400
+      ],
+      "vibe": "배달의민족이 만든 좁고 각진 제목 고딕. 손으로 쓴 간판 같은 맛이 조금 있다.",
+      "use": "앱 화면 제목, 메뉴판, 가격표처럼 좁은 칸에 큰 글자를 넣을 때.",
+      "whenNot": "두께가 하나뿐이다. 본문으로 쓰면 글자가 좁아 빽빽해 보인다.",
+      "pairsWith": "제목 Do Hyeon + 본문 Noto Sans KR 또는 Pretendard.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/google/fonts/blob/main/ofl/dohyeon/OFL.txt",
+      "checked": "2026-10-23"
+    },
+    {
+      "id": "jua",
+      "category": "ko-display",
+      "family": "Jua",
+      "familyKo": "주아",
+      "css": "'Jua', sans-serif",
+      "role": "한글 제목 · 둥근 고딕",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Jua&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');",
+      "weights": "400 한 가지",
+      "weightNums": [
+        400
+      ],
+      "vibe": "모서리가 둥글고 통통한 고딕. 친근하고 귀엽다.",
+      "use": "생활 서비스·어린이·음식 앱의 제목과 큰 버튼 글씨.",
+      "whenNot": "금융·의료처럼 믿음이 먼저인 화면. 두께가 하나라 굵기로 위계를 못 만든다.",
+      "pairsWith": "제목 Jua + 본문 Pretendard. 본문까지 둥글게 하지 않는다.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/google/fonts/blob/main/ofl/jua/OFL.txt",
+      "checked": "2026-10-23"
+    },
+    {
+      "id": "paperlogy",
+      "category": "ko-display",
+      "family": "Paperlogy",
+      "familyKo": "페이퍼로지",
+      "css": "'Paperlogy', 'Pretendard Variable', sans-serif",
+      "role": "한글 제목 · 발표 고딕",
+      "source": "jsDelivr",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능 · 한글 2,780자(KS X 1001 범위)만 들어 있다"
+      },
+      "load": "<style>@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/Freesentation/paperlogy@8ef35f53b318c7ca914c52b1b382b9a8bad07a61/woff2/Paperlogy-4Regular.woff2') format('woff2');font-weight:400;font-display:swap}@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/Freesentation/paperlogy@8ef35f53b318c7ca914c52b1b382b9a8bad07a61/woff2/Paperlogy-7Bold.woff2') format('woff2');font-weight:700;font-display:swap}@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/Freesentation/paperlogy@8ef35f53b318c7ca914c52b1b382b9a8bad07a61/woff2/Paperlogy-8ExtraBold.woff2') format('woff2');font-weight:800;font-display:swap}</style>",
+      "import": "@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/Freesentation/paperlogy@8ef35f53b318c7ca914c52b1b382b9a8bad07a61/woff2/Paperlogy-4Regular.woff2') format('woff2');font-weight:400;font-display:swap}@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/Freesentation/paperlogy@8ef35f53b318c7ca914c52b1b382b9a8bad07a61/woff2/Paperlogy-7Bold.woff2') format('woff2');font-weight:700;font-display:swap}@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/Freesentation/paperlogy@8ef35f53b318c7ca914c52b1b382b9a8bad07a61/woff2/Paperlogy-8ExtraBold.woff2') format('woff2');font-weight:800;font-display:swap}",
+      "weights": "100~900 (9단계, 스니펫은 400 · 700 · 800)",
+      "weightNums": [
+        400,
+        700,
+        800
+      ],
+      "vibe": "G마켓 산스의 한글에 Montserrat 영문을 붙여 발표용으로 다듬은 고딕. 두께가 아홉 단계라 제목과 본문을 한 가족으로 나눌 수 있다.",
+      "use": "발표 자료풍 랜딩, 숫자가 많은 소개 페이지, 굵은 제목과 보통 본문을 한 글꼴로 맞추고 싶을 때.",
+      "whenNot": "Google Fonts에 없다. family=Paperlogy를 Google 링크에 넣으면 조용히 기본 글꼴로 나온다. 한글이 2,780자뿐이라 드문 글자(예: 똠, 햏)는 대체 글꼴로 빠진다.",
+      "pairsWith": "제목 Paperlogy 800 + 본문 Paperlogy 400, 또는 본문만 Pretendard.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/Freesentation/paperlogy/blob/main/OFL%20license.txt",
+      "checked": "2026-10-23"
+    },
+    {
+      "id": "bagel-fat-one",
+      "category": "ko-display",
+      "family": "Bagel Fat One",
+      "familyKo": null,
+      "css": "'Bagel Fat One', sans-serif",
+      "role": "한글 제목 · 장난스러운 굵은 글씨",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap');",
+      "weights": "400 한 가지",
+      "weightNums": [
+        400
+      ],
+      "vibe": "빵처럼 부풀린 아주 굵은 글씨. 한 단어만 써도 눈에 띈다.",
+      "use": "이벤트 페이지, 스티커 같은 로고타입, SNS 카드의 큰 한 단어.",
+      "whenNot": "두께가 하나뿐이다. 두 줄 넘는 제목은 무거워진다. 진지한 서비스엔 안 맞는다.",
+      "pairsWith": "제목 Bagel Fat One + 본문 Pretendard 또는 영문 Plus Jakarta Sans.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/google/fonts/blob/main/ofl/bagelfatone/OFL.txt",
+      "checked": "2026-10-23"
+    },
+    {
+      "id": "song-myung",
+      "category": "ko-display",
+      "family": "Song Myung",
+      "familyKo": "송명",
+      "css": "'Song Myung', serif",
+      "role": "한글 제목 · 날카로운 명조",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Song+Myung&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Song+Myung&display=swap');",
+      "weights": "400 한 가지",
+      "weightNums": [
+        400
+      ],
+      "vibe": "붓끝이 날카롭게 살아 있는 명조. 책 표지나 영화 포스터 같은 인상.",
+      "use": "에세이·문화·전시 페이지의 제목, 큰 인용문.",
+      "whenNot": "두께가 하나뿐이다. 작은 글씨에선 가는 획이 사라진다. 버튼·라벨엔 쓰지 않는다.",
+      "pairsWith": "제목 Song Myung + 본문 Pretendard. 명조 대 고딕으로 대비를 준다.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/google/fonts/blob/main/ofl/songmyung/OFL.txt",
+      "checked": "2026-10-23"
+    },
+    {
+      "id": "hahmlet",
+      "category": "ko-display",
+      "family": "Hahmlet",
+      "familyKo": "함렛",
+      "css": "'Hahmlet', serif",
+      "role": "한글 제목 · 현대 명조",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&display=swap');",
+      "weights": "100~900 (Variable, 스니펫은 400 · 600 · 800)",
+      "weightNums": [
+        400,
+        600,
+        800
+      ],
+      "vibe": "획 끝을 각지게 정리한 요즘 명조. 두께 폭이 넓어 굵게 쓰면 잡지 제목처럼 된다.",
+      "use": "브랜드 소개, 매거진형 글, 고급스러운 상품 페이지의 제목.",
+      "whenNot": "긴 본문은 Gowun Batang이나 고딕이 더 편하다. 가는 두께는 작은 글씨에서 흐려진다.",
+      "pairsWith": "제목 Hahmlet 800 + 본문 Noto Sans KR 400.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/google/fonts/blob/main/ofl/hahmlet/OFL.txt",
+      "checked": "2026-10-23"
+    },
+    {
+      "id": "nanum-brush-script",
+      "category": "ko-display",
+      "family": "Nanum Brush Script",
+      "familyKo": "나눔손글씨 붓",
+      "css": "'Nanum Brush Script', cursive",
+      "role": "한글 손글씨 · 붓",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "상용 · 번들 가능 · 고쳐서 다시 낼 때는 Nanum 이름을 쓸 수 없다(예약 이름)"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap');",
+      "weights": "400 한 가지",
+      "weightNums": [
+        400
+      ],
+      "vibe": "붓으로 빠르게 쓴 손글씨. 거칠고 힘이 있다.",
+      "use": "전통 음식, 시장, 축제 포스터의 한두 단어 제목.",
+      "whenNot": "본문이나 두 줄 넘는 문장. 글자 크기가 작게 나오니 다른 글꼴보다 크게(1.3배쯤) 잡는다.",
+      "pairsWith": "제목 Nanum Brush Script + 본문 Gowun Batang 또는 Pretendard.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/google/fonts/blob/main/ofl/nanumbrushscript/OFL.txt",
+      "checked": "2026-10-23"
+    },
+    {
+      "id": "nanum-pen-script",
+      "category": "ko-display",
+      "family": "Nanum Pen Script",
+      "familyKo": "나눔손글씨 펜",
+      "css": "'Nanum Pen Script', cursive",
+      "role": "한글 손글씨 · 펜",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "상용 · 번들 가능 · 고쳐서 다시 낼 때는 Nanum 이름을 쓸 수 없다(예약 이름)"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');",
+      "weights": "400 한 가지",
+      "weightNums": [
+        400
+      ],
+      "vibe": "볼펜으로 쓴 메모 같은 손글씨. 가볍고 사적이다.",
+      "use": "손으로 남긴 한 줄, 다이어리·일기 화면, 사진 위 짧은 메모.",
+      "whenNot": "안내문·설명처럼 정확히 읽혀야 하는 글. 글자가 작게 나오니 크게(1.3배쯤) 잡는다.",
+      "pairsWith": "제목 Nanum Pen Script + 본문 Gowun Batang. 둘 다 손맛이라 결이 맞는다.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/google/fonts/blob/main/ofl/nanumpenscript/OFL.txt",
+      "checked": "2026-10-23"
+    },
+    {
+      "id": "gaegu",
+      "category": "ko-display",
+      "family": "Gaegu",
+      "familyKo": "개구",
+      "css": "'Gaegu', cursive",
+      "role": "한글 손글씨 · 둥근 펜",
+      "source": "Google Fonts",
+      "license": {
+        "name": "SIL OFL 1.1",
+        "tone": "ok",
+        "bundle": true,
+        "blurb": "완전 자유 · 상용 · 번들 가능"
+      },
+      "load": "<link href=\"https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap\" rel=\"stylesheet\">",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap');",
+      "weights": "300 · 400 · 700",
+      "weightNums": [
+        300,
+        400,
+        700
+      ],
+      "vibe": "또박또박 쓴 둥근 손글씨. 손글씨 중에선 잘 읽히는 편이다.",
+      "use": "아이 대상 화면, 체크리스트, 말풍선, 손글씨 느낌의 짧은 설명.",
+      "whenNot": "긴 글과 업무 도구. 손글씨라 금방 피로해진다.",
+      "pairsWith": "제목 Gaegu 700 + 본문 Pretendard.",
+      "pan": "The quick brown fox 0123",
+      "panKo": "다람쥐 헌 쳇바퀴에 타고파 0123",
+      "licenseUrl": "https://github.com/google/fonts/blob/main/ofl/gaegu/OFL.txt",
+      "checked": "2026-10-23"
+    }
+  ],
+  "pairRule": "한 화면에 한글 글꼴은 두 개까지, 나머지 차이는 굵기와 크기로",
+  "pairGroups": [
+    {
+      "id": "ko-ko",
+      "ko": "한글 + 한글"
+    },
+    {
+      "id": "ko-en",
+      "ko": "한글 + 영문"
+    },
+    {
+      "id": "en-en",
+      "ko": "영문 + 영문"
+    }
+  ],
+  "pairs": [
+    {
+      "id": "pair-black-han-pretendard",
+      "group": "ko-ko",
+      "title": {
+        "font": "black-han-sans",
+        "weight": 400
+      },
+      "sub": {
+        "font": "pretendard",
+        "weight": 400
+      },
+      "rule": "아주 굵은 제목 하나에 보통 굵기 본문. 굵기 차이로만 나눈다.",
+      "head": "이번 주말, 마당 장터",
+      "subText": "토요일 오전 10시부터 오후 4시까지 열립니다",
+      "ask": "제목은 Black Han Sans, 본문은 Pretendard 400으로. Black Han Sans는 Google Fonts <link>, Pretendard는 jsDelivr <link>로 불러오고 제목의 font-weight는 400 그대로 둬."
+    },
+    {
+      "id": "pair-song-myung-pretendard",
+      "group": "ko-ko",
+      "title": {
+        "font": "song-myung",
+        "weight": 400
+      },
+      "sub": {
+        "font": "pretendard",
+        "weight": 400
+      },
+      "rule": "명조 제목에 고딕 본문. 제목은 본문의 2.5배 이상 크게 써야 가는 획이 산다.",
+      "head": "오래 머무는 방",
+      "subText": "작은 책방이 문을 연 지 열 해가 되었습니다",
+      "ask": "제목은 Song Myung, 본문은 Pretendard로. 제목은 본문보다 2.5배 넘게 크게 하고, Song Myung은 Google Fonts, Pretendard는 jsDelivr에서 불러와줘."
+    },
+    {
+      "id": "pair-paperlogy-wanted",
+      "group": "ko-ko",
+      "title": {
+        "font": "paperlogy",
+        "weight": 800
+      },
+      "sub": {
+        "font": "wanted-sans",
+        "weight": 400
+      },
+      "rule": "둘 다 고딕이니 제목은 800, 본문은 400으로 두께를 확실히 벌린다.",
+      "head": "3분 만에 끝나는 정산",
+      "subText": "영수증을 찍으면 금액과 날짜가 바로 채워집니다",
+      "ask": "제목은 Paperlogy 800, 본문은 Wanted Sans 400으로. Paperlogy는 jsDelivr의 @font-face로 불러오고(Google Fonts에 없다), Wanted Sans도 jsDelivr <link>로."
+    },
+    {
+      "id": "pair-hahmlet-noto",
+      "group": "ko-ko",
+      "title": {
+        "font": "hahmlet",
+        "weight": 800
+      },
+      "sub": {
+        "font": "noto-sans-kr",
+        "weight": 400
+      },
+      "rule": "굵은 명조 제목에 담백한 고딕 본문. 제목만 굵기를 올린다.",
+      "head": "손으로 짓는 집",
+      "subText": "목수 세 사람이 한 채를 짓는 데 넉 달이 걸립니다",
+      "ask": "제목은 Hahmlet 800, 본문은 Noto Sans KR 400으로. 둘 다 Google Fonts에서 쓰는 두께만 불러와줘."
+    },
+    {
+      "id": "pair-pen-gowun",
+      "group": "ko-ko",
+      "title": {
+        "font": "nanum-pen-script",
+        "weight": 400
+      },
+      "sub": {
+        "font": "gowun-batang",
+        "weight": 400
+      },
+      "rule": "손글씨 제목에 명조 본문. 손글씨는 본문보다 1.3배쯤 더 크게 잡는다.",
+      "head": "오늘 걸은 길",
+      "subText": "비가 그친 뒤 강가를 따라 한 시간쯤 걸었다",
+      "ask": "제목은 Nanum Pen Script, 본문은 Gowun Batang 400으로. 손글씨는 작게 나오니 제목을 크게 잡고, 둘 다 Google Fonts에서 불러와줘."
+    },
+    {
+      "id": "pair-jua-pretendard",
+      "group": "ko-ko",
+      "title": {
+        "font": "jua",
+        "weight": 400
+      },
+      "sub": {
+        "font": "pretendard",
+        "weight": 400
+      },
+      "rule": "둥근 제목에 반듯한 본문. 친근함은 제목에만 둔다.",
+      "head": "우리 동네 간식 지도",
+      "subText": "걸어서 10분 안에 있는 가게만 모았어요",
+      "ask": "제목은 Jua, 본문은 Pretendard 400으로. Jua는 Google Fonts, Pretendard는 jsDelivr에서 불러오고 Jua는 제목에만 써."
+    },
+    {
+      "id": "pair-instrument-pretendard",
+      "group": "ko-en",
+      "title": {
+        "font": "instrument-serif",
+        "weight": 400
+      },
+      "sub": {
+        "font": "pretendard",
+        "weight": 400
+      },
+      "rule": "영문 세리프 제목에 한글 고딕 본문. 영문은 크게, 한글은 작게 나눠 둘이 섞이지 않게 한다.",
+      "head": "Slow Mornings",
+      "subText": "천천히 내린 커피 한 잔과 함께 하루를 엽니다",
+      "ask": "영문 제목은 Instrument Serif, 한글 본문은 Pretendard로. Instrument Serif는 Google Fonts, Pretendard는 jsDelivr에서 불러와줘."
+    },
+    {
+      "id": "pair-space-wanted",
+      "group": "ko-en",
+      "title": {
+        "font": "space-grotesk",
+        "weight": 700
+      },
+      "sub": {
+        "font": "wanted-sans",
+        "weight": 400
+      },
+      "rule": "영문 테크 제목에 한글 본문. 영문 제목에는 한글을 넣지 않는다.",
+      "head": "Ship faster",
+      "subText": "배포 기록을 한 화면에서 확인하세요",
+      "ask": "영문 제목은 Space Grotesk 700, 한글 본문은 Wanted Sans 400으로. Space Grotesk는 Google Fonts, Wanted Sans는 jsDelivr <link>로 불러와줘."
+    },
+    {
+      "id": "pair-bagel-jakarta",
+      "group": "ko-en",
+      "title": {
+        "font": "bagel-fat-one",
+        "weight": 400
+      },
+      "sub": {
+        "font": "plus-jakarta",
+        "weight": 500
+      },
+      "rule": "굵은 한글 한 단어에 영문 보조 줄. 한글 제목을 짧게 두고 영문은 작게 받친다.",
+      "head": "빵지순례",
+      "subText": "Weekend bakery route in Seoul",
+      "ask": "한글 제목은 Bagel Fat One, 영문 보조 줄은 Plus Jakarta Sans 500으로. 둘 다 Google Fonts에서 불러오고 제목은 한두 단어로 짧게."
+    },
+    {
+      "id": "pair-instrument-inter",
+      "group": "en-en",
+      "title": {
+        "font": "instrument-serif",
+        "weight": 400
+      },
+      "sub": {
+        "font": "inter",
+        "weight": 400
+      },
+      "rule": "세리프 제목에 산세리프 본문. 가장 흔하게 통하는 대비다.",
+      "head": "Quiet tools for loud days",
+      "subText": "A calendar that only shows what matters today",
+      "ask": "제목은 Instrument Serif, 본문은 Inter 400으로. 둘 다 Google Fonts <link>로 불러오고 폴백 스택도 넣어줘."
+    },
+    {
+      "id": "pair-clash-satoshi",
+      "group": "en-en",
+      "title": {
+        "font": "clash-display",
+        "weight": 600
+      },
+      "sub": {
+        "font": "satoshi",
+        "weight": 400
+      },
+      "rule": "같은 제작사의 두 글꼴. 제목은 좁고 굵게, 본문은 넓고 보통으로.",
+      "head": "Make it loud",
+      "subText": "Bold launches for small teams",
+      "ask": "제목은 Clash Display 600, 본문은 Satoshi 400으로. 둘 다 Fontshare <link>로 불러와줘(Google Fonts에 없다)."
+    },
+    {
+      "id": "pair-bricolage-manrope",
+      "group": "en-en",
+      "title": {
+        "font": "bricolage",
+        "weight": 800
+      },
+      "sub": {
+        "font": "manrope",
+        "weight": 400
+      },
+      "rule": "개성 있는 굵은 제목에 고른 본문. 제목에만 특이한 모양을 둔다.",
+      "head": "Odd by design",
+      "subText": "Products with a little personality",
+      "ask": "제목은 Bricolage Grotesque 800, 본문은 Manrope 400으로. 둘 다 Google Fonts에서 쓰는 두께만 불러와줘."
+    }
+  ]
+}

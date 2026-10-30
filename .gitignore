@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+node_modules/
+dist/
+.astro/
+.omc/
+.DS_Store
+# 외부 사이트 이미지. 개인 참고용이라 올리지 않는다
+refs-private/

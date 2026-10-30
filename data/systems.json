@@ -1,0 +1,711 @@
+{
+  "_about": "국내외 디자인 시스템과, 그 문서들이 우리 패턴에 대해 하는 말. 2026-10-29 공개 문서를 읽고 우리 말로 요약했다(조사 원본은 research/design-systems/). 글을 옮기지 않고 링크만 건다. systems: 시스템 목록(short는 화면에 쓰는 짧은 이름). guidance: {패턴 id: [{text, opt, refs}]} — opt는 그 말이 가리키는 방식 id(패턴 전체에 대한 말이면 null), refs는 {시스템 id: 그 시스템의 해당 문서 주소 또는 null(주소를 모르면 /systems/의 카드로 보낸다)}. numbers: 숫자 기준. 페이지 /systems/와 패턴 페이지, llms.txt, design-agent 스킬이 읽는다",
+  "systems": [
+    {
+      "id": "seed",
+      "name": "SEED Design",
+      "maker": "당근",
+      "region": "국내",
+      "url": "https://seed-design.io",
+      "focus": "컴포넌트마다 「언제 쓰고 언제 쓰지 않나」가 있고, 로딩 대기 시간 기준이 구체적이다",
+      "refFor": "한국 모바일 앱, AI에게 컴포넌트 기준을 읽힐 때",
+      "license": "코드 Apache-2.0",
+      "ai": [
+        "llms.txt",
+        "MCP(@seed-design/mcp)",
+        "Figma"
+      ],
+      "short": "당근"
+    },
+    {
+      "id": "krds",
+      "name": "KRDS",
+      "maker": "행정안전부",
+      "region": "국내",
+      "url": "https://www.krds.go.kr",
+      "focus": "「쓰지 말아야 할 때」와 대신 쓸 컴포넌트, 키보드·스크린리더 기준이 상세하다",
+      "refFor": "누구나 쓰는 공공·일반 서비스, 접근성",
+      "license": "확인 못 함",
+      "ai": [],
+      "short": "KRDS"
+    },
+    {
+      "id": "montage",
+      "name": "Montage",
+      "maker": "원티드",
+      "region": "국내",
+      "url": "https://montage.wanted.co.kr/docs/getting-started",
+      "focus": "컴포넌트 54개, 높이·시간·여백 같은 숫자가 구체적이다",
+      "refFor": "한국 웹·앱 서비스의 크기와 시간 값",
+      "license": "MIT",
+      "ai": [
+        "Figma"
+      ],
+      "short": "원티드"
+    },
+    {
+      "id": "tds",
+      "name": "TDS",
+      "maker": "토스",
+      "region": "국내",
+      "url": "https://developers-apps-in-toss.toss.im/design/components",
+      "focus": "앱인토스용 11개만 공개. 다크패턴을 막는 UX 가이드가 있다",
+      "refFor": "다크패턴 피하기, UX 라이팅",
+      "license": "Figma 키트는 앱인토스 밖 사용·복제 금지",
+      "ai": [
+        "llms.txt"
+      ],
+      "short": "토스"
+    },
+    {
+      "id": "material",
+      "name": "Material Design 3",
+      "maker": "Google",
+      "region": "해외",
+      "url": "https://m3.material.io",
+      "focus": "창 크기에 따라 내비게이션과 시트를 바꾸는 기준이 체계적이다",
+      "refFor": "Android, 화면 크기별로 바뀌는 화면",
+      "license": "확인 못 함",
+      "ai": [
+        "Figma"
+      ],
+      "short": "Material"
+    },
+    {
+      "id": "apple",
+      "name": "Human Interface Guidelines",
+      "maker": "Apple",
+      "region": "해외",
+      "url": "https://developer.apple.com/design/human-interface-guidelines",
+      "focus": "컴포넌트마다 iPhone·iPad·Mac 기준이 따로 있다. 알림 대화상자는 드물게 쓰라고 한다",
+      "refFor": "iOS·iPadOS, 플랫폼별 차이",
+      "license": "확인 못 함",
+      "ai": [],
+      "short": "Apple"
+    },
+    {
+      "id": "fluent",
+      "name": "Fluent 2",
+      "maker": "Microsoft",
+      "region": "해외",
+      "url": "https://fluent2.microsoft.design",
+      "focus": "웹·iOS·Android·Windows 문서가 따로 있고 터치 크기를 플랫폼마다 정했다",
+      "refFor": "여러 플랫폼에 같은 제품을 낼 때",
+      "license": "코드 MIT",
+      "ai": [
+        "Figma"
+      ],
+      "short": "Fluent"
+    },
+    {
+      "id": "ant",
+      "name": "Ant Design",
+      "maker": "Ant Group",
+      "region": "해외",
+      "url": "https://ant.design",
+      "focus": "데스크톱 관리자 화면용 컴포넌트 73개",
+      "refFor": "관리자·업무 도구",
+      "license": "코드 MIT",
+      "ai": [
+        "llms.txt"
+      ],
+      "short": "Ant"
+    },
+    {
+      "id": "polaris",
+      "name": "Polaris",
+      "maker": "Shopify",
+      "region": "해외",
+      "url": "https://shopify.dev/docs/api/polaris",
+      "focus": "알림을 배너·인라인·토스트로 나누는 기준",
+      "refFor": "커머스 관리자",
+      "license": "확인 못 함",
+      "ai": [],
+      "short": "Shopify"
+    },
+    {
+      "id": "carbon",
+      "name": "Carbon",
+      "maker": "IBM",
+      "region": "해외",
+      "url": "https://carbondesignsystem.com/patterns/",
+      "focus": "빈 상태·로딩·알림·폼·대화상자 「패턴」 문서가 가장 체계적이다",
+      "refFor": "업무 도구, 패턴 기준",
+      "license": "코드 Apache-2.0",
+      "ai": [
+        "MCP"
+      ],
+      "short": "Carbon"
+    },
+    {
+      "id": "atlassian",
+      "name": "Atlassian Design System",
+      "maker": "Atlassian",
+      "region": "해외",
+      "url": "https://atlassian.design",
+      "focus": "깃발·배너·인라인 메시지·모달을 심각도와 위치로 나눈다",
+      "refFor": "협업 도구의 알림",
+      "license": "확인 못 함",
+      "ai": [],
+      "short": "Atlassian"
+    },
+    {
+      "id": "primer",
+      "name": "Primer",
+      "maker": "GitHub",
+      "region": "해외",
+      "url": "https://primer.style/product/ui-patterns/",
+      "focus": "시간 구간별 로딩 기준과 「저장」 패턴. 접근성 때문에 토스트를 쓰지 않는다",
+      "refFor": "개발자 도구, 저장·로딩",
+      "license": "확인 못 함",
+      "ai": [
+        "Figma"
+      ],
+      "short": "Primer"
+    },
+    {
+      "id": "govuk",
+      "name": "GOV.UK Design System",
+      "maker": "영국 정부",
+      "region": "해외",
+      "url": "https://design-system.service.gov.uk/patterns/",
+      "focus": "한 화면에 질문 하나, 오류는 제출 때 한꺼번에. 일반 시민 기준",
+      "refFor": "처음 쓰는 사람이 많은 신청·입력 흐름",
+      "license": "글 OGL v3.0",
+      "ai": [],
+      "short": "GOV.UK"
+    }
+  ],
+  "guidance": {
+    "loading": [
+      {
+        "text": "1초 안에 끝나면 로딩 표시를 하지 않는다. 깜빡이는 것이 더 느리게 느껴진다",
+        "opt": null,
+        "refs": {
+          "seed": "https://seed-design.io/llms/patterns/loading.txt",
+          "krds": "https://www.krds.go.kr/html/site/component/component_07_02.html",
+          "primer": "https://primer.style/product/ui-patterns/loading/",
+          "ant": "https://ant.design/components/spin"
+        }
+      },
+      {
+        "text": "기다리는 시간으로 고른다. 짧으면 스피너·스켈레톤, 3~4초를 넘으면 진행 바와 안내, 아주 길면 뒤에서 처리하고 취소를 준다",
+        "opt": null,
+        "refs": {
+          "seed": "https://seed-design.io/llms/patterns/loading.txt",
+          "primer": "https://primer.style/product/ui-patterns/loading/"
+        }
+      },
+      {
+        "text": "가능한 한 빨리 무엇이든 보인다. 빈 화면은 고장 난 것처럼 보인다",
+        "opt": null,
+        "refs": {
+          "apple": "https://developer.apple.com/design/human-interface-guidelines/loading"
+        }
+      },
+      {
+        "text": "목록·카드·표처럼 틀이 정해진 곳에만. 정적인 것·버튼·모달에는 쓰지 않는다",
+        "opt": "skeleton",
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/loading-pattern/",
+          "montage": "https://montage.wanted.co.kr/docs/components/loading/skeleton/design",
+          "seed": "https://seed-design.io/llms/components/skeleton.txt"
+        }
+      },
+      {
+        "text": "짧은 대기, 좁은 영역, 저장처럼 누른 뒤의 기다림에. 스켈레톤과 같이 쓰지 않고 화면에 하나만",
+        "opt": "spinner",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/skeleton.txt",
+          "krds": "https://www.krds.go.kr/html/site/component/component_07_02.html"
+        }
+      },
+      {
+        "text": "업로드·설치처럼 시작과 끝이 있는 긴 처리에. 예상 시간을 주고, 아주 길면 뒤에서 처리한다",
+        "opt": "progress",
+        "refs": {
+          "seed": "https://seed-design.io/llms/patterns/loading.txt",
+          "primer": "https://primer.style/product/ui-patterns/loading/"
+        }
+      }
+    ],
+    "busy": [
+      {
+        "text": "보내는 버튼은 두 번째 누름을 무시한다. 서버에서도 막는다",
+        "opt": null,
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/component/component_05_02.html",
+          "govuk": "https://design-system.service.gov.uk/components/button/",
+          "carbon": "https://carbondesignsystem.com/patterns/forms-pattern/"
+        }
+      },
+      {
+        "text": "한 부분만 처리 중이면 그 자리(버튼 안)에 표시한다",
+        "opt": "inline",
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/loading-pattern/",
+          "krds": "https://www.krds.go.kr/html/site/component/component_07_02.html"
+        }
+      },
+      {
+        "text": "앱 전체를 잠깐 못 쓸 때만 화면 전체를 막는다",
+        "opt": "block",
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/loading-pattern/"
+        }
+      }
+    ],
+    "empty": [
+      {
+        "text": "처음이라 비었는지, 검색·필터 결과가 없는지, 오류인지에 따라 문구를 다르게 쓴다",
+        "opt": null,
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/empty-states-pattern/",
+          "polaris": "https://shopify.dev/docs/api/app-home/patterns/compositions/empty-state.md",
+          "seed": "https://seed-design.io/llms/components/result-section.txt"
+        }
+      },
+      {
+        "text": "다음에 할 일이 있으면 버튼 하나를 둔다. 막다른 길을 만들지 않는다",
+        "opt": "action",
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/empty-states-pattern/",
+          "seed": "https://seed-design.io/llms/components/result-section.txt",
+          "montage": "https://montage.wanted.co.kr/docs/components/feedback/fallback-view/design"
+        }
+      },
+      {
+        "text": "그림은 상황과 관련 있을 때만. 자리가 좁거나 여러 개가 겹치면 글만",
+        "opt": "illus",
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/empty-states-pattern/",
+          "primer": "https://primer.style/product/ui-patterns/empty-states/"
+        }
+      }
+    ],
+    "error": [
+      {
+        "text": "오류가 여러 개면 위에 오류 목록을 두고 누르면 그 칸으로 간다",
+        "opt": null,
+        "refs": {
+          "govuk": "https://design-system.service.gov.uk/patterns/validation/",
+          "primer": "https://primer.style/product/ui-patterns/forms/"
+        }
+      },
+      {
+        "text": "입력 오류는 토스트나 모달이 아니라 그 칸 옆 문구로",
+        "opt": "inline",
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/component/component_12_05.html",
+          "polaris": "https://shopify.dev/docs/apps/design/user-experience/alerts"
+        }
+      },
+      {
+        "text": "오류에는 쓰지 않는다. 중요한 메시지는 저절로 사라지면 안 된다",
+        "opt": "toast",
+        "refs": {
+          "polaris": "https://shopify.dev/docs/apps/design/user-experience/alerts",
+          "carbon": "https://carbondesignsystem.com/patterns/notification-pattern/",
+          "atlassian": "https://atlassian.design/components/flag/usage",
+          "fluent": "https://fluent2.microsoft.design/components/web/react/core/toast/usage"
+        }
+      },
+      {
+        "text": "버튼은 상황에 맞게: 입력 오류면 뒤로, 바로 다시 할 수 있으면 다시 시도, 못 돌아가면 홈. 설명은 두 줄 이내",
+        "opt": "full",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/result-section.txt",
+          "montage": "https://montage.wanted.co.kr/docs/components/feedback/fallback-view/design"
+        }
+      },
+      {
+        "text": "바로 응답해야 하는 중대한 일에만",
+        "opt": "dialog",
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/dialog-pattern/",
+          "atlassian": null
+        }
+      }
+    ],
+    "done": [
+      {
+        "text": "토스트를 쓰지 않는 곳도 있다(스크린리더가 놓친다). 그 자리 문구나 띠로 알린다",
+        "opt": null,
+        "refs": {
+          "primer": "https://primer.style/product/ui-patterns/saving/"
+        }
+      },
+      {
+        "text": "방금 한 일의 짧은 성공 확인용. 한 줄로, 저절로 사라지게",
+        "opt": "toast",
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/component/component_12_05.html",
+          "montage": "https://montage.wanted.co.kr/docs/components/feedback/toast/design",
+          "polaris": "https://shopify.dev/docs/apps/design/user-experience/alerts",
+          "fluent": "https://fluent2.microsoft.design/components/web/react/core/toast/usage"
+        }
+      },
+      {
+        "text": "되돌리기 같은 행동이 붙으면 스낵바. 한 번에 하나, 행동 버튼도 하나, 4초쯤",
+        "opt": "undo",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/snackbar.txt",
+          "krds": "https://www.krds.go.kr/html/site/component/component_12_05.html",
+          "material": "https://github.com/material-components/material-components-android/blob/master/docs/components/Snackbar.md",
+          "montage": "https://montage.wanted.co.kr/docs/components/feedback/snackbar/design"
+        }
+      },
+      {
+        "text": "신청·등록 흐름의 끝이나 꼭 확인해야 할 결과는 확인 페이지로",
+        "opt": "screen",
+        "refs": {
+          "govuk": "https://design-system.service.gov.uk/components/notification-banner/",
+          "montage": "https://montage.wanted.co.kr/docs/components/feedback/snackbar/design"
+        }
+      }
+    ],
+    "notify": [
+      {
+        "text": "중요한 정보에만. 광고에 쓰지 않는다",
+        "opt": "badge",
+        "refs": {
+          "apple": "https://developer.apple.com/design/human-interface-guidelines/managing-notifications"
+        }
+      },
+      {
+        "text": "페이지 전체 상태는 맨 위 띠 하나. 경고는 닫을 수 없게, 정보는 닫을 수 있게",
+        "opt": "banner",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/page-banner.txt",
+          "polaris": "https://shopify.dev/docs/apps/design/user-experience/alerts",
+          "atlassian": null,
+          "govuk": "https://design-system.service.gov.uk/components/notification-banner/"
+        }
+      },
+      {
+        "text": "최후의 수단. 바로 응답해야 할 때만 쓰고, 들어오자마자 띄우지 않는다",
+        "opt": "modal",
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/component/component_04_05.html",
+          "atlassian": null,
+          "tds": "https://developers-apps-in-toss.toss.im/design/consumer-ux-guide.md"
+        }
+      }
+    ],
+    "onboarding": [
+      {
+        "text": "온보딩은 건너뛸 수 있으니, 주요 기능은 빈 화면 안내를 따로 둔다",
+        "opt": null,
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/empty-states-pattern/"
+        }
+      },
+      {
+        "text": "한 번에 하나, 페이지가 열리자마자 저절로 띄우지 않는다",
+        "opt": "coach",
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/component/component_08_04.html",
+          "primer": "https://primer.style/product/ui-patterns/feature-onboarding/"
+        }
+      }
+    ],
+    "more": [
+      {
+        "text": "검색 결과·게시판처럼 위치를 알아야 할 때. 한 화면 분량이면 나누지 않는다",
+        "opt": "pages",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/pagination.txt",
+          "krds": "https://www.krds.go.kr/html/site/component/component_03_06.html",
+          "govuk": "https://design-system.service.gov.uk/components/pagination/",
+          "ant": "https://ant.design/components/pagination"
+        }
+      },
+      {
+        "text": "모바일은 더보기 버튼이나 무한 스크롤",
+        "opt": "button",
+        "refs": {
+          "montage": "https://montage.wanted.co.kr/docs/components/navigations/pagination/design"
+        }
+      },
+      {
+        "text": "키보드로 끝에 닿기 어렵다. 쓰면 페이지 번호를 같이 두지 않는다",
+        "opt": "infinite",
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/component/component_03_06.html",
+          "govuk": "https://design-system.service.gov.uk/components/pagination/"
+        }
+      }
+    ],
+    "nav": [
+      {
+        "text": "3~5개. 넘치면 「더 보기」에 숨어 찾기 어렵다",
+        "opt": "tabbar",
+        "refs": {
+          "material": "https://github.com/material-components/material-components-android/blob/master/docs/components/BottomNavigation.md",
+          "apple": "https://developer.apple.com/design/human-interface-guidelines/tab-bars",
+          "tds": "https://developers-apps-in-toss.toss.im/design/consumer-ux-guide.md"
+        }
+      },
+      {
+        "text": "태블릿·데스크톱은 왼쪽 레일이나 사이드바. iPad는 탭바를 사이드바로 바꿀 수 있게",
+        "opt": "sidebar",
+        "refs": {
+          "material": "https://github.com/material-components/material-components-android/blob/master/docs/components/NavigationRail.md",
+          "apple": "https://developer.apple.com/design/human-interface-guidelines/tab-bars"
+        }
+      }
+    ],
+    "popover": [
+      {
+        "text": "데스크톱의 무거운 하위 작업은 옆에서 밀려 나오는 서랍으로",
+        "opt": null,
+        "refs": {
+          "ant": "https://ant.design/components/drawer"
+        }
+      },
+      {
+        "text": "데스크톱에서 가벼운 확인·메뉴는 누른 자리 옆에",
+        "opt": "layer",
+        "refs": {
+          "ant": "https://ant.design/components/popconfirm"
+        }
+      },
+      {
+        "text": "모바일은 아래 시트, iPad는 가운데 창. 보이는 닫기 버튼을 두고, 시트 위에 시트를 쌓지 않는다",
+        "opt": "sheet",
+        "refs": {
+          "apple": "https://developer.apple.com/design/human-interface-guidelines/sheets",
+          "montage": "https://montage.wanted.co.kr/docs/components/presentation/bottom-sheet/design",
+          "krds": "https://www.krds.go.kr/html/site/component/component_12_03.html"
+        }
+      }
+    ],
+    "toggle": [
+      {
+        "text": "바로 적용되는 설정에",
+        "opt": "switch",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/switch.txt",
+          "krds": "https://www.krds.go.kr/html/site/component/component_06_07.html",
+          "primer": "https://primer.style/product/ui-patterns/saving/"
+        }
+      },
+      {
+        "text": "저장해야 적용되거나, 동의·여러 개 고르기에",
+        "opt": "checkbox",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/switch.txt",
+          "krds": "https://www.krds.go.kr/html/site/component/component_06_07.html",
+          "primer": "https://primer.style/product/ui-patterns/saving/"
+        }
+      }
+    ],
+    "validate": [
+      {
+        "text": "기본으로 권한다. 칸을 벗어날 때마다 검사하면 느리게 입력하는 사람을 방해한다",
+        "opt": "submit",
+        "refs": {
+          "govuk": "https://design-system.service.gov.uk/patterns/validation/",
+          "primer": "https://primer.style/product/ui-patterns/forms/",
+          "seed": "https://seed-design.io/llms/components/field.txt"
+        }
+      },
+      {
+        "text": "이쪽을 권하는 곳도 있다. 오입력 위험이 큰 칸(금융·보안)만 이렇게 섞기도 한다",
+        "opt": "blur",
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/forms-pattern/",
+          "seed": "https://seed-design.io/llms/components/field.txt"
+        }
+      },
+      {
+        "text": "낮게 본다. 무엇이 빠졌는지 알려 주지 않고 대비도 낮다. 짧은 폼만 허용하는 곳도 있다",
+        "opt": "lock",
+        "refs": {
+          "govuk": "https://design-system.service.gov.uk/components/button/",
+          "primer": "https://primer.style/product/ui-patterns/saving/",
+          "carbon": "https://carbondesignsystem.com/patterns/forms-pattern/"
+        }
+      }
+    ],
+    "qty": [
+      {
+        "text": "범위가 좁을 때. 끝값에 닿으면 그 버튼을 잠근다",
+        "opt": "stepper",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/quantity-picker.txt",
+          "krds": "https://www.krds.go.kr/html/site/component/component_12_04.html"
+        }
+      },
+      {
+        "text": "범위가 넓을 때(나이처럼)",
+        "opt": "input",
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/component/component_12_04.html"
+        }
+      }
+    ],
+    "delete": [
+      {
+        "text": "되돌릴 수 없고 드문 일에만. 버튼은 「삭제」처럼 동작 이름으로, 위험 버튼만 빨간색",
+        "opt": "confirm",
+        "refs": {
+          "apple": "https://developer.apple.com/design/human-interface-guidelines/alerts",
+          "carbon": "https://carbondesignsystem.com/patterns/dialog-pattern/",
+          "seed": "https://seed-design.io/llms/components/alert-dialog.txt"
+        }
+      },
+      {
+        "text": "되돌릴 수 있으면 묻지 말고 되돌리기를 준다",
+        "opt": "undo",
+        "refs": {
+          "apple": "https://developer.apple.com/design/human-interface-guidelines/alerts",
+          "seed": "https://seed-design.io/llms/components/snackbar.txt"
+        }
+      }
+    ],
+    "confirmForm": [
+      {
+        "text": "버튼은 3개 이내. 안에 폼·탭 같은 무거운 것을 넣지 않는다",
+        "opt": "dialog",
+        "refs": {
+          "apple": "https://developer.apple.com/design/human-interface-guidelines/alerts",
+          "fluent": "https://fluent2.microsoft.design/components/web/react/core/dialog/usage",
+          "krds": "https://www.krds.go.kr/html/site/component/component_04_05.html"
+        }
+      },
+      {
+        "text": "결제처럼 실수로 닫히면 안 되면 끌어서 닫기를 막고 닫기 버튼을 둔다",
+        "opt": "sheet",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/bottom-sheet.txt",
+          "krds": "https://www.krds.go.kr/html/site/component/component_12_03.html"
+        }
+      },
+      {
+        "text": "여러 단계이거나 내용이 많으면 전체 화면으로",
+        "opt": "screen",
+        "refs": {
+          "carbon": "https://carbondesignsystem.com/patterns/dialog-pattern/",
+          "apple": "https://developer.apple.com/design/human-interface-guidelines/sheets",
+          "krds": "https://www.krds.go.kr/html/site/component/component_04_05.html"
+        }
+      }
+    ],
+    "cta": [
+      {
+        "text": "가장 강조한 버튼은 한 화면에 하나. 위험한 동작만 빨간색",
+        "opt": null,
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/action-button.txt",
+          "krds": "https://www.krds.go.kr/html/site/component/component_05_02.html"
+        }
+      }
+    ],
+    "steps": [
+      {
+        "text": "일반 사용자에게는 한 화면에 질문 하나. 매일 같은 일을 하는 사람에게는 묶어도 된다",
+        "opt": "wizard",
+        "refs": {
+          "govuk": "https://design-system.service.gov.uk/patterns/question-pages/"
+        }
+      }
+    ],
+    "noImage": [
+      {
+        "text": "이미지가 없거나 못 불러오면 그 자리의 성격을 알리는 대체 그림을 둔다",
+        "opt": "placeholder",
+        "refs": {
+          "seed": "https://seed-design.io/llms/components/content-placeholder.txt"
+        }
+      }
+    ]
+  },
+  "numbers": [
+    {
+      "k": "최소 터치 영역",
+      "v": "44×44(iOS·웹, KRDS 44px), 48×48(Android). 마우스는 더 작아도 된다(macOS 28pt)",
+      "by": [
+        "apple",
+        "material",
+        "fluent",
+        "krds"
+      ]
+    },
+    {
+      "k": "로딩 표시 시작",
+      "v": "1초 미만은 표시하지 않는다",
+      "by": [
+        "seed",
+        "krds",
+        "primer"
+      ]
+    },
+    {
+      "k": "로딩 방식 바꾸는 시간",
+      "v": "1~4초 스피너·스켈레톤 → 4~10초 진행 바와 안내 → 10초 이상 진행률과 예상 시간 → 1분 이상 뒤에서 처리·취소",
+      "by": [
+        "seed",
+        "primer"
+      ]
+    },
+    {
+      "k": "스낵바 표시 시간",
+      "v": "약 4초. 길거나 행동이 필요하면 더 길게",
+      "by": [
+        "seed",
+        "montage"
+      ]
+    },
+    {
+      "k": "토스트 표시 시간",
+      "v": "안내 2~3초, 경고·실패 3~4초(KRDS). 동작 없는 토스트 7초(Fluent)",
+      "by": [
+        "krds",
+        "fluent"
+      ]
+    },
+    {
+      "k": "하단 탭 개수",
+      "v": "3~5개",
+      "by": [
+        "material",
+        "apple",
+        "tds"
+      ]
+    },
+    {
+      "k": "페이지 번호 개수",
+      "v": "숫자 링크 7~11개(모바일 7개)",
+      "by": [
+        "krds",
+        "seed",
+        "montage"
+      ]
+    },
+    {
+      "k": "대화상자 버튼 수",
+      "v": "3개 이내, 라벨은 1~2단어",
+      "by": [
+        "apple",
+        "fluent",
+        "seed"
+      ]
+    },
+    {
+      "k": "바텀시트 높이",
+      "v": "최대 화면의 90%, 넘으면 별도 페이지",
+      "by": [
+        "seed"
+      ]
+    },
+    {
+      "k": "글자 대비",
+      "v": "일반 4.5:1, 큰 글자·아이콘·입력칸 경계 3:1",
+      "by": [
+        "fluent",
+        "krds"
+      ]
+    }
+  ]
+}

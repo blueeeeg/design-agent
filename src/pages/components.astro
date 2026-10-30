@@ -1,0 +1,158 @@
+---
+// 컴포넌트 사전: 화면을 이루는 컴포넌트의 이름·쉬운 말·데모. 데이터는 giting.kr 메뉴판(MIT)을 그대로 쓰고, 「쓰이는 곳」만 우리 데이터로 잇는다
+import '../styles/catalog.css';
+import TopNav from '../components/TopNav.astro';
+import Prompt from '../components/Prompt.astro';
+import elementsData from '../../data/elements.json';
+import uiMenu from '../../data/giting/ui-menu.json';
+import appMenu from '../../data/giting/app-menu.json';
+import landingMenu from '../../data/giting/landing-menu.json';
+
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const MENUS = [
+  { id: 'ui-menu', title: '웹 컴포넌트', data: uiMenu, demo: true },
+  { id: 'app-menu', title: '앱 컴포넌트', data: appMenu, demo: false },
+  { id: 'landing-menu', title: '랜딩 페이지 섹션', data: landingMenu, demo: false },
+];
+// 우리 방식의 giting 링크(예: "ui-menu/toast")를 거꾸로 따라가 「쓰이는 곳」을 만든다
+const usedBy = {};
+for (const el of elementsData.elements) for (const o of el.options) {
+  if (o.giting) (usedBy[o.giting] ||= []).push({ el, o });
+}
+const name = it => (typeof it.name === 'string' ? { ko: it.name, en: '' } : it.name);
+---
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>컴포넌트 사전 · UI 패턴 카탈로그</title>
+<meta name="description" content="화면을 이루는 컴포넌트의 이름과 쉬운 말 설명, 데모, AI에게 시키는 문장. giting.kr 메뉴판(MIT)을 바탕으로 했습니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<TopNav current="components" />
+<aside class="side">
+  <div class="tools">
+    <p class="lede">이름을 정확히 알면 AI에게 정확히 시킬 수 있습니다. 쉬운 말, 헷갈리는 짝, 붙여 넣을 문장을 두었습니다.</p>
+    <input class="find" id="find" type="search" placeholder="이름·쉬운 말로 찾기" aria-label="컴포넌트 이름이나 쉬운 말로 찾기">
+  </div>
+  <nav aria-label="컴포넌트 묶음">
+    {MENUS.map(m => (
+      <>
+        <b>{m.title}</b>
+        {m.data.categories.map(c => (
+          <a href={`#${m.id}-${c.id}`} data-cat={`${m.id}-${c.id}`} data-title={`${m.title} · ${c.ko || c.name}`} data-name={c.ko || c.name} data-menu={m.title}><span>{c.ko || c.name}</span><small>{m.data.items.filter(i => i.category === c.id).length}</small></a>
+        ))}
+      </>
+    ))}
+  </nav>
+</aside>
+<main class="dict one-cat" id="dict">
+  <!-- 패턴 페이지처럼 고른 묶음 이름이 머리가 된다. 찾는 중에는 「찾은 컴포넌트」 -->
+  <header class="el-head"><h1 class="dict-title" id="cat-title">컴포넌트 사전</h1><span class="sub" id="cat-sub" aria-live="polite">{MENUS.reduce((n, m) => n + m.data.items.length, 0)}개</span></header>
+
+  {MENUS.map(m => (
+    <section class="dict-menu">
+      <h2 class="dict-menu-title">{m.title}</h2>
+      {m.data.categories.map(c => (
+        <div class="dict-cat" id={`cat-${m.id}-${c.id}`}>
+          <h3>{c.ko || c.name}</h3>
+          <div class="dict-grid">
+            {m.data.items.filter(i => i.category === c.id).map(it => {
+              const n = name(it);
+              const uses = usedBy[`${m.id}/${it.id}`] || [];
+              return (
+                <article class="dcard sub" id={`${m.id}-${it.id}`} data-q={[n.ko, n.en, it.id, ...(it.aliases || []), it.oneliner].join(' ').toLowerCase()}>
+                  {m.demo && <iframe class="demo" src={`${BASE}giting/${m.id}/${it.id}.html`} title={`${n.ko} 데모`} loading="lazy" scrolling="no" sandbox="allow-scripts"></iframe>}
+                  <div class="dslot">
+                    <h4>{n.ko} {n.en && <small class="en">{n.en}</small>}</h4>
+                    {it.aliases?.length > 0 && <p class="alias">「{it.aliases[0]}」</p>}
+                    {it.oneliner && <p class="one">{it.oneliner}</p>}
+                  </div>
+                  <div class="dslot">
+                    {it.vs && <p class="kv"><span class="fl">헷갈리면</span><span>{it.vs}</span></p>}
+                    {uses.length > 0 && <p class="kv uses"><span class="fl">쓰이는 곳</span><span>{uses.map(({ el, o }, i) => (<>{i > 0 && ' · '}<a href={`${BASE}elements/${el.id}/`}>{el.name} › {o.name}</a></>))}</span></p>}
+                  </div>
+                  <div class="dslot">{it.ask && <Prompt text={it.ask} />}</div>
+                  {!m.demo && <div class="dslot end"><a class="giting" href={`https://giting.kr/menu/${m.id}/${it.id}`} target="_blank" rel="noopener">데모 보기 ↗</a></div>}
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </section>
+  ))}
+
+  <nav class="detail-nav" id="cat-nav" aria-label="이전·다음 묶음"></nav>
+
+  <footer class="dict-foot">
+    이 페이지의 컴포넌트 이름·설명·문장·데모는 <a href="https://giting.kr/menu/" target="_blank" rel="noopener">giting.kr 메뉴판</a>(<a href="https://github.com/hanmariyang/giting-skills" target="_blank" rel="noopener">giting-skills</a>)에서 가져왔습니다.
+    MIT License, Copyright (c) 2026 Giting (hanmariyang). 「쓰이는 곳」 연결만 이 사이트가 더했습니다.
+  </footer>
+</main>
+<script>
+import { markClamped } from '../scripts/prompt.js';
+// 패턴 페이지처럼 왼쪽에서 고른 묶음 하나만 보여 준다. 찾을 때는 묶음과 상관없이 전체에서 찾는다
+const find = document.getElementById('find');
+const links = [...document.querySelectorAll('.side nav a[data-cat]')];
+const cats = links.map(a => a.dataset.cat);
+let current = cats[0];
+
+// 주소가 묶음(#ui-menu-layout)이면 그 묶음, 카드(#ui-menu-toast)면 그 카드가 든 묶음.
+// 묶음 요소 id는 「cat-」을 붙여 주소와 다르게 둔다. 같으면 브라우저가 그 자리로 내려가 머리가 가려진다
+function catOf(hash) {
+  if (!hash) return null;
+  const key = decodeURIComponent(hash.slice(1));
+  if (cats.includes(key)) return key;
+  const cat = document.getElementById(key)?.closest('.dict-cat');
+  return cat ? cat.id.replace(/^cat-/, '') : null;
+}
+
+function render() {
+  const words = (find?.value || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+  let shown = 0;
+  document.querySelectorAll('.dcard').forEach(c => {
+    const ok = words.every(w => c.dataset.q.includes(w));
+    c.hidden = !ok;
+    if (ok) shown++;
+  });
+  document.querySelectorAll('.dict-cat').forEach(cat => {
+    cat.hidden = words.length ? !cat.querySelector('.dcard:not([hidden])') : cat.id !== `cat-${current}`;
+  });
+  document.querySelectorAll('.dict-menu').forEach(m => { m.hidden = !m.querySelector('.dict-cat:not([hidden])'); });
+  links.forEach(a => a.setAttribute('aria-current', String(!words.length && a.dataset.cat === current)));
+  // 묶음 하나를 볼 때는 그 이름이 머리이고, 위쪽 묶음·분류 제목은 숨긴다. 찾는 중에는 어느 묶음인지 보이게 둔다
+  const link = links.find(a => a.dataset.cat === current);
+  document.getElementById('dict').classList.toggle('one-cat', !words.length);
+  document.getElementById('cat-title').textContent = words.length ? '찾은 컴포넌트' : link.dataset.name;
+  document.getElementById('cat-sub').textContent = words.length ? `${shown}개` : `${link.dataset.menu} · ${link.querySelector('small').textContent}개`;
+  // 이전·다음 묶음은 찾는 중이 아닐 때만
+  const i = cats.indexOf(current);
+  const pn = (k, cls, label, arrowL, arrowR) => (k ? `<a class="pnav ${cls}" href="#${k.dataset.cat}"><span class="pnav-k">${label}</span><span class="pnav-n">${arrowL}${k.dataset.title}${arrowR}</span></a>` : '<span></span>');
+  const nav = document.getElementById('cat-nav');
+  nav.hidden = !!words.length;
+  nav.innerHTML = pn(links[i - 1], 'prev', '이전 묶음', '‹ ', '') + pn(links[i + 1], 'next', '다음 묶음', '', ' ›');
+  markClamped();
+}
+
+function go(hash, scroll) {
+  const cat = catOf(hash);
+  if (cat) current = cat;
+  if (find && find.value) find.value = '';
+  render();
+  if (!scroll) return;
+  const card = hash ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+  if (card?.classList.contains('dcard')) card.scrollIntoView({ block: 'center' });
+  else window.scrollTo(0, 0);
+}
+
+find?.addEventListener('input', render);
+window.addEventListener('hashchange', () => go(location.hash, true));
+go(location.hash, !!location.hash);
+</script>
+</body>
+</html>

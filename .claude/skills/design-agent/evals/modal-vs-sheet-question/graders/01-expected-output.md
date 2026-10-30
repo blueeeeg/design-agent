@@ -1,0 +1,7 @@
+---
+type: llm
+focus: trace
+weight: 1
+---
+
+The result matches this description: 모바일 필터에는 아래 시트(필터 시트)를 근거와 함께 권하고, 바텀 시트와 드로어의 차이(아래에서 올라오는지, 옆에서 밀려 나오는지)를 쉬운 말로 설명한다. 한국어로 답한다.

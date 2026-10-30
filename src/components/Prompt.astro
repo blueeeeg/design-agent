@@ -1,0 +1,6 @@
+---
+// AI에게 시킬 문장 상자. 모양과 동작은 src/scripts/prompt.js의 promptHTML과 같다(동작은 그 파일이 붙인다)
+interface Props { text: string }
+const { text } = Astro.props;
+---
+<div class="prompt"><div class="prompt-head"><span class="fl">AI에게 시킬 문장</span><span class="prompt-acts"><button type="button" class="prompt-more" aria-expanded="false">전체 보기</button><button type="button" class="copy-mini" data-copy={text}>복사</button></span></div><p class="prompt-text">{text}</p></div>

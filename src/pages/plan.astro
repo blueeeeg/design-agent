@@ -1,0 +1,74 @@
+---
+// 내 서비스에 맞추기: 조건을 한 번 고르면 27개 패턴의 추천을 한 목록으로, 다 고르면 AI용 디자인 규칙(DESIGN.md)까지
+import '../styles/catalog.css';
+import TopNav from '../components/TopNav.astro';
+---
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>내 서비스에 맞추기 · UI 패턴 카탈로그</title>
+<meta name="description" content="어디서, 얼마나 자주, 누구 기기에서, 무엇을 보여 주는지 한 번 고르면 UI 패턴마다 맞는 방식을 추천하고, AI에게 줄 디자인 규칙 파일(DESIGN.md)을 만듭니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+</head>
+<body data-base={import.meta.env.BASE_URL}>
+<TopNav current="plan" />
+<aside class="side">
+  <nav aria-label="이 페이지 목차">
+    <b>순서</b>
+    <a href="#pick"><span>1. 질문에 답하기</span></a>
+    <a href="#rules-section"><span>2. AI에게 줄 규칙</span></a>
+    <a href="#list-section"><span>3. 패턴별로 고른 방식</span></a>
+  </nav>
+</aside>
+<main class="dict">
+  <header class="el-head"><h1 class="dict-title">내 서비스에 맞추기 <small class="en">Plan</small></h1></header>
+  <p class="q">같은 「로딩」이라도 처음 온 손님이 매장 태블릿에서 보는 화면과, 매일 쓰는 직원이 데스크톱에서 보는 화면은 답이 다릅니다. 아래 질문에 답하면 AI에게 그대로 붙여 넣을 디자인 규칙을 만들어 줍니다.</p>
+
+  <section class="controls plan-controls" id="pick">
+    <div class="pick-head"><p class="pick-status" id="pick-status"></p><button type="button" class="chipbtn" id="clear-pick">답 지우기</button></div>
+    <div class="axis-selects" id="axes"></div>
+  </section>
+
+  <!-- 사용자가 가져갈 것은 AI에게 줄 규칙이다. 그래서 질문 바로 다음에 두고, 패턴별 풀이는 그 아래 근거로 둔다 -->
+  <section class="plan-rules" id="rules-section">
+    <header class="md-intro">
+      <h2>AI에게 줄 규칙 <small class="en">DESIGN.md</small></h2>
+      <p>복사해서 AI 대화 첫머리에 붙여 넣거나, 프로젝트 맨 위에 <code>DESIGN.md</code> 파일로 두세요. AI가 화면을 만들 때 이 크기·규칙·패턴별 방식을 따릅니다. 색·서체·로고는 직접 채웁니다.</p>
+    </header>
+    <p class="rules-wait" id="rules-wait"></p>
+    <div id="rules-body" hidden>
+      <section class="panel">
+        <div class="md-head">
+          <h2>DESIGN.md</h2>
+          <button class="copy-mini" id="copy" type="button">복사</button>
+        </div>
+        <pre id="md" tabindex="0"></pre>
+      </section>
+      <details class="panel rules-why">
+        <summary>이 규칙에 들어간 크기와 근거 보기</summary>
+        <h3>기본 크기</h3>
+        <div class="tiles" id="tiles"></div>
+        <h3>규칙</h3>
+        <div class="rules" id="rules"></div>
+      </details>
+    </div>
+  </section>
+
+  <section class="plan-list-section" id="list-section">
+    <header class="md-intro">
+      <h2>패턴별로 고른 방식</h2>
+      <p>위 규칙의 「패턴별 방식」을 이유와 함께 풀어 본 것입니다. 이름을 누르면 그 패턴의 방식들을 그림으로 비교할 수 있습니다.</p>
+    </header>
+    <ol id="plan-list" class="plan-list"></ol>
+    <p class="foot">답한 조건에 맞는 근거가 많은 방식을 고릅니다. 규격·접근성 기준이 있는 근거를 가장 무겁게 보고, 흔히 쓰는 방식을 그다음으로 봅니다. 근거가 없거나 같으면 가장 흔한 방식을 고릅니다.</p>
+  </section>
+</main>
+<script>
+import '../scripts/plan.js';
+</script>
+</body>
+</html>

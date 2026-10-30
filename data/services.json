@@ -1,0 +1,128 @@
+{
+  "_about": "실제 서비스에서 본 방식. notes 한 줄은 [요소 id, 방식 id, 관찰]. verified가 없으면 기억에 기반한 관찰이다. 2026-10-29부터 페이지에서 쓰지 않는다. 실제 화면과 대조한 뒤 다시 쓸 후보다",
+  "services": [
+    {
+      "id": "toss",
+      "name": "토스",
+      "kind": "모바일 금융 앱",
+      "sel": {
+        "platform": "mobile",
+        "skill": "occasional",
+        "device": "personal",
+        "content": "numbers",
+        "domain": "finance",
+        "action": "irreversible"
+      },
+      "notes": [
+        ["confirmForm", "screen", "보내기 전에 받는 사람과 금액을 한 화면에 크게 다시 보여준다"],
+        ["done", "screen", "보낸 뒤 완료 화면에서 금액과 받는 사람을 보여준다"],
+        ["cta", "bottom", "다음 단계 버튼이 화면 아래에 꽉 차게 붙어 있다"]
+      ]
+    },
+    {
+      "id": "coupang",
+      "name": "쿠팡",
+      "kind": "모바일 쇼핑 앱",
+      "sel": {
+        "platform": "mobile",
+        "skill": "occasional",
+        "device": "personal",
+        "content": "photo",
+        "domain": "commerce",
+        "action": "once"
+      },
+      "notes": [
+        ["more", "infinite", "검색 결과를 내리면 상품이 계속 이어 붙는다"],
+        ["filter", "chips", "검색 결과 위에 「로켓배송」 같은 조건을 칩으로 둔다"],
+        ["cta", "bottom", "상품 상세에서 구매 버튼이 화면 아래에 붙어 있다"]
+      ]
+    },
+    {
+      "id": "baemin",
+      "name": "배달의민족",
+      "kind": "모바일 배달 앱",
+      "sel": {
+        "platform": "mobile",
+        "skill": "occasional",
+        "device": "personal",
+        "content": "photo",
+        "domain": "fnb",
+        "action": "once"
+      },
+      "notes": [
+        ["category", "chips", "가게 메뉴판 위에 메뉴 분류가 가로로 밀리는 줄로 붙는다"],
+        ["qty", "stepper", "장바구니에서 수량을 − + 로 바꾼다"],
+        ["cta", "bottom", "담은 뒤 주문 버튼이 합계와 함께 화면 아래에 붙는다"]
+      ]
+    },
+    {
+      "id": "kiosk",
+      "name": "맥도날드 키오스크",
+      "kind": "매장 주문 키오스크",
+      "sel": {
+        "platform": "tablet",
+        "skill": "first",
+        "device": "shared",
+        "content": "photo",
+        "domain": "fnb",
+        "action": "once"
+      },
+      "notes": [
+        ["category", "rail", "메뉴 분류를 왼쪽에 세로로 펼쳐 둔다"],
+        ["single", "tiles", "세트·단품 같은 선택을 큰 사진 버튼으로 고르게 한다"]
+      ]
+    },
+    {
+      "id": "gmail",
+      "name": "Gmail",
+      "kind": "데스크톱 메일",
+      "sel": {
+        "platform": "desktop",
+        "skill": "daily",
+        "device": "personal",
+        "content": "text",
+        "domain": "media",
+        "action": "light"
+      },
+      "notes": [
+        ["delete", "undo", "메일을 지우면 묻지 않고 지운 뒤 「실행취소」를 잠깐 띄운다"],
+        ["more", "pages", "목록을 50개씩 끊고 「1–50」처럼 범위로 넘긴다"],
+        ["refresh", "button", "목록 위에 새로고침 버튼을 둔다"]
+      ]
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "kind": "모바일 영상 앱",
+      "sel": {
+        "platform": "mobile",
+        "skill": "occasional",
+        "device": "personal",
+        "content": "photo",
+        "domain": "media",
+        "action": "light"
+      },
+      "notes": [
+        ["loading", "skeleton", "썸네일 자리를 회색 틀로 먼저 그린다"],
+        ["more", "infinite", "피드를 내리면 계속 이어진다"],
+        ["refresh", "pull", "피드를 아래로 당기면 새로고침한다"]
+      ]
+    },
+    {
+      "id": "iphone",
+      "name": "iPhone 설정",
+      "kind": "모바일 설정 화면",
+      "sel": {
+        "platform": "mobile",
+        "skill": "occasional",
+        "device": "personal",
+        "content": "text",
+        "domain": "media",
+        "action": "light"
+      },
+      "notes": [
+        ["toggle", "switch", "설정을 스위치로 누르는 즉시 켜고 끈다"]
+      ]
+    }
+  ]
+}

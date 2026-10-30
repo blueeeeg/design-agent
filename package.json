@@ -1,0 +1,17 @@
+{
+  "name": "ui-pattern-catalog",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "node tools/check-page.cjs dist/index.html"
+  },
+  "dependencies": {
+    "astro": "^7.3.8"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}

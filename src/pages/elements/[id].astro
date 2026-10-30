@@ -1,0 +1,11 @@
+---
+// 요소마다 주소를 따로 만든다. 링크로 바로 그 요소를 열 수 있다
+import Catalog from '../../components/Catalog.astro';
+import data from '../../../data/elements.json';
+
+export function getStaticPaths() {
+  return data.elements.map(el => ({ params: { id: el.id }, props: { el } }));
+}
+const { el } = Astro.props;
+---
+<Catalog title={`${el.name} · UI 패턴 카탈로그`} description={el.q} element={el.id} />

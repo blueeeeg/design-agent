@@ -1,0 +1,1388 @@
+{
+  "_about": "화면 요소와 방식. fits/avoid 한 줄은 [축, 선택지, 강도(제약·관례·예시), 이유, 출처]. domain 축 항목은 예전 도메인 축의 흔적이라 점수에 들어가지 않는다. en은 AI에게 시킬 때 쓰는 영어 이름이다. giting은 같은 것을 다루는 giting.kr 메뉴판 항목이다(https://giting.kr/menu/{값}, MIT). 부품 사전(/components/)이 이 링크를 거꾸로 따라가 「쓰이는 곳」을 만든다",
+  "groups": ["상태 알리기", "목록과 이동", "고르기와 입력", "동작과 확인", "표시"],
+  "elements": [
+    {
+      "group": "상태 알리기",
+      "id": "loading",
+      "name": "불러오는 동안",
+      "en": "Loading state",
+      "q": "데이터가 오기 전 화면에 무엇을 두나",
+      "options": [
+        {
+          "id": "skeleton",
+          "name": "스켈레톤",
+          "en": "Skeleton screen",
+          "giting": "ui-menu/skeleton-ui",
+          "desc": "올 내용의 모양을 회색 틀로 먼저 그린다",
+          "fits": [
+            ["content", "photo", "관례", "사진·카드 자리를 미리 잡아 화면이 튀지 않는다"],
+            ["content", "numbers", "관례", "행 모양을 미리 보여준다"]
+          ]
+        },
+        {
+          "id": "spinner",
+          "name": "스피너",
+          "en": "Spinner",
+          "giting": "ui-menu/spinner",
+          "desc": "가운데에서 도는 표시 하나",
+          "fits": [],
+          "avoid": [
+            ["content", "photo", "관례", "다 오면 레이아웃이 한꺼번에 튄다"]
+          ]
+        },
+        {
+          "id": "progress",
+          "name": "진행 바",
+          "en": "Progress bar",
+          "giting": "ui-menu/progress-bar",
+          "desc": "얼마나 남았는지 단계와 막대로",
+          "fits": [
+            ["domain", "finance", "관례", "이체·인증처럼 단계가 있는 처리는 남은 양을 보여준다"],
+            ["domain", "admin", "예시", "정산 파일처럼 오래 걸리는 작업"]
+          ]
+        },
+        {
+          "id": "optimistic",
+          "name": "바로 반영",
+          "en": "Optimistic UI",
+          "desc": "응답을 기다리지 않고 먼저 바꾸고, 실패하면 되돌린다",
+          "fits": [
+            ["skill", "daily", "예시", "같은 일을 반복하는 사람의 흐름을 끊지 않는다"],
+            ["domain", "admin", "관례", "상태 변경처럼 거의 성공하는 작업"],
+            ["action", "light", "관례", "거의 성공하는 일은 먼저 바꿔 보여준다"]
+          ],
+          "avoid": [
+            ["domain", "finance", "관례", "돈이 오가는 일은 서버 확인 전에 성공처럼 보이면 안 된다"],
+            ["domain", "fnb", "관례", "주문은 매장에 접수되기 전에 완료처럼 보이면 안 된다"],
+            ["action", "once", "관례", "확인 전에 성공처럼 보이면 안 된다"],
+            ["action", "irreversible", "관례", "확인 전에 성공처럼 보이면 안 된다"]
+          ]
+        },
+        {
+          "id": "illus",
+          "name": "그림과 진행 문구",
+          "en": "Illustrated loading with status text",
+          "desc": "그림이나 캐릭터와 함께 지금 하는 일을 문구로 알린다",
+          "fits": [],
+          "avoid": [
+            ["skill", "daily", "관례", "매번 보는 그림은 금방 귀찮다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "상태 알리기",
+      "id": "busy",
+      "name": "버튼을 누른 뒤",
+      "en": "Button loading state",
+      "q": "처리하는 동안 버튼과 화면을 어떻게 두나",
+      "options": [
+        {
+          "id": "inline",
+          "name": "버튼 안 스피너",
+          "en": "Loading button",
+          "giting": "app-menu/loadingbtn",
+          "desc": "누른 버튼 자리에서 돌고, 다른 곳은 그대로 쓸 수 있다",
+          "fits": [
+            ["action", "light", "관례", "실패해도 다시 누르면 그만이다"]
+          ],
+          "avoid": [
+            ["action", "irreversible", "관례", "처리 중에 다른 버튼을 누를 수 있다"]
+          ]
+        },
+        {
+          "id": "label",
+          "name": "문구를 바꾸고 잠근다",
+          "en": "Disabled button with progress label",
+          "desc": "「보내는 중…」으로 바꾸고 다시 못 누르게",
+          "fits": [
+            ["skill", "first", "관례", "무슨 일이 일어나는지 글로 말한다"],
+            ["domain", "fnb", "관례", "두 번 눌러 같은 주문이 두 번 가는 것을 막는다"],
+            ["domain", "finance", "관례", "중복 이체를 막는다"],
+            ["action", "once", "관례", "두 번 눌러 두 번 가는 것을 막는다"]
+          ],
+          "avoid": [
+            ["action", "irreversible", "예시", "버튼만 잠기면 처리 중에 다른 화면으로 가 버릴 수 있다"]
+          ]
+        },
+        {
+          "id": "block",
+          "name": "화면 전체를 막는다",
+          "en": "Blocking loading overlay",
+          "giting": "app-menu/loadingoverlay",
+          "desc": "끝날 때까지 다른 조작을 못 하게 덮는다",
+          "fits": [
+            ["domain", "finance", "예시", "결제 승인처럼 중간에 다른 조작이 끼면 안 될 때"],
+            ["action", "irreversible", "관례", "끝날 때까지 다른 조작이 끼면 안 된다"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "다른 일까지 막혀 흐름이 끊긴다"],
+            ["action", "light", "관례", "가벼운 일에 화면 전체를 막을 필요가 없다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "상태 알리기",
+      "id": "empty",
+      "name": "비어 있을 때",
+      "en": "Empty state",
+      "q": "보여줄 것이 없을 때 그 자리에 무엇을 두나",
+      "options": [
+        {
+          "id": "action",
+          "name": "다음 행동 버튼",
+          "en": "Empty state with call to action",
+          "giting": "ui-menu/empty-state",
+          "desc": "왜 비었는지 한 줄, 그리고 갈 곳 버튼",
+          "fits": [
+            ["domain", "admin", "관례", "빈 화면에 다음에 할 일을 둔다"],
+            ["domain", "commerce", "관례", "비었으면 둘러보기로 보낸다"],
+            ["skill", "first", "관례", "다음에 누를 곳을 알려준다"]
+          ]
+        },
+        {
+          "id": "illus",
+          "name": "그림 + 문구",
+          "en": "Empty state with illustration",
+          "giting": "ui-menu/empty-state",
+          "desc": "브랜드 그림으로 빈자리를 채운다",
+          "fits": [
+            ["domain", "media", "예시", "브랜드 톤을 보여줄 자리"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "자리만 차지하고 할 일을 안 알려준다"]
+          ]
+        },
+        {
+          "id": "text",
+          "name": "문구 한 줄",
+          "en": "Empty state message",
+          "giting": "ui-menu/empty-state",
+          "desc": "표 안에서 사실만 짧게",
+          "fits": [
+            ["skill", "daily", "관례", "짧게 사실만"],
+            ["content", "numbers", "관례", "표 머리는 남기고 한 줄로"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "상태 알리기",
+      "id": "error",
+      "name": "실패했을 때",
+      "en": "Error message",
+      "q": "오류를 어디에, 얼마나 크게 알리나",
+      "options": [
+        {
+          "id": "inline",
+          "name": "그 자리에 문구",
+          "en": "Inline error",
+          "giting": "ui-menu/field-error",
+          "desc": "틀린 칸 바로 아래에 이유와 고칠 방법",
+          "fits": [
+            ["skill", "first", "관례", "어디를 어떻게 고칠지 그 자리에서 알려준다"]
+          ]
+        },
+        {
+          "id": "toast",
+          "name": "토스트",
+          "en": "Error toast",
+          "giting": "ui-menu/toast",
+          "desc": "아래에 잠깐 떴다가 사라진다",
+          "fits": [
+            ["skill", "daily", "관례", "흐름을 끊지 않는다"]
+          ],
+          "avoid": [
+            ["skill", "first", "관례", "금방 사라져 놓친다"],
+            ["action", "once", "관례", "주문·결제 실패를 금방 사라지는 말로 알리면 놓친다"],
+            ["action", "irreversible", "관례", "중요한 실패를 금방 사라지는 말로 알리면 놓친다"]
+          ]
+        },
+        {
+          "id": "full",
+          "name": "전체 화면 + 다시 시도",
+          "en": "Full-page error with retry",
+          "desc": "화면을 바꾸고 할 일을 버튼 하나로",
+          "fits": [
+            ["skill", "first", "관례", "무엇을 누르면 되는지 하나만"],
+            ["device", "shared", "관례", "지나가던 직원도 알아보게 크게"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "작은 실패에 화면을 통째로 잃는다"]
+          ]
+        },
+        {
+          "id": "dialog",
+          "name": "알림 대화상자",
+          "en": "Error alert dialog",
+          "desc": "가운데 창으로 알리고 다시 시도와 닫기를 고르게 한다",
+          "fits": [
+            ["action", "once", "예시", "결제·인증 실패처럼 다음에 할 일을 골라야 할 때", "Lazyweb 실제 앱 화면 4건(copilot, donotpay 등)"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "자주 나는 작은 실패마다 창을 닫아야 한다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "상태 알리기",
+      "id": "done",
+      "name": "끝났다고 알릴 때",
+      "en": "Success feedback",
+      "q": "성공을 어떻게 확인시키나",
+      "options": [
+        {
+          "id": "toast",
+          "name": "토스트",
+          "en": "Success toast",
+          "giting": "ui-menu/toast",
+          "desc": "「저장했어요」 한 줄이 잠깐",
+          "fits": [
+            ["skill", "daily", "관례", "자주 하는 일은 가볍게"],
+            ["action", "light", "관례", "가벼운 일은 가볍게 알린다"]
+          ],
+          "avoid": [
+            ["action", "irreversible", "관례", "되돌릴 수 없는 일의 결과를 금방 사라지는 말로 끝내지 않는다"],
+            ["action", "once", "관례", "주문 번호처럼 들고 갈 결과를 금방 사라지는 말로 끝내지 않는다"]
+          ]
+        },
+        {
+          "id": "undo",
+          "name": "되돌리기 스낵바",
+          "en": "Undo snackbar",
+          "giting": "ui-menu/toast",
+          "desc": "바로 실행하고 몇 초 동안 되돌릴 기회를 준다",
+          "fits": [
+            ["domain", "admin", "관례", "일괄 처리 뒤 바로 되돌릴 수 있게"],
+            ["domain", "media", "예시", "저장 해제처럼 가벼운 일"],
+            ["action", "light", "관례", "되돌릴 수 있으면 묻지 말고 되돌리기를 준다"]
+          ],
+          "avoid": [
+            ["domain", "finance", "관례", "보낸 돈은 되돌릴 수 없다"],
+            ["action", "irreversible", "관례", "되돌릴 수 없는 일에 되돌리기를 보여주면 안 된다"]
+          ]
+        },
+        {
+          "id": "screen",
+          "name": "완료 화면",
+          "en": "Confirmation page",
+          "desc": "화면을 바꿔 결과를 크게, 내역과 함께",
+          "fits": [
+            ["domain", "fnb", "관례", "주문이 들어갔다는 것을 크게 확인시킨다"],
+            ["domain", "finance", "관례", "이체 결과를 금액·받는 사람과 함께"],
+            ["action", "once", "관례", "주문 번호·결제 내역처럼 들고 갈 결과를 크게"],
+            ["action", "irreversible", "관례", "보낸 금액과 받는 사람을 결과로 남긴다"]
+          ],
+          "avoid": [
+            ["action", "light", "관례", "가벼운 일마다 화면이 바뀌면 흐름이 끊긴다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "상태 알리기",
+      "id": "notify",
+      "name": "새 소식 알릴 때",
+      "en": "Notification",
+      "q": "사용자가 기다리던 일이 생기면 어떻게 알리나",
+      "options": [
+        {
+          "id": "badge",
+          "name": "숫자 배지",
+          "en": "Count badge",
+          "giting": "ui-menu/badge",
+          "desc": "아이콘 위에 개수만 붙인다",
+          "fits": [
+            ["skill", "daily", "관례", "일을 끊지 않고 나중에 몰아 본다"]
+          ]
+        },
+        {
+          "id": "banner",
+          "name": "위쪽 띠",
+          "en": "Notification banner",
+          "giting": "ui-menu/banner",
+          "desc": "화면 위에 한 줄로 띄우고 누르면 이동",
+          "fits": []
+        },
+        {
+          "id": "modal",
+          "name": "가운데 창",
+          "en": "Alert dialog",
+          "giting": "ui-menu/modal",
+          "desc": "화면 가운데 크게 띄우고 소리를 함께",
+          "fits": [
+            ["device", "shared", "관례", "자리에 없던 사람도 보도록 크게"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "하던 일을 끊는다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "상태 알리기",
+      "id": "onboarding",
+      "name": "처음 안내",
+      "en": "Onboarding",
+      "q": "처음 온 사람에게 쓰는 법을 어떻게 알려주나",
+      "options": [
+        {
+          "id": "none",
+          "name": "안내 없음",
+          "en": "No onboarding",
+          "desc": "바로 시작한다",
+          "fits": [
+            ["skill", "daily", "관례", "알아서 쓴다"]
+          ]
+        },
+        {
+          "id": "inline",
+          "name": "그 자리 안내 문구",
+          "en": "Inline hint",
+          "desc": "쓰는 화면 안에 짧은 안내를 붙여 둔다",
+          "fits": [
+            ["skill", "first", "관례", "쓰는 중에 그 자리에서 알려준다"],
+            ["device", "shared", "관례", "누가 처음인지 모르니 늘 붙여 둔다"]
+          ]
+        },
+        {
+          "id": "coach",
+          "name": "가리키는 말풍선",
+          "en": "Coach mark",
+          "desc": "새 기능 하나를 말풍선으로 짚는다",
+          "fits": [
+            ["skill", "occasional", "예시", "바뀐 것 하나만 알릴 때"]
+          ]
+        },
+        {
+          "id": "tour",
+          "name": "넘기는 소개",
+          "en": "Onboarding carousel",
+          "giting": "app-menu/onboarding",
+          "desc": "시작 전에 여러 장을 넘겨 본다",
+          "fits": [],
+          "avoid": [
+            ["skill", "first", "관례", "넘기기만 하고 기억하지 못한다"],
+            ["device", "shared", "관례", "다음 사람은 소개를 못 본다"]
+          ]
+        },
+        {
+          "id": "walkthrough",
+          "name": "따라 하기 안내",
+          "en": "Step-by-step setup guide",
+          "desc": "위젯 추가처럼 앱이 대신 못 하는 일을 순서대로 보여 준다",
+          "fits": [
+            ["skill", "first", "예시", "홈 화면 위젯·설정 바꾸기처럼 사람이 직접 해야 하는 일", "Lazyweb 실제 앱 화면 3건(airbuds, pool, locket)"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "이미 아는 사람에게 단계를 다시 넘기게 한다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "목록과 이동",
+      "id": "more",
+      "name": "목록이 길 때",
+      "en": "Long list loading",
+      "q": "다음 묶음을 어떻게 불러오나",
+      "options": [
+        {
+          "id": "pages",
+          "name": "페이지 번호",
+          "en": "Numbered pagination",
+          "giting": "ui-menu/pagination",
+          "desc": "번호로 끊어 원하는 자리로 돌아오기 쉽다",
+          "fits": [
+            ["platform", "desktop", "관례", ""],
+            ["domain", "admin", "관례", "어제 본 주문으로 돌아오기 쉽다"],
+            ["content", "numbers", "예시", ""]
+          ],
+          "avoid": [
+            ["platform", "mobile", "예시", "작은 번호를 손가락으로 누르기 어렵다"]
+          ]
+        },
+        {
+          "id": "button",
+          "name": "더보기 버튼",
+          "en": "Load more button",
+          "giting": "ui-menu/load-more",
+          "desc": "끝에 버튼을 두고 누를 때마다 더 붙인다",
+          "fits": [
+            ["skill", "first", "예시", "목록에 끝이 있다는 걸 알 수 있다"],
+            ["content", "numbers", "관례", "합계나 바닥글까지 닿을 수 있다"],
+            ["domain", "fnb", "예시", ""]
+          ]
+        },
+        {
+          "id": "infinite",
+          "name": "무한 스크롤",
+          "en": "Infinite scroll",
+          "giting": "ui-menu/infinite-scroll",
+          "desc": "끝에 닿으면 알아서 더 불러온다",
+          "fits": [
+            ["platform", "mobile", "예시", ""],
+            ["domain", "media", "관례", "계속 읽어 내려가는 흐름"],
+            ["domain", "commerce", "관례", "둘러보기"],
+            ["content", "photo", "관례", "사진을 계속 넘겨 보는 피드"]
+          ],
+          "avoid": [
+            ["domain", "admin", "관례", "보던 위치를 잃는다"],
+            ["content", "numbers", "관례", "합계나 바닥글에 닿을 수 없다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "목록과 이동",
+      "id": "refresh",
+      "name": "새로 고칠 때",
+      "en": "Refresh",
+      "q": "최신 내용을 어떻게 다시 받나",
+      "options": [
+        {
+          "id": "pull",
+          "name": "당겨서 새로고침",
+          "en": "Pull to refresh",
+          "giting": "app-menu/pulltorefresh",
+          "desc": "목록을 아래로 끌었다 놓으면 다시 받는다",
+          "fits": [
+            ["platform", "mobile", "관례", ""]
+          ],
+          "avoid": [
+            ["platform", "desktop", "관례", "마우스로는 끌어당기지 않는다"],
+            ["device", "shared", "관례", "숨은 제스처라 지나가는 사람은 모른다"]
+          ]
+        },
+        {
+          "id": "button",
+          "name": "새로고침 버튼",
+          "en": "Refresh button",
+          "desc": "기준 시각과 버튼을 머리에 둔다",
+          "fits": [
+            ["platform", "desktop", "관례", ""],
+            ["skill", "daily", "관례", "언제 받은 정보인지 시각으로 본다"]
+          ]
+        },
+        {
+          "id": "live",
+          "name": "자동 갱신",
+          "en": "Live auto-refresh",
+          "desc": "새 내용이 오면 알아서 끼우고 표시한다",
+          "fits": [
+            ["domain", "admin", "관례", "주문이 들어오면 바로 보이게"],
+            ["device", "shared", "예시", "켜 두고 아무도 안 만지는 화면"],
+            ["domain", "fnb", "예시", ""]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "목록과 이동",
+      "id": "category",
+      "name": "카테고리 이동",
+      "en": "Category navigation",
+      "q": "분류 사이를 어떻게 오가나",
+      "options": [
+        {
+          "id": "tabs",
+          "name": "상단 탭",
+          "en": "Tabs",
+          "giting": "ui-menu/tabs",
+          "desc": "밑줄 탭을 머리에 한 줄로",
+          "fits": [
+            ["platform", "desktop", "예시", "분류가 몇 개뿐일 때"],
+            ["domain", "media", "관례", ""],
+            ["platform", "mobile", "예시", "분류가 몇 개면 한 줄 탭으로"]
+          ],
+          "avoid": []
+        },
+        {
+          "id": "chips",
+          "name": "가로 칩",
+          "en": "Scrollable chips",
+          "giting": "ui-menu/chip",
+          "desc": "좌우로 밀리는 칩 한 줄",
+          "fits": [
+            ["platform", "mobile", "관례", "좁은 폭에서 한 줄로 많이"],
+            ["domain", "commerce", "관례", ""]
+          ]
+        },
+        {
+          "id": "rail",
+          "name": "왼쪽 레일",
+          "en": "Navigation rail",
+          "desc": "분류를 세로로 항상 펼쳐 둔다",
+          "fits": [
+            ["platform", "tablet", "관례", "넓은 화면에서 메뉴판처럼"],
+            ["domain", "fnb", "관례", "메뉴판처럼 한눈에"],
+            ["skill", "first", "관례", "무엇이 있는지 펼치지 않아도 보인다"]
+          ]
+        },
+        {
+          "id": "dropdown",
+          "name": "드롭다운",
+          "en": "Dropdown menu",
+          "giting": "ui-menu/dropdown",
+          "desc": "누르면 펼쳐지는 목록 하나",
+          "fits": [
+            ["skill", "daily", "예시", "분류를 외워 바로 고른다"]
+          ],
+          "avoid": [
+            ["skill", "first", "관례", "펼치기 전엔 무엇이 있는지 안 보인다"],
+            ["device", "shared", "관례", "공용 화면에선 분류가 다 보여야 고른다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "목록과 이동",
+      "id": "filter",
+      "name": "거르기",
+      "en": "Filtering",
+      "q": "조건으로 좁히는 장치를 어디에 두나",
+      "options": [
+        {
+          "id": "chips",
+          "name": "칩 필터",
+          "en": "Filter chips",
+          "giting": "ui-menu/chip",
+          "desc": "자주 쓰는 조건 몇 개를 칩으로",
+          "fits": [
+            ["platform", "mobile", "관례", ""],
+            ["skill", "occasional", "예시", "자주 쓰는 조건만 바로 누른다"],
+            ["domain", "commerce", "관례", ""]
+          ]
+        },
+        {
+          "id": "sheet",
+          "name": "필터 시트",
+          "en": "Filter bottom sheet",
+          "giting": "ui-menu/bottom-sheet",
+          "desc": "조건이 많으면 아래에서 올려 한꺼번에",
+          "fits": [
+            ["platform", "mobile", "관례", "좁은 화면에서 조건을 한꺼번에 고른다"],
+            ["domain", "commerce", "예시", ""]
+          ],
+          "avoid": [
+            ["platform", "desktop", "관례", "넓은 화면은 옆 패널로 펼쳐 둔다"]
+          ]
+        },
+        {
+          "id": "side",
+          "name": "옆 패널",
+          "en": "Filter sidebar",
+          "giting": "ui-menu/sidebar",
+          "desc": "왼쪽에 조건을 펼쳐 두고 바로 반영",
+          "fits": [
+            ["platform", "desktop", "관례", ""],
+            ["domain", "admin", "관례", ""],
+            ["skill", "daily", "관례", "여러 조건을 오가며 비교한다"]
+          ],
+          "avoid": [
+            ["platform", "mobile", "관례", "좁은 폭에 펼쳐 둘 자리가 없다"]
+          ]
+        },
+        {
+          "id": "none",
+          "name": "두지 않는다",
+          "en": "No filters",
+          "desc": "카테고리만으로 찾게 한다",
+          "fits": [
+            ["skill", "first", "예시", "조건을 조합하라고 하면 헤맨다"],
+            ["domain", "fnb", "관례", "메뉴는 카테고리로 충분하다"],
+            ["device", "shared", "관례", "메뉴판처럼 항목이 적으면 카테고리로 충분하다"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "많은 항목을 조건으로 좁혀야 한다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "목록과 이동",
+      "id": "nav",
+      "name": "화면 사이 이동",
+      "en": "Primary navigation",
+      "q": "큰 메뉴 사이를 어떻게 오가나",
+      "options": [
+        {
+          "id": "sidebar",
+          "name": "왼쪽 사이드바",
+          "en": "Sidebar navigation",
+          "giting": "ui-menu/sidebar",
+          "desc": "메뉴를 왼쪽에 세로로 늘 펼쳐 둔다",
+          "fits": [
+            ["platform", "desktop", "관례", "넓은 화면에서 메뉴가 늘 보인다"],
+            ["platform", "tablet", "예시", "가로로 넓게 쓸 때"]
+          ],
+          "avoid": [
+            ["platform", "mobile", "관례", "좁은 폭에 둘 자리가 없다"]
+          ]
+        },
+        {
+          "id": "tabbar",
+          "name": "하단 탭바",
+          "en": "Bottom tab bar",
+          "giting": "ui-menu/bottom-nav",
+          "desc": "아래에 아이콘과 이름을 3~5개 둔다",
+          "fits": [
+            ["platform", "mobile", "관례", "엄지가 닿는 곳에서 바로 옮긴다"],
+            ["skill", "occasional", "예시", "앱마다 같은 자리라 낯설지 않다"]
+          ],
+          "avoid": [
+            ["platform", "desktop", "관례", "넓은 화면 아래는 눈이 잘 안 간다"]
+          ]
+        },
+        {
+          "id": "top",
+          "name": "위쪽 메뉴",
+          "en": "Top navigation bar",
+          "giting": "ui-menu/navbar",
+          "desc": "머리에 메뉴를 한 줄로 두고 본문을 넓게 쓴다",
+          "fits": [
+            ["content", "text", "관례", "옆 메뉴 없이 본문에 자리를 준다"],
+            ["platform", "desktop", "관례", "메뉴가 몇 개인 웹사이트의 기본"]
+          ]
+        },
+        {
+          "id": "single",
+          "name": "한 화면 + 처음으로",
+          "en": "Single screen with home button",
+          "desc": "갈 곳을 줄이고 언제든 첫 화면으로",
+          "fits": [
+            ["skill", "first", "관례", "갈 곳이 적을수록 덜 헤맨다"],
+            ["device", "shared", "관례", "다음 사람이 첫 화면에서 시작하게"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "여러 화면을 오가며 일한다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "목록과 이동",
+      "id": "search",
+      "name": "찾기",
+      "en": "Search",
+      "q": "검색을 어떤 모양으로 두나",
+      "options": [
+        {
+          "id": "box",
+          "name": "펼친 검색창",
+          "en": "Persistent search bar",
+          "giting": "ui-menu/search-bar",
+          "desc": "머리에 검색창을 늘 펼쳐 둔다",
+          "fits": [
+            ["platform", "desktop", "관례", ""],
+            ["skill", "daily", "관례", "자주 찾는 사람은 바로 쳐서 간다"],
+            ["platform", "mobile", "예시", "검색이 주된 길이면 모바일도 펼쳐 둔다"]
+          ],
+          "avoid": []
+        },
+        {
+          "id": "icon",
+          "name": "돋보기 아이콘",
+          "en": "Search icon button",
+          "desc": "누르면 검색 화면이 열린다",
+          "fits": [
+            ["platform", "mobile", "관례", "좁은 머리에 자리를 아낀다"]
+          ]
+        },
+        {
+          "id": "none",
+          "name": "두지 않는다",
+          "en": "Browse without search",
+          "desc": "카테고리를 눌러 찾게 한다",
+          "fits": [
+            ["skill", "first", "관례", "무엇을 쳐야 할지 모른다"],
+            ["device", "shared", "예시", "공용 자판을 띄우지 않는다"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "항목이 많으면 찾을 길이 없다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "목록과 이동",
+      "id": "popover",
+      "name": "가벼운 메뉴 열기",
+      "en": "Menu presentation",
+      "q": "프로필·더보기처럼 가벼운 메뉴를 어떻게 여나",
+      "options": [
+        {
+          "id": "layer",
+          "name": "누른 자리 옆 레이어",
+          "en": "Popover menu",
+          "giting": "ui-menu/popover",
+          "desc": "배경은 그대로 두고 테두리로 구분한 작은 창을 띄운다",
+          "fits": [
+            ["platform", "desktop", "관례", "누른 자리 옆에 뜨고 바깥을 누르면 닫힌다"],
+            ["skill", "daily", "예시", "열고 닫기가 가볍다"],
+            ["platform", "tablet", "관례", "태블릿도 누른 자리 옆에 작은 메뉴를 띄운다"],
+            ["platform", "mobile", "예시", "⋮ 더보기처럼 항목이 몇 개면 누른 자리에 편다"]
+          ],
+          "avoid": []
+        },
+        {
+          "id": "sheet",
+          "name": "아래 시트",
+          "en": "Bottom sheet menu",
+          "giting": "ui-menu/bottom-sheet",
+          "desc": "화면 아래에서 올라오고 뒤는 옅게 가린다",
+          "fits": [
+            ["platform", "mobile", "관례", "엄지가 닿는 아래에서 고른다"]
+          ],
+          "avoid": [
+            ["platform", "desktop", "관례", "넓은 화면 아래쪽은 눈이 잘 안 간다"],
+            ["platform", "tablet", "관례", "넓은 화면에서는 아래에서 올라오는 판이 멀다"]
+          ]
+        },
+        {
+          "id": "screen",
+          "name": "새 화면",
+          "en": "Full-screen menu page",
+          "desc": "메뉴를 한 화면으로 열고 뒤로 가기로 닫는다",
+          "fits": [
+            ["skill", "first", "관례", "한 화면에 한 가지만 보여 헤매지 않는다"],
+            ["device", "shared", "예시", "큰 글씨와 버튼을 둘 자리가 넉넉하다"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "자주 여닫으면 화면을 오가느라 느리다"]
+          ]
+        },
+        {
+          "id": "modal",
+          "name": "가운데 창 + 어두운 막",
+          "en": "Modal dialog with scrim",
+          "giting": "ui-menu/modal",
+          "desc": "배경을 어둡게 가리고 가운데 띄운다",
+          "fits": [],
+          "avoid": [
+            ["platform", "desktop", "관례", "가벼운 메뉴에 배경까지 가리면 하던 일이 끊긴다", "Madia Designer 「AI디자이너」 3부 13:00"],
+            ["skill", "daily", "관례", "여닫을 때마다 화면 전체가 바뀐다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "고르기와 입력",
+      "id": "single",
+      "name": "하나 고르기",
+      "en": "Single selection",
+      "q": "여러 선택지 중 하나를 어떻게 고르게 하나",
+      "options": [
+        {
+          "id": "radio",
+          "name": "라디오 목록",
+          "en": "Radio list",
+          "giting": "ui-menu/radio",
+          "desc": "선택지마다 한 줄, 설명을 붙일 수 있다",
+          "fits": [
+            ["content", "text", "관례", "선택지 설명이 길 때"],
+            ["domain", "finance", "관례", "계좌·약관처럼 하나하나 읽고 고를 때"]
+          ]
+        },
+        {
+          "id": "segment",
+          "name": "세그먼트",
+          "en": "Segmented control",
+          "giting": "app-menu/segmented",
+          "desc": "짧은 선택지 2~4개를 한 줄 버튼으로",
+          "fits": []
+        },
+        {
+          "id": "tiles",
+          "name": "큰 버튼",
+          "en": "Selectable tiles",
+          "desc": "선택지를 큰 칸으로 모두 펼친다",
+          "fits": [
+            ["skill", "first", "관례", "한 번에 보이고 크게 누른다"],
+            ["device", "shared", "관례", "키오스크·매장 태블릿에서 크게 누른다"],
+            ["domain", "fnb", "관례", "맵기·사이즈 같은 메뉴 옵션"]
+          ]
+        },
+        {
+          "id": "dropdown",
+          "name": "드롭다운",
+          "en": "Select dropdown",
+          "giting": "ui-menu/select",
+          "desc": "선택지가 많을 때 접어 둔다",
+          "fits": [
+            ["domain", "admin", "예시", ""]
+          ],
+          "avoid": [
+            ["skill", "first", "관례", "펼치기 전엔 무엇이 있는지 안 보인다"],
+            ["device", "shared", "관례", "작은 목록을 손가락으로 고르기 어렵다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "고르기와 입력",
+      "id": "qty",
+      "name": "수량",
+      "en": "Quantity input",
+      "q": "개수를 어떻게 바꾸게 하나",
+      "options": [
+        {
+          "id": "stepper",
+          "name": "− + 버튼",
+          "en": "Quantity stepper",
+          "giting": "ui-menu/number-stepper",
+          "desc": "한 개씩 올리고 내린다",
+          "fits": [
+            ["domain", "fnb", "관례", "메뉴는 한두 개씩 더한다"],
+            ["domain", "commerce", "관례", ""],
+            ["skill", "first", "관례", "자판을 안 띄운다"],
+            ["device", "shared", "관례", "키오스크에서 자판 없이 누른다"]
+          ],
+          "avoid": []
+        },
+        {
+          "id": "input",
+          "name": "숫자 입력",
+          "en": "Number input",
+          "giting": "ui-menu/input",
+          "desc": "칸에 숫자를 바로 친다",
+          "fits": [
+            ["skill", "daily", "관례", "큰 숫자를 빠르게"],
+            ["domain", "admin", "관례", "재고처럼 큰 숫자"]
+          ],
+          "avoid": [
+            ["device", "shared", "관례", "여럿이 쓰는 기기에서 자판을 띄우면 화면을 가린다"]
+          ]
+        },
+        {
+          "id": "select",
+          "name": "드롭다운",
+          "en": "Quantity select",
+          "giting": "ui-menu/select",
+          "desc": "1~10 중에서 고른다",
+          "fits": [],
+          "avoid": [
+            ["device", "shared", "관례", "작은 목록을 손가락으로 고르기 어렵다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "고르기와 입력",
+      "id": "toggle",
+      "name": "켜고 끄기",
+      "en": "Toggle",
+      "q": "설정 하나를 켜고 끄는 모양",
+      "options": [
+        {
+          "id": "switch",
+          "name": "토글 스위치",
+          "en": "Toggle switch",
+          "giting": "ui-menu/switch",
+          "desc": "누르는 즉시 적용된다",
+          "fits": [
+            ["skill", "occasional", "관례", ""]
+          ]
+        },
+        {
+          "id": "checkbox",
+          "name": "체크박스",
+          "en": "Checkbox",
+          "giting": "ui-menu/checkbox",
+          "desc": "저장 버튼을 눌러야 적용되는 폼 안에서",
+          "fits": [
+            ["domain", "admin", "관례", ""]
+          ]
+        },
+        {
+          "id": "twobtn",
+          "name": "켜기·끄기 두 버튼",
+          "en": "On/Off button pair",
+          "desc": "지금 상태를 글로 보여준다",
+          "fits": [
+            ["skill", "first", "관례", "스위치 모양을 읽지 못해도 글로 안다"],
+            ["device", "shared", "예시", "매장 태블릿처럼 여러 사람이 쓰는 기기"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "고르기와 입력",
+      "id": "validate",
+      "name": "입력 확인 시점",
+      "en": "Validation timing",
+      "q": "틀린 입력을 언제 알려주나",
+      "options": [
+        {
+          "id": "live",
+          "name": "입력하는 동안",
+          "en": "Real-time validation",
+          "giting": "ui-menu/validation",
+          "desc": "치는 대로 바로 맞는지 알려준다",
+          "fits": [
+            ["domain", "finance", "관례", "계좌번호·금액은 바로 틀린 걸 알려준다"],
+            ["action", "irreversible", "관례", "계좌번호처럼 틀리면 돌이킬 수 없는 값은 치는 동안 알려준다"]
+          ],
+          "avoid": []
+        },
+        {
+          "id": "blur",
+          "name": "칸을 벗어날 때",
+          "en": "Validate on blur",
+          "giting": "ui-menu/validation",
+          "desc": "다 치고 다음 칸으로 갈 때 알려준다",
+          "fits": [
+            ["skill", "occasional", "관례", "입력 중에 재촉하지 않는다"]
+          ]
+        },
+        {
+          "id": "submit",
+          "name": "제출할 때 모아서",
+          "en": "Validate on submit",
+          "giting": "ui-menu/validation",
+          "desc": "버튼을 누르면 틀린 곳을 한꺼번에",
+          "fits": [
+            ["skill", "first", "관례", "입력하는 동안 재촉하지 않고, 위에 고칠 곳을 모아 보여 준다"]
+          ]
+        },
+        {
+          "id": "lock",
+          "name": "채우기 전 버튼 잠금",
+          "en": "Disabled button until valid",
+          "desc": "필요한 칸을 다 채울 때까지 다음 버튼을 흐리게 잠가 둔다",
+          "fits": [
+            ["platform", "mobile", "예시", "전화번호·이메일처럼 한 화면에 칸이 하나뿐인 가입 단계", "Lazyweb 실제 앱 화면 6건(swimply, life360, strava 등)"]
+          ],
+          "avoid": [
+            ["skill", "first", "관례", "무엇이 빠져서 잠겼는지 몰라 헤맨다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "동작과 확인",
+      "id": "delete",
+      "name": "지울 때",
+      "en": "Delete",
+      "q": "삭제를 어떻게 확인하나",
+      "options": [
+        {
+          "id": "confirm",
+          "name": "먼저 묻는다",
+          "en": "Delete confirmation dialog",
+          "giting": "ui-menu/confirmation",
+          "desc": "지우기 전에 대화상자로 확인",
+          "fits": [
+            ["domain", "admin", "관례", "되돌릴 수 없는 삭제"],
+            ["domain", "finance", "관례", ""],
+            ["skill", "first", "예시", ""],
+            ["action", "irreversible", "관례", "영구 삭제는 먼저 묻는다"]
+          ],
+          "avoid": [
+            ["action", "light", "관례", "되살릴 수 있는 삭제까지 물으면 습관처럼 누른다"]
+          ]
+        },
+        {
+          "id": "undo",
+          "name": "지우고 되돌리기",
+          "en": "Delete with undo",
+          "giting": "ui-menu/toast",
+          "desc": "묻지 않고 지운 뒤 몇 초 동안 되돌릴 수 있다",
+          "fits": [
+            ["skill", "daily", "관례", "묻는 단계 없이 빠르게"],
+            ["domain", "commerce", "관례", "장바구니에서 빼기"],
+            ["domain", "media", "관례", ""],
+            ["action", "light", "관례", "휴지통처럼 되살릴 수 있는 삭제"]
+          ],
+          "avoid": [
+            ["domain", "finance", "관례", "되돌릴 수 없는 일에 쓰면 안 된다"],
+            ["action", "irreversible", "관례", "영구 삭제에는 쓰면 안 된다"]
+          ]
+        },
+        {
+          "id": "swipe",
+          "name": "밀어서 지우기",
+          "en": "Swipe to delete",
+          "giting": "app-menu/swipeaction",
+          "desc": "행을 옆으로 밀면 삭제 버튼이 나온다",
+          "fits": [
+            ["platform", "mobile", "예시", "목록 정리가 잦은 앱"],
+            ["device", "personal", "예시", "내 목록을 내가 정리할 때"]
+          ],
+          "avoid": [
+            ["skill", "first", "관례", "숨은 제스처라 처음 쓰는 사람은 못 찾는다"],
+            ["platform", "desktop", "관례", "마우스로는 밀지 않는다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "동작과 확인",
+      "id": "confirmForm",
+      "name": "확인 단계 모양",
+      "en": "Confirmation step",
+      "q": "되돌리기 어려운 동작 앞에서 멈추는 화면의 모양",
+      "options": [
+        {
+          "id": "dialog",
+          "name": "대화상자",
+          "en": "Confirmation dialog",
+          "giting": "ui-menu/confirmation",
+          "desc": "가운데 상자에 요약과 버튼 둘",
+          "fits": [
+            ["platform", "desktop", "관례", ""],
+            ["platform", "tablet", "관례", "넓은 화면은 가운데 창으로 확인받는다"]
+          ],
+          "avoid": []
+        },
+        {
+          "id": "sheet",
+          "name": "아래 시트",
+          "en": "Confirmation bottom sheet",
+          "giting": "ui-menu/bottom-sheet",
+          "desc": "아래에서 올라와 엄지로 누른다",
+          "fits": [
+            ["platform", "mobile", "관례", "버튼이 엄지 닿는 곳에 온다"],
+            ["action", "once", "예시", "결제 전 요약을 엄지 닿는 곳에"]
+          ],
+          "avoid": [
+            ["platform", "tablet", "관례", "태블릿은 확인을 가운데 창으로 띄운다"]
+          ]
+        },
+        {
+          "id": "screen",
+          "name": "확인 화면",
+          "en": "Review page",
+          "desc": "화면 하나를 통째로 써서 크게",
+          "fits": [
+            ["domain", "finance", "관례", "금액·받는 사람을 한 화면에 크게"],
+            ["skill", "first", "관례", ""],
+            ["action", "irreversible", "관례", "금액·받는 사람을 한 화면에 크게"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "동작과 확인",
+      "id": "cta",
+      "name": "주요 버튼 자리",
+      "en": "Primary button placement",
+      "q": "화면의 가장 중요한 버튼을 어디에 두나",
+      "options": [
+        {
+          "id": "inline",
+          "name": "내용 옆 오른쪽",
+          "en": "Inline primary button",
+          "desc": "취소 옆, 내용 끝에 작게",
+          "fits": [
+            ["platform", "desktop", "관례", "눈이 내용을 다 읽고 끝나는 자리"]
+          ]
+        },
+        {
+          "id": "bottom",
+          "name": "아래 고정, 꽉 차게",
+          "en": "Sticky full-width bottom button",
+          "giting": "app-menu/footerbar",
+          "desc": "스크롤해도 화면 아래에 붙어 있다",
+          "fits": [
+            ["platform", "mobile", "관례", "엄지가 닿는 곳"]
+          ]
+        },
+        {
+          "id": "panel",
+          "name": "오른쪽 패널 아래",
+          "en": "Side panel button",
+          "desc": "합계 패널 맨 아래에 크게",
+          "fits": [
+            ["platform", "tablet", "관례", "넓은 화면에서 합계와 버튼을 한 덩어리로"],
+            ["domain", "fnb", "관례", ""],
+            ["domain", "commerce", "예시", ""]
+          ],
+          "avoid": [
+            ["platform", "mobile", "관례", "좁은 폭에 패널을 둘 자리가 없다"]
+          ]
+        },
+        {
+          "id": "barRight",
+          "name": "하단 바 오른쪽 버튼",
+          "en": "Bottom bar with summary and button",
+          "desc": "아래 고정 바 왼쪽에 가격·요약, 오른쪽에 버튼",
+          "fits": [
+            ["platform", "mobile", "예시", "가격이나 결과 수를 보면서 바로 누른다", "Lazyweb 실제 앱 화면 3건(swimply)"]
+          ],
+          "avoid": [
+            ["platform", "desktop", "관례", "넓은 화면에서 요약과 버튼이 양 끝으로 멀어진다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "동작과 확인",
+      "id": "cartPlace",
+      "name": "장바구니·합계 자리",
+      "en": "Cart summary placement",
+      "q": "담은 것과 합계를 어디에 보여주나",
+      "options": [
+        {
+          "id": "panel",
+          "name": "오른쪽 패널",
+          "en": "Cart side panel",
+          "desc": "목록 옆에 늘 펼쳐 둔다",
+          "fits": [
+            ["platform", "tablet", "관례", "넓은 화면에서 담은 것을 계속 본다"],
+            ["platform", "desktop", "관례", ""]
+          ],
+          "avoid": [
+            ["platform", "mobile", "관례", "좁은 폭에 둘 자리가 없다"]
+          ]
+        },
+        {
+          "id": "bar",
+          "name": "하단 고정 바",
+          "en": "Sticky cart bar",
+          "giting": "app-menu/footerbar",
+          "desc": "아래에 개수·합계와 버튼을 붙인다",
+          "fits": [
+            ["platform", "mobile", "관례", "엄지 닿는 곳에 합계와 버튼"]
+          ]
+        },
+        {
+          "id": "icon",
+          "name": "아이콘으로 접기",
+          "en": "Cart icon with count badge",
+          "desc": "머리의 장바구니 아이콘에 개수만, 누르면 열린다",
+          "fits": [
+            ["skill", "occasional", "예시", "자주 안 보는 정보는 접어 둔다"]
+          ],
+          "avoid": [
+            ["skill", "first", "예시", "담은 게 안 보이면 같은 걸 또 담는다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "동작과 확인",
+      "id": "steps",
+      "name": "여러 단계 흐름",
+      "en": "Multi-step flow",
+      "q": "입력할 게 많을 때 단계를 어떻게 나누나",
+      "options": [
+        {
+          "id": "stepper",
+          "name": "단계 표시줄",
+          "en": "Step indicator",
+          "giting": "ui-menu/stepper",
+          "desc": "몇 단계 중 어디인지 위에 보여준다",
+          "fits": [
+            ["skill", "occasional", "관례", "어디쯤인지 알려준다"],
+            ["action", "once", "관례", "결제 전에 몇 단계가 남았는지 보여준다"]
+          ]
+        },
+        {
+          "id": "onepage",
+          "name": "한 화면에 펼치기",
+          "en": "Single-page form",
+          "desc": "모든 칸을 한 화면에 늘어놓는다",
+          "fits": [
+            ["skill", "daily", "관례", "앞뒤로 오가지 않고 한눈에"],
+            ["platform", "desktop", "관례", "넓은 화면을 쓴다"]
+          ],
+          "avoid": [
+            ["skill", "first", "관례", "칸이 많으면 어디부터 할지 모른다"]
+          ]
+        },
+        {
+          "id": "wizard",
+          "name": "한 화면에 한 질문",
+          "en": "One question per screen",
+          "desc": "질문 하나에 답하면 다음으로 넘어간다",
+          "fits": [
+            ["skill", "first", "관례", "한 번에 한 가지만"],
+            ["platform", "mobile", "관례", "좁은 화면에 하나씩"]
+          ],
+          "avoid": [
+            ["skill", "daily", "관례", "같은 질문을 매번 넘기느라 느리다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "표시",
+      "id": "longText",
+      "name": "긴 글",
+      "en": "Long text",
+      "q": "설명이 길 때 얼마나 보여주나",
+      "options": [
+        {
+          "id": "ellipsis",
+          "name": "말줄임",
+          "en": "Text truncation with ellipsis",
+          "desc": "한 줄만 보이고 …으로 자른다",
+          "fits": [
+            ["content", "numbers", "관례", "표 안에서는 한 줄"],
+            ["skill", "daily", "예시", ""],
+            ["content", "photo", "예시", "카드 높이를 맞춘다"]
+          ],
+          "avoid": [
+            ["domain", "finance", "관례", "수수료·한도 안내를 자르면 안 된다"],
+            ["action", "irreversible", "관례", "동의할 내용을 자르면 안 된다"]
+          ]
+        },
+        {
+          "id": "expand",
+          "name": "더보기로 펼치기",
+          "en": "Show more expandable text",
+          "desc": "두세 줄 보이고 누르면 펼친다",
+          "fits": [
+            ["content", "text", "관례", ""],
+            ["domain", "commerce", "관례", "상품 설명"],
+            ["domain", "fnb", "관례", "메뉴 설명"]
+          ]
+        },
+        {
+          "id": "full",
+          "name": "전부 보여준다",
+          "en": "Full text",
+          "desc": "자르지 않는다",
+          "fits": [
+            ["domain", "finance", "관례", "수수료·한도·약관은 줄이지 않는다"],
+            ["action", "irreversible", "관례", "수수료·한도·약관은 줄이지 않는다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "표시",
+      "id": "noImage",
+      "name": "사진이 없을 때",
+      "en": "Image fallback",
+      "q": "사진이 빠진 항목을 어떻게 그리나",
+      "options": [
+        {
+          "id": "placeholder",
+          "name": "빈 자리 표시",
+          "en": "Image placeholder",
+          "desc": "같은 크기의 회색 칸에 아이콘",
+          "fits": [
+            ["content", "photo", "관례", "격자가 깨지지 않게 자리를 지킨다"],
+            ["domain", "fnb", "관례", "사진 없는 메뉴도 같은 크기로"]
+          ]
+        },
+        {
+          "id": "initial",
+          "name": "첫 글자",
+          "en": "Initials avatar",
+          "giting": "ui-menu/avatar",
+          "desc": "이름 첫 글자를 동그라미에",
+          "fits": [
+            ["domain", "finance", "관례", "거래처·사람은 이니셜로"],
+            ["domain", "admin", "예시", ""]
+          ]
+        },
+        {
+          "id": "collapse",
+          "name": "자리를 없앤다",
+          "en": "Collapsed image slot",
+          "desc": "사진 칸 없이 글만",
+          "fits": [
+            ["content", "text", "관례", ""],
+            ["content", "numbers", "관례", ""]
+          ],
+          "avoid": [
+            ["content", "photo", "관례", "사진 있는 항목과 줄이 어긋난다"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "표시",
+      "id": "statusMark",
+      "name": "상태 표시",
+      "en": "Status indicator",
+      "q": "접수·완료 같은 상태를 어떤 모양으로",
+      "options": [
+        {
+          "id": "chip",
+          "name": "칩",
+          "en": "Status badge",
+          "giting": "ui-menu/badge",
+          "desc": "바탕색과 글자를 함께. 그림자 같은 효과 없이 배경과 테두리만",
+          "fits": [
+            ["domain", "admin", "관례", "상태별로 눈에 띄게"],
+            ["skill", "first", "예시", ""]
+          ]
+        },
+        {
+          "id": "dot",
+          "name": "점 + 글자",
+          "en": "Status dot with label",
+          "giting": "ui-menu/status-dot",
+          "desc": "색 점 옆에 상태 글자",
+          "fits": [
+            ["skill", "daily", "관례", "목록이 덜 무겁다"]
+          ]
+        },
+        {
+          "id": "color",
+          "name": "색만",
+          "en": "Color-only indicator",
+          "desc": "글자 없이 색 점이나 줄 색으로",
+          "fits": [],
+          "avoid": [
+            ["skill", "first", "제약", "색만으로는 정보를 전하지 않는다", "WCAG 2.2 · 1.4.1"],
+            ["skill", "occasional", "제약", "색만으로는 정보를 전하지 않는다", "WCAG 2.2 · 1.4.1"],
+            ["skill", "daily", "제약", "색만으로는 정보를 전하지 않는다", "WCAG 2.2 · 1.4.1"]
+          ]
+        }
+      ]
+    },
+    {
+      "group": "표시",
+      "id": "time",
+      "name": "시간 표기",
+      "en": "Timestamp format",
+      "q": "언제 일어났는지 어떻게 쓰나",
+      "options": [
+        {
+          "id": "relative",
+          "name": "3분 전",
+          "en": "Relative time",
+          "desc": "지금부터 얼마나 지났는지",
+          "fits": [
+            ["domain", "media", "관례", "새 글인지가 중요"],
+            ["skill", "occasional", "예시", ""]
+          ],
+          "avoid": [
+            ["domain", "finance", "관례", "거래 시각은 정확해야 한다"],
+            ["action", "irreversible", "관례", "송금·결제 내역 시각은 정확해야 한다"]
+          ]
+        },
+        {
+          "id": "absolute",
+          "name": "14:32",
+          "en": "Absolute time",
+          "desc": "시각을 그대로",
+          "fits": [
+            ["domain", "finance", "관례", "거래 시각은 정확하게"],
+            ["domain", "admin", "관례", "주문 시각으로 찾는다"],
+            ["action", "irreversible", "관례", "송금·결제 내역 시각은 정확하게"]
+          ],
+          "avoid": []
+        },
+        {
+          "id": "both",
+          "name": "경과 + 시각",
+          "en": "Relative and absolute time",
+          "desc": "얼마나 지났는지와 시각을 함께",
+          "fits": [
+            ["domain", "fnb", "관례", "주문하고 얼마나 기다렸는지가 중요"],
+            ["skill", "daily", "예시", ""]
+          ]
+        }
+      ]
+    }
+  ]
+}

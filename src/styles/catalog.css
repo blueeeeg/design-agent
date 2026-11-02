@@ -800,3 +800,32 @@ main { justify-self: start; max-width: 1640px; }
 .ogrid-cat .case-head:first-child { padding-top: 0; }
 .ogrid-cat .case-head h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
 .case-head p { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* ===== 2026-11-02 디자인 리뷰(design-agent로 이 사이트를 잰 결과) 반영 =====
+   글자 크기를 28·20·18·16·14·12 여섯 단계로 줄이고, 설명·이유 글을 14px로 올린다(12~13px 회색 글이 대부분이었다) */
+.el-head .en, .dict-title .en { font-size: 14px; }
+.ogrid-cat .ocard .how { font-size: 16px; }
+.ogrid-cat .ocard .vh .en, .dcard .alias { font-size: 14px; }
+.dcard h4 { font-size: 18px; }
+.ax-q b, .tile .v.txt { font-size: 16px; }
+.kv, .fchip, .prompt-text, .giting, .plan-why, .plan-alt { font-size: 14px; }
+.badge, .ax-opt, .foot { font-size: 12px; }
+pre { font-size: 12px; }
+/* 맞추기: 고른 답이 주변과 1.09:1로만 달라 안 보였다(선택 상태는 3:1 이상 구분 · WCAG 2.2 1.4.11). 고른 답은 진한 바탕 */
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); box-shadow: none; }
+.seg button[aria-pressed="true"] .seg-l { color: var(--surface); }
+.seg button[aria-pressed="true"] .seg-s { color: color-mix(in srgb, var(--surface) 80%, transparent); }
+/* 맞추기: 휴대폰 폭에서 선택지 하나가 다음 줄로 떨어지지 않게, 한 줄을 나눠 쓰고 글자가 버튼 안에서 줄바꿈된다 */
+@media (max-width: 760px) {
+  .axsel .seg { flex-wrap: nowrap; width: 100%; }
+  .axsel .seg button { flex: 1 1 0; min-width: 0; white-space: normal; padding: 6px 8px; }
+}
+/* 맞추기: 「이름을 누르면」이라고 했으니 패턴 이름이 링크로 보이게 */
+.plan-pat { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent); text-underline-offset: 3px; }
+.plan-pat:hover { text-decoration-color: currentColor; }
+
+/* 올리기 칸(2026-11-02) */
+.dropzone { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 24px 16px; border: 1.5px dashed var(--line); border-radius: 12px; text-align: center; }
+.dropzone svg { width: 24px; height: 24px; color: var(--accent); }
+.hint.warn { background: var(--warn-soft); color: var(--ink); }
+.hint.warn svg { color: var(--warn); }

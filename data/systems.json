@@ -174,6 +174,21 @@
       "license": "글 OGL v3.0",
       "ai": [],
       "short": "GOV.UK"
+    },
+    {
+      "id": "shadcn",
+      "name": "shadcn/ui",
+      "maker": "shadcn",
+      "region": "해외",
+      "url": "https://ui.shadcn.com",
+      "focus": "컴포넌트 코드를 내 프로젝트에 복사해 고쳐 쓴다. Radix 위에 Tailwind로 만들어 키보드·스크린리더 동작은 갖췄지만, 기본 입력칸 테두리·회색 글이 연해 대비를 따로 봐야 한다(2026-11-02 실측 1.2~1.5:1)",
+      "refFor": "React·Tailwind 앱, Lovable·v0·Bolt 같은 AI 빌더가 만든 앱",
+      "license": "코드 MIT",
+      "ai": [
+        "llms.txt",
+        "MCP(npx shadcn@latest mcp)"
+      ],
+      "short": "shadcn"
     }
   ],
   "guidance": {
@@ -280,6 +295,13 @@
         "refs": {
           "carbon": "https://carbondesignsystem.com/patterns/empty-states-pattern/",
           "primer": "https://primer.style/product/ui-patterns/empty-states/"
+        }
+      },
+      {
+        "text": "빈 화면 컴포넌트(Empty)에 그림·제목·설명·행동 버튼 자리를 둔다",
+        "opt": "action",
+        "refs": {
+          "shadcn": "https://ui.shadcn.com/docs/components/empty"
         }
       }
     ],

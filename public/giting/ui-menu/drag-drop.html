@@ -6,20 +6,20 @@
 <title>드래그 앤 드롭 Drag and Drop · UI 메뉴판</title>
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17171b; font-size: 13.5px; background: #fff; }
+  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #14212b; font-size: 13.5px; background: #fff; }
   .center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 14px; }
-  .cap { color: #9a9aa4; font-size: 11px; text-align: center; margin: 10px 0 0; }
-  .bar { background: #ececf1; border-radius: 4px; height: 10px; }
-  .mut { color: #9a9aa4; font-size: 12px; }
+  .cap { color: #5a6974; font-size: 11px; text-align: center; margin: 10px 0 0; }
+  .bar { background: #e7ecef; border-radius: 4px; height: 10px; }
+  .mut { color: #5a6974; font-size: 12px; }
 </style>
 </head>
 <body>
 <style>
   .dz { display: flex; gap: 12px; align-items: center; }
-  .dz .item { width: 44px; height: 44px; border-radius: 9px; background: #fff; border: 1px solid #e8e8ee; box-shadow: 0 3px 8px rgba(0,0,0,.08); cursor: grab; }
-  .dz .arrow { color: #9a9aa4; }
-  .dz .slot { width: 66px; height: 44px; border: 2px dashed #c9c9d4; border-radius: 9px; display: grid; place-items: center; color: #9a9aa4; font-size: 10px; }
-  .dz .slot.over { border-color: #17171b; color: #17171b; }
+  .dz .item { width: 44px; height: 44px; border-radius: 9px; background: #fff; border: 1px solid #e3e9ec; box-shadow: 0 3px 8px rgba(0,0,0,.08); cursor: grab; }
+  .dz .arrow { color: #5a6974; }
+  .dz .slot { width: 66px; height: 44px; border: 2px dashed #c3cdd3; border-radius: 9px; display: grid; place-items: center; color: #5a6974; font-size: 10px; }
+  .dz .slot.over { border-color: #14212b; color: #14212b; }
 </style>
 <div class="center"><div>
   <div class="dz"><div class="item" draggable="true" id="it"></div><span class="arrow">&#8594;</span><div class="slot" id="sl">여기에 놓기</div></div>

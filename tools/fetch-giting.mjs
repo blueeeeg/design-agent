@@ -4,6 +4,7 @@
 // - data/giting/LICENSE     : MIT 원문(고지를 함께 둬야 쓸 수 있다)
 // - public/giting/ui-menu/{id}.html : ui-menu 데모. 컴포넌트 사전 페이지가 작은 창으로 띄운다
 import { mkdir, writeFile } from 'node:fs/promises';
+import { repaint } from './giting-palette.mjs';
 
 const RAW = 'https://raw.githubusercontent.com/hanmariyang/giting-skills/HEAD';
 const MENUS = ['ui-menu', 'app-menu', 'landing-menu', 'carousel-menu', 'css-menu', 'type-menu', 'font-menu', 'thumb-menu', 'codelazy', 'motion-menu'];
@@ -29,7 +30,8 @@ let ok = 0;
 const missing = [];
 for (const it of ui.items) {
   try {
-    await writeFile(`public/giting/ui-menu/${it.id}.html`, await get(`plugins/ui-menu/components/${it.id}.html`));
+    // 사이트 색으로 바꿔 저장한다(tools/giting-palette.mjs)
+    await writeFile(`public/giting/ui-menu/${it.id}.html`, repaint(await get(`plugins/ui-menu/components/${it.id}.html`)));
     ok++;
   } catch { missing.push(it.id); }
 }

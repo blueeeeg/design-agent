@@ -127,7 +127,9 @@ export function scorePattern(pat, sel) {
     const score = hits.reduce((s, f) => s + SCORE[f[2]], 0) - misses.reduce((s, f) => s + SCORE[f[2]], 0);
     return { o, i, hits, misses, score };
   });
-  const best = scored.slice().sort((a, b) => b.score - a.score || a.i - b.i)[0];
+  // 상황이 나뉜 패턴은 대표 상황(main)의 방식 안에서 고른다. 다른 상황에만 쓰는 방식이 패턴 전체 추천으로 올라오지 않게
+  const main = pat.cases && (pat.cases.find(c => c.main) || pat.cases[0]);
+  const best = scored.filter(s => !main || main.options.includes(s.o.id)).sort((a, b) => b.score - a.score || a.i - b.i)[0];
   return { scored, best, neutral: scored.every(s => s.score === 0) };
 }
 

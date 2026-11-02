@@ -8,6 +8,7 @@ const popMenu = x => `<div class="pop-head"><b>김하늘</b><span class="m-sub">
 
 export const RENDERS = {
   loading: {
+    none: x => `<div class="fr-pad fr-stack">${titleBar(x, '<span class="m-sub">고치면 바로 바뀌어요</span>')}${rowsHTML(x, 3)}</div>`,
     skeleton: () => `<div class="fr-pad fr-stack">${[0, 1, 2].map(() => '<div class="sk-row"><span class="sk sk-thumb"></span><div class="sk-lines"><span class="sk" style="width:72%"></span><span class="sk" style="width:38%"></span></div></div>').join('')}</div>`,
     spinner: () => '<div class="fr-pad fr-center" style="min-height:190px"><span class="spin"></span><span class="m-sub">불러오는 중</span></div>',
     progress: x => `<div class="fr-pad fr-stack" style="min-height:190px;justify-content:center"><b>${esc(x.T.making)}</b><div class="pbar"><span style="width:62%"></span></div><span class="m-sub">3단계 중 2단계 · 창을 닫지 마세요</span></div>`,
@@ -25,6 +26,7 @@ export const RENDERS = {
   empty: {
     action: x => `<div class="fr-pad fr-empty"><span class="big-ico">${icon(x.D.btnIcon)}</span><b>${esc(x.T.empty[0])}</b><span class="m-btn" style="${btnStyle(x, 'md')}">${esc(x.T.empty[1])}</span></div>`,
     illus: x => `<div class="fr-pad fr-empty"><div class="illus"><i></i><i></i><i></i></div><b>${esc(x.T.empty[0])}</b><span class="m-sub">생기면 여기에 모아 둘게요</span></div>`,
+    clear: x => `<div class="fr-pad fr-stack"><div class="m-chips" style="flex-wrap:wrap">${x.D.cats.slice(1, 3).map(c => `<span class="m-chip on">${esc(c)} ×</span>`).join('')}</div><div class="fr-empty" style="min-height:150px"><b>조건에 맞는 결과가 없어요</b><span class="m-sub">조건을 하나씩 풀어 보세요</span><span class="m-btn ghost" style="${btnStyle(x, 'md')}">조건 모두 지우기</span></div></div>`,
     text: x => `<div class="fr-pad"><div class="m-kv m-sub fr-line"><span>${esc(x.D.th.name)}</span><span>${esc(x.D.th.value)}</span></div><div class="m-sub" style="text-align:center;padding:22px 0">${esc(x.T.empty[0])}</div></div>`,
   },
   error: {
@@ -35,6 +37,7 @@ export const RENDERS = {
   },
   done: {
     toast: x => `<div class="fr-confirm" style="height:210px"><div class="fr-pad">${rowsHTML(x)}</div><div class="toast">${icon('check')}${esc(x.T.done[0])}</div></div>`,
+    inline: x => `<div class="fr-pad fr-stack">${rowsHTML(x, 3)}<div class="fr-tools" style="justify-content:flex-start;align-items:center"><span class="m-btn ghost" style="${btnStyle(x, 'sm')}">${icon('check')}<span>복사했어요</span></span><span class="m-sub">잠시 뒤 「링크 복사」로 돌아가요</span></div></div>`,
     undo: x => `<div class="fr-confirm" style="height:210px"><div class="fr-pad">${rowsHTML(x, 3, 1)}</div><div class="toast">${esc(x.T.removed)}<span class="toast-act">되돌리기</span></div></div>`,
     screen: x => `<div class="fr-pad fr-empty" style="min-height:240px"><span class="done-mark">${icon('check')}</span><b style="font-size:1.2em">${esc(x.T.done[0])}</b><span class="m-sub">${esc(x.T.done[1])}</span><span class="m-btn" style="${btnStyle(x, 'lg')}">확인</span></div>`,
   },
@@ -47,6 +50,7 @@ export const RENDERS = {
     none: x => `<div class="fr-pad fr-stack">${titleBar(x)}${rowsHTML(x, 3)}</div>`,
     inline: x => `<div class="fr-pad fr-stack">${titleBar(x)}<div class="hint">${icon('alert')}${esc(HINT_TEXT[x.dom])}</div>${rowsHTML(x, 3)}</div>`,
     coach: x => `<div class="fr-confirm"><div class="fr-pad fr-stack">${titleBar(x, `<span class="m-icobtn">${icon('bell')}</span>`)}${rowsHTML(x, 3)}</div><div class="coach">새 소식은 여기에 모여요<b>알겠어요</b></div></div>`,
+    sample: x => `<div class="fr-pad fr-stack">${titleBar(x, '<span class="m-st s-new">예시 데이터</span>')}${rowsHTML(x, 3)}<span class="m-btn block" style="${btnStyle(x, 'md')}">내 것으로 시작하기</span></div>`,
     tour: x => `<div class="fr-pad fr-empty" style="min-height:240px"><span class="big-ico">${icon(x.D.btnIcon)}</span><b style="font-size:1.2em">${esc(HINT_TEXT[x.dom])}</b><div class="dots"><i class="on"></i><i></i><i></i></div><span class="m-btn" style="${btnStyle(x, 'md')}">다음</span></div>`,
     walkthrough: x => `<div class="fr-pad fr-stack" style="min-height:240px"><span class="m-sub">2 / 3</span><b style="font-size:1.2em">홈 화면에 위젯 추가하기</b>${['홈 화면 빈 곳을 길게 누르세요', '왼쪽 위 + 를 누르세요', '목록에서 앱을 고르세요'].map((s, i) => `<div class="walk-row ${i === 1 ? 'on' : ''}"><i>${i + 1}</i><span>${s}</span></div>`).join('')}<span class="m-spacer"></span><span class="m-btn block" style="${btnStyle(x, 'md')}">다 했어요</span></div>`,
   },
@@ -73,6 +77,7 @@ export const RENDERS = {
     chips: x => `<div class="fr-pad fr-stack"><div class="m-chips" style="flex-wrap:wrap">${['할인 중', '무료 배송', '오늘 출발'].map((c, i) => `<span class="m-chip ${i < 2 ? 'on' : ''}">${c}</span>`).join('')}</div><span class="m-sub">24개</span>${rowsHTML(x)}</div>`,
     sheet: x => `<div class="fr-confirm" style="height:300px"><div class="fr-pad">${rowsHTML(x)}</div><div class="m-overlay fr-ov sheet"><div class="m-dialog fr-dialog sheet"><b>거르기</b><span class="m-sub">가격</span><div class="m-chips" style="flex-wrap:wrap">${['3만 원 이하', '3~5만 원', '5만 원 이상'].map((c, i) => `<span class="m-chip ${i === 1 ? 'on' : ''}">${c}</span>`).join('')}</div><span class="m-btn block" style="${btnStyle(x, 'md')}">결과 24개 보기</span></div></div></div>`,
     side: x => `<div class="fr-row"><div class="sidefilter">${x.D.cats.map((c, i) => `<span><i class="m-check ${i === 1 || i === 2 ? 'on' : ''}"></i>${esc(c)}</span>`).join('')}</div><div class="fr-main">${rowsHTML(x)}</div></div>`,
+    bar: x => `<div class="fr-pad fr-stack"><div class="fr-tools" style="justify-content:flex-start;flex-wrap:nowrap">${[x.D.cats[0], '전체 기간', '최신순'].map(c => `<span class="dd" style="min-height:${Math.max(x.t, 36)}px;flex:1;min-width:0"><span>${esc(c)}</span>${icon('down')}</span>`).join('')}</div><span class="m-sub">24개</span>${rowsHTML(x, 3)}</div>`,
     none: x => `<div class="fr-pad fr-stack"><div class="ctabs" style="padding:0">${x.D.cats.slice(0, 3).map((c, i) => `<span class="${i === 0 ? 'on' : ''}">${esc(c)}</span>`).join('')}</div>${rowsHTML(x)}</div>`,
   },
   nav: {
@@ -116,6 +121,11 @@ export const RENDERS = {
     blur: x => `<div class="fr-pad fr-stack"><span class="fr-label">이메일</span><div class="fr-input err" style="min-height:${Math.max(x.t, 40)}px">hana@example</div><span class="err-text">${icon('alert')}@ 뒤 주소를 끝까지 써 주세요</span><span class="fr-label">연락처</span><div class="fr-input" style="min-height:${Math.max(x.t, 40)}px"><span class="fr-caret"></span></div></div>`,
     submit: x => `<div class="fr-pad fr-stack"><div class="err-box">${icon('alert')}2곳을 고쳐 주세요</div><div class="fr-input err" style="min-height:${Math.max(x.t, 36)}px">hana@example</div><div class="fr-input err" style="min-height:${Math.max(x.t, 36)}px">010-12</div><span class="m-btn" style="${btnStyle(x, 'md')}">보내기</span></div>`,
     lock: x => `<div class="fr-pad fr-stack" style="min-height:240px"><b style="font-size:1.2em">휴대폰 번호를 알려 주세요</b><div class="fr-input" style="min-height:${Math.max(x.t, 44)}px">010-1234<span class="fr-caret"></span></div><span class="m-sub">인증 번호를 문자로 보내요</span><span class="m-spacer"></span><span class="m-btn is-off block" style="${btnStyle(x, 'lg')}">다음</span></div>`,
+  },
+  upload: {
+    drop: x => `<div class="fr-pad fr-stack"><span class="fr-label">파일 올리기</span><div class="dropzone">${icon('upload')}<b>파일을 여기에 끌어 놓거나 눌러서 고르세요</b><span class="m-sub">JPG·PNG·PDF · 10MB까지</span></div></div>`,
+    button: x => `<div class="fr-pad fr-stack"><span class="fr-label">파일 올리기</span><span class="m-btn ghost" style="${btnStyle(x, 'md')};align-self:flex-start">${icon('upload')}<span>파일 고르기</span></span><span class="m-sub">JPG·PNG·PDF · 10MB까지</span></div>`,
+    result: x => `<div class="fr-pad fr-stack"><div class="hint">${icon('check')}<span><b>파일 3개</b>를 올렸어요 · 사진 2 · PDF 1</span></div><div class="hint warn">${icon('alert')}<span>menu.pdf는 이미 올렸어요. 그래도 더할까요?</span></div><div class="dropzone" style="padding:14px">${icon('upload')}<span class="m-sub">더 올리려면 끌어 놓거나 누르세요</span></div></div>`,
   },
   delete: {
     confirm: x => `<div class="fr-confirm" style="height:230px"><div class="fr-pad">${rowsHTML(x)}</div><div class="m-overlay fr-ov"><div class="m-dialog fr-dialog"><b>지울까요?</b><span class="m-sub">지운 뒤에는 되돌릴 수 없어요</span><div class="m-actions"><span class="m-btn ghost block" style="${btnStyle(x, 'sm')}">취소</span><span class="m-btn danger block" style="${btnStyle(x, 'sm')}">지우기</span></div></div></div></div>`,

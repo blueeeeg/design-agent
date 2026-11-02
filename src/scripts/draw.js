@@ -20,6 +20,7 @@ export const ICONS = {
   refresh: '<path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.5v3.5h-3.5"/>',
   down: '<path d="m5 8 5 5 5-5"/>',
   arrowdown: '<path d="M10 3.5v12M5 11l5 5 5-5"/>',
+  upload: '<path d="M10 13V3.5M5.5 8 10 3.5 14.5 8M4 13.5v3h12v-3"/>',
   trash: '<path d="M4 5.5h12M8 5.5V3.5h4v2M5.5 5.5l.8 11h7.4l.8-11"/>',
   filter: '<path d="M3 4.5h14l-5.5 6.5v5l-3 1.5v-6.5z"/>',
   photo: '<rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="8" cy="8.5" r="1.5"/><path d="m3.5 14 4-4 3 3 2-2 4 4"/>',

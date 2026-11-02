@@ -24,9 +24,22 @@ const where = el => {
   return `<${el.tagName.toLowerCase()}${id}${cls}>`;
 };
 
+// 확대 막기: 글자가 작아 보이는 사람이 손가락으로 키울 수 없다 — WCAG 2.2 1.4.4. 빈 껍데기 index.html에도 있으니 먼저 본다
+const viewport = doc.querySelector('meta[name="viewport"]')?.getAttribute('content') || '';
+const badViewport = /user-scalable\s*=\s*(no|0)|maximum-scale\s*=\s*1(\.0*)?(\s|,|$)/i.test(viewport);
+// React·Vue 앱의 index.html은 빈 <div id="root">뿐이다. 여기에 「걸린 것 없음」이라고 하면 통과로 읽힌다(2026-11-02 실제 서비스 시험)
+if (!text(doc.body) && doc.querySelector('script[src], script[type="module"]')) {
+  console.log(`검사: ${file}\n화면이 JS로 그려지는 빈 껍데기라 검사할 것이 없다(통과가 아니다). 띄운 페이지를 브라우저에서 재거나(SKILL.md 7단계) 화면을 그리는 소스를 읽는다`);
+  if (badViewport) console.log(`- [꼭 고칠 것] 확대 막기: viewport에 「${viewport.trim()}」. user-scalable=no와 maximum-scale=1을 지운다(WCAG 2.2 1.4.4)`);
+  process.exit(badViewport ? 1 : 2);
+}
+
 const found = [];
 // 세기: 꼭 = 꼭 고칠 것(규격·사고), 권장 = 고치기를 권함, 확인 = 사람이 한 번 볼 것
 const add = (level, rule, why, els = []) => found.push({ level, rule, why, at: els.slice(0, 3).map(where) });
+
+if (badViewport) add('꼭', '확대 막기', `viewport에 「${viewport.trim()}」. user-scalable=no와 maximum-scale=1을 지운다(WCAG 2.2 1.4.4)`, [doc.querySelector('meta[name="viewport"]')]);
+
 
 // 1. 이름 없는 버튼: 글자도 aria-label도 없으면 스크린리더가 읽을 게 없다. 처음 쓰는 사람에게는 아이콘만 있는 버튼도 피한다
 const buttons = [...doc.querySelectorAll('button, [role="button"], a[href]')].filter(visible);

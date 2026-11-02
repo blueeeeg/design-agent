@@ -6,18 +6,18 @@
 <title>지연 로딩 Lazy Loading · UI 메뉴판</title>
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17171b; font-size: 13.5px; background: #fff; }
+  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #14212b; font-size: 13.5px; background: #fff; }
   .center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 14px; }
-  .cap { color: #9a9aa4; font-size: 11px; text-align: center; margin: 10px 0 0; }
-  .bar { background: #ececf1; border-radius: 4px; height: 10px; }
-  .mut { color: #9a9aa4; font-size: 12px; }
+  .cap { color: #5a6974; font-size: 11px; text-align: center; margin: 10px 0 0; }
+  .bar { background: #e7ecef; border-radius: 4px; height: 10px; }
+  .mut { color: #5a6974; font-size: 12px; }
 </style>
 </head>
 <body>
 <style>
   .sc { height: 100vh; overflow-y: auto; padding: 14px 16px 30px; }
   .gr { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .im { aspect-ratio: 4 / 3; border-radius: 8px; background: #ececf1; position: relative; overflow: hidden; }
+  .im { aspect-ratio: 4 / 3; border-radius: 8px; background: #e7ecef; position: relative; overflow: hidden; }
   .im i { position: absolute; inset: 0; opacity: 0; filter: blur(8px); transform: scale(1.05); transition: opacity .5s, filter .6s, transform .6s; }
   .im.ok i { opacity: 1; filter: none; transform: none; }
   .im:not(.ok)::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); animation: sh 1.1s infinite; }
@@ -27,7 +27,7 @@
 <div class="sc" id="sc"><p class="mut" style="margin:0 0 10px">갤러리 · 화면에 들어온 사진만 불러와요</p><div class="gr" id="gr"></div></div>
 <script>
   (function () {
-    var C = ['#c9d3f3', '#fbd3bf', '#2b2f4a', '#8ea1e6', '#e0733f', '#cfe8dc', '#3f56c4', '#f3c8a8', '#2f9a6a', '#d8d8e0', '#8e5bd6', '#fde2d2', '#17171b', '#aac0f0', '#f0a77f'];
+    var C = ['#cfe6e4', '#fbd3bf', '#2b2f4a', '#8ea1e6', '#e0733f', '#cfe8dc', '#0e6b6b', '#f3c8a8', '#2f9a6a', '#d8d8e0', '#8e5bd6', '#fde2d2', '#14212b', '#aac0f0', '#f0a77f'];
     var gr = document.getElementById('gr');
     C.forEach(function (c) { var d = document.createElement('div'); d.className = 'im'; d.innerHTML = '<i data-c="' + c + '"></i>'; gr.appendChild(d); });
     var io = new IntersectionObserver(function (es) {

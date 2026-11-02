@@ -6,11 +6,11 @@
 <title>캐러셀 Carousel / Slider · UI 메뉴판</title>
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17171b; font-size: 13.5px; background: #fff; }
+  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #14212b; font-size: 13.5px; background: #fff; }
   .center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 14px; }
-  .cap { color: #9a9aa4; font-size: 11px; text-align: center; margin: 10px 0 0; }
-  .bar { background: #ececf1; border-radius: 4px; height: 10px; }
-  .mut { color: #9a9aa4; font-size: 12px; }
+  .cap { color: #5a6974; font-size: 11px; text-align: center; margin: 10px 0 0; }
+  .bar { background: #e7ecef; border-radius: 4px; height: 10px; }
+  .mut { color: #5a6974; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -18,12 +18,12 @@
   .cr { width: 260px; }
   .tr { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; border-radius: 10px; }
   .tr::-webkit-scrollbar { display: none; }
-  .sl { flex: 0 0 100%; scroll-snap-align: start; padding: 28px 18px; text-align: center; font-size: 12.5px; background: #f4f4f7; color: #43434d; }
+  .sl { flex: 0 0 100%; scroll-snap-align: start; padding: 28px 18px; text-align: center; font-size: 12.5px; background: #f3f6f7; color: #43434d; }
   .nv { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
-  .nv button { border: 1px solid #e0e0e8; background: #fff; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 12px; }
+  .nv button { border: 1px solid #d8e0e5; background: #fff; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 12px; }
   .dots { display: flex; gap: 5px; }
-  .dots i { width: 6px; height: 6px; border-radius: 50%; background: #d4d4dd; }
-  .dots i.on { background: #17171b; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: #cfd8dd; }
+  .dots i.on { background: #14212b; }
 </style>
 <div class="center"><div class="cr">
   <div class="tr" id="tr"><div class="sl">"실측 수치부터 보게 됐어요."</div><div class="sl">"별점 대신 근거를 읽어요."</div><div class="sl">"리포트로 설득이 끝났어요."</div></div>

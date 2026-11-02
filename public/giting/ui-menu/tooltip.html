@@ -6,19 +6,19 @@
 <title>툴팁 Tooltip · UI 메뉴판</title>
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17171b; font-size: 13.5px; background: #fff; }
+  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #14212b; font-size: 13.5px; background: #fff; }
   .center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 14px; }
-  .cap { color: #9a9aa4; font-size: 11px; text-align: center; margin: 10px 0 0; }
-  .bar { background: #ececf1; border-radius: 4px; height: 10px; }
-  .mut { color: #9a9aa4; font-size: 12px; }
+  .cap { color: #5a6974; font-size: 11px; text-align: center; margin: 10px 0 0; }
+  .bar { background: #e7ecef; border-radius: 4px; height: 10px; }
+  .mut { color: #5a6974; font-size: 12px; }
 </style>
 </head>
 <body>
 <style>
   .tip { position: relative; display: inline-flex; }
-  .tip > button { width: 20px; height: 20px; border-radius: 50%; border: 1px solid #c9c9d4; background: #fff; color: #6b6b76; font-size: 11px; cursor: default; }
-  .bub { position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 6px 10px; border-radius: 7px; background: #17171b; color: #fff; font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .12s; }
-  .bub::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -4px; border: 4px solid transparent; border-top-color: #17171b; }
+  .tip > button { width: 20px; height: 20px; border-radius: 50%; border: 1px solid #c3cdd3; background: #fff; color: #5a6974; font-size: 11px; cursor: default; }
+  .bub { position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 6px 10px; border-radius: 7px; background: #14212b; color: #fff; font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .12s; }
+  .bub::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -4px; border: 4px solid transparent; border-top-color: #14212b; }
   .tip:hover .bub, .tip > button:focus-visible + .bub { opacity: 1; }
 </style>
 <div class="center"><div style="font-size:13px">AEO란? <span class="tip"><button aria-describedby="tt">?</button><span class="bub" role="tooltip" id="tt">AI 검색 최적화예요</span></span><p class="cap">마우스를 올려 보세요</p></div></div>

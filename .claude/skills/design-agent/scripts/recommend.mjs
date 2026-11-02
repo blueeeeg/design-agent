@@ -70,7 +70,10 @@ function score(p) {
     const misses = o.avoid.filter(f => ctx[f[0]] === f[1]);
     return { o, i, hits, misses, score: hits.reduce((s, f) => s + SCORE[f[2]], 0) - misses.reduce((s, f) => s + SCORE[f[2]], 0) };
   });
-  const ranked = scored.slice().sort((a, b) => b.score - a.score || a.i - b.i);
+  // 상황이 나뉜 패턴은 대표 상황(main)의 방식을 앞에 둔다. 사이트(core.js scorePattern)와 같은 규칙
+  const main = p.cases && (p.cases.find(c => c.main) || p.cases[0]);
+  const inMain = s => !main || main.options.includes(s.o.id);
+  const ranked = scored.slice().sort((a, b) => inMain(b) - inMain(a) || b.score - a.score || a.i - b.i);
   return { ranked, neutral: scored.every(s => s.score === 0) };
 }
 

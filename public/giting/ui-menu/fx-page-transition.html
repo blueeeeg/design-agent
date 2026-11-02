@@ -6,11 +6,11 @@
 <title>페이지 전환 Page Transition · UI 메뉴판</title>
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17171b; font-size: 13.5px; background: #fff; }
+  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #14212b; font-size: 13.5px; background: #fff; }
   .center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 14px; }
-  .cap { color: #9a9aa4; font-size: 11px; text-align: center; margin: 10px 0 0; }
-  .bar { background: #ececf1; border-radius: 4px; height: 10px; }
-  .mut { color: #9a9aa4; font-size: 12px; }
+  .cap { color: #5a6974; font-size: 11px; text-align: center; margin: 10px 0 0; }
+  .bar { background: #e7ecef; border-radius: 4px; height: 10px; }
+  .mut { color: #5a6974; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -20,12 +20,12 @@
   .top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; margin-bottom: 12px; }
   .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .cards a { display: block; height: 70px; border-radius: 9px; color: #fff; font-weight: 800; padding: 8px; text-decoration: none; font-size: 13px; }
-  .back { border: 0; background: none; font-size: 12px; cursor: pointer; padding: 0; color: #55555f; }
-  .wipe { position: fixed; inset: 0; background: #17171b; transform: scaleY(0); transform-origin: bottom; pointer-events: none; z-index: 5; }
+  .back { border: 0; background: none; font-size: 12px; cursor: pointer; padding: 0; color: #3e4a53; }
+  .wipe { position: fixed; inset: 0; background: #14212b; transform: scaleY(0); transform-origin: bottom; pointer-events: none; z-index: 5; }
   .wipe.in { transition: transform .35s cubic-bezier(.7,0,.3,1); transform: scaleY(1); }
   .wipe.out { transition: transform .35s cubic-bezier(.7,0,.3,1); transform: scaleY(0); transform-origin: top; }
 </style>
-<div class="pg" id="p1"><div class="top"><span>만든 것</span></div><div class="cards"><a href="#" class="go" style="background:#e0733f">프로젝트 02</a><a href="#" style="background:#3f56c4">프로젝트 03</a></div><p class="cap">눌러서 넘어갈 때 막이 한 번 덮었다 걷혀요</p></div>
+<div class="pg" id="p1"><div class="top"><span>만든 것</span></div><div class="cards"><a href="#" class="go" style="background:#e0733f">프로젝트 02</a><a href="#" style="background:#0e6b6b">프로젝트 03</a></div><p class="cap">눌러서 넘어갈 때 막이 한 번 덮었다 걷혀요</p></div>
 <div class="pg" id="p2" hidden><div class="top"><button class="back" id="back">← 돌아가기</button><span>프로젝트 02</span></div><div style="height:80px;border-radius:9px;background:#e0733f"></div><div class="bar" style="width:70%;margin-top:10px"></div></div>
 <div class="wipe" id="wp"></div>
 <script>

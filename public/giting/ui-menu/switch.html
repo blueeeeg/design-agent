@@ -6,11 +6,11 @@
 <title>토글 스위치 Toggle / Switch · UI 메뉴판</title>
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17171b; font-size: 13.5px; background: #fff; }
+  body { margin: 0; font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #14212b; font-size: 13.5px; background: #fff; }
   .center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 14px; }
-  .cap { color: #9a9aa4; font-size: 11px; text-align: center; margin: 10px 0 0; }
-  .bar { background: #ececf1; border-radius: 4px; height: 10px; }
-  .mut { color: #9a9aa4; font-size: 12px; }
+  .cap { color: #5a6974; font-size: 11px; text-align: center; margin: 10px 0 0; }
+  .bar { background: #e7ecef; border-radius: 4px; height: 10px; }
+  .mut { color: #5a6974; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -18,11 +18,11 @@
   .sw { display: grid; gap: 10px; }
   .sw label { display: flex; gap: 34px; align-items: center; font-size: 12.5px; cursor: pointer; justify-content: space-between; width: 150px; }
   .sw input { position: absolute; opacity: 0; }
-  .kb { width: 36px; height: 21px; border-radius: 999px; background: #d4d4dd; position: relative; transition: background .15s; flex-shrink: 0; }
+  .kb { width: 36px; height: 21px; border-radius: 999px; background: #cfd8dd; position: relative; transition: background .15s; flex-shrink: 0; }
   .kb::after { content: ""; position: absolute; top: 2.5px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s; }
-  .sw input:checked + .kb { background: #17171b; }
+  .sw input:checked + .kb { background: #14212b; }
   .sw input:checked + .kb::after { transform: translateX(14px); }
-  .sw input:focus-visible + .kb { outline: 2px solid #17171b; outline-offset: 2px; }
+  .sw input:focus-visible + .kb { outline: 2px solid #14212b; outline-offset: 2px; }
 </style>
 <div class="center"><div class="sw">
   <label>알림 받기<input type="checkbox" role="switch" checked><span class="kb" aria-hidden="true"></span></label>

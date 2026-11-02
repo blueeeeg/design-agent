@@ -92,7 +92,6 @@ function buildMarkdown(r) {
   const line = x => `- ${x.t}${x.src ? ` (${x.src})` : ''}`;
   return [
     '---',
-    '# 필드 이름은 DESIGN.md 규격과 맞추기 전 임시',
     'context:',
     ...VISIBLE_AXES.map(a => `  ${a.key}: ${p[a.key].id}   # ${p[a.key].label}`),
     ...(state.actionKind ? [`  action: ${state.actionKind}   # ${findOpt('action', state.actionKind).label}`] : []),

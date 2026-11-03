@@ -32,8 +32,11 @@ if (val('--from-json')) {
   html = html.replace(/<link[^>]+rel=["']?stylesheet["']?[^>]*>/gi, tag => {
     const href = (tag.match(/href=["']([^"']+)["']/) || [])[1];
     if (!href || /^(https?:)?\/\//.test(href)) return tag;
-    const p = resolve(dirname(file), href.replace(/^\//, ''));
-    return existsSync(p) ? `<style>${readFileSync(p, 'utf8')}</style>` : tag;
+    // 「/_astro/a.css」처럼 사이트 맨 위 기준 경로는 하위 페이지(dist/plan/index.html)에서 위 폴더로 올라가며 찾는다
+    const tries = [];
+    for (let d = dirname(file), i = 0; i < (href.startsWith('/') ? 5 : 1); i++, d = dirname(d)) tries.push(resolve(d, href.replace(/^\//, '')));
+    const p = tries.find(existsSync);
+    return p ? `<style>${readFileSync(p, 'utf8')}</style>` : tag;
   });
   // jsdom은 CSS 변수(var())를 풀지 못한다. 선언을 모아 값으로 바꿔 넣는다(가장 나중 선언, 기본값 지원)
   const vars = {};

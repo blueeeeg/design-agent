@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>넘침 시험 화면</title>
+<!-- 브라우저에서만 재는 넘침·잘림 시험용. 가로로 넘치는 표 하나, 말줄임 없이 잘리는 버튼 글자 하나, 말줄임 하나 -->
+<style>
+  body { margin: 0; font-family: Pretendard, sans-serif; font-size: 16px; line-height: 1.6; color: #1f2328; background: #fff; }
+  main { padding: 16px; }
+  .wide { width: 140vw; border: 1px solid #d0d7de; padding: 8px; }
+  .chip { display: inline-block; width: 72px; overflow: hidden; white-space: nowrap; border: 1px solid #8a8f98; border-radius: 6px; padding: 4px 8px; }
+  .cut { width: 120px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+</style>
+</head>
+<body>
+<main>
+  <h1>주문 목록</h1>
+  <div class="wide">이 표는 화면보다 넓어 가로로 넘친다</div>
+  <p><span class="chip">아주 긴 분류 이름입니다</span></p>
+  <p class="cut">말줄임으로 잘리는 아주 긴 메뉴 이름입니다</p>
+</main>
+</body>
+</html>

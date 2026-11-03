@@ -95,6 +95,23 @@ const emojiHeads = [...doc.querySelectorAll('h1, h2, h3, h4')].filter(h => /^\p{
 if (emojiHeads.length) add('권장', '이모지 제목 표시', '이모지를 섹션 표시로 쓰지 않는다', emojiHeads);
 if (/:hover[^{]*\{[^}]*(display\s*:\s*(block|flex)|visibility\s*:\s*visible|opacity\s*:\s*1)/i.test(css) && sel.platform !== 'desktop') add('확인', 'hover로만 보이는 것', '터치 화면에는 hover가 없다. 꼭 필요한 동작을 hover 뒤에 숨기지 않는다');
 
+// 10-1. AI가 흔히 쓰는 문구: 과장, 「A가 아니라 B」 대비, 근거 없어 보이는 큰 숫자, 대시 남발(2026-11-03 조사)
+const shown = doc.body.cloneNode(true);
+shown.querySelectorAll('script, style, template, [hidden], [aria-hidden="true"]').forEach(e => e.remove());
+const copy = (shown.textContent || '').replace(/\s+/g, ' ');
+const hits = re => [...new Set([...copy.matchAll(re)].map(m => m[0].replace(/^[.!?]\s*/, '').trim()))].slice(0, 4).map(s => `「${s}」`).join(', ');
+// 「완벽한」「원활한」은 평범한 문장에도 나온다. 한 번 나온 것은 넘기고, 두 번 넘게 나올 때만 알린다
+const HYPE = /혁신적인?|획기적인?|압도적인?|차원이 다른|완벽한|놀라운|새로운 경험|게임 ?체인저|원활한|강력한|supercharge\w*|seamless\w*|revolutioni[sz]\w*|world-class|cutting-edge|game-?chang\w*|next-gen\w*|effortless\w*|unlock (?:your|the)\b/gi;
+if ((copy.match(HYPE) || []).length >= 2) add('확인', '과장 문구', `${hits(HYPE)}. 무엇이 어떻게 좋은지 구체적인 사실로 바꾼다`);
+// 짧게 단정하는 「X가 아니라 Y입니다」만 잡는다. 「드롭다운이 아니라 시트로 열린다」 같은 사실 비교는 넘긴다
+const FOIL = /(?:^|[.!?] )[^.!?]{0,12}(?:이|가) 아니라 [^.!?\s]{1,12}(?: [^.!?\s]{1,8})?(?:입니다|이에요|예요)[.!]|\bnot (?:just )?an? [\w-]+\. An? [\w-]+\./gi;
+if (hits(FOIL)) add('확인', '「A가 아니라 B」 문장', `${hits(FOIL)}. AI 글투로 많이 꼽힌다. 하고 싶은 말을 바로 쓴다`);
+// 100%·200%(확대 비율) 같은 평범한 값은 넘기고 1,000% 넘는 값과 「10배 빠른」만 본다
+const BIG = /\d{1,3}(?:,\d{3})+\s?%|\d{4,}\s?%|\d{2,}\s?배 (?:빠|늘|많)|\d{2,}x (?:faster|more)/gi;
+if (hits(BIG)) add('확인', '근거를 밝히지 않은 큰 숫자', `${hits(BIG)}. 실제 수치가 아니면 빼고, 실제면 출처나 기준을 옆에 적는다`);
+const dashes = (copy.match(/—/g) || []).length;
+if (dashes >= 3) add('확인', '대시(—) 남발', `화면 글에 「—」가 ${dashes}번 나온다. 문장을 나누거나 쉼표로`);
+
 // 11. 누를 곳 크기(CSS에 적힌 값만)
 const minTouch = sel.platform === 'desktop' ? 24 : sel.platform === 'tablet' ? 48 : 44;
 const small = [...css.matchAll(/([^{}]*(?:button|btn|\.icon)[^{}]*)\{[^}]*?(?:^|;|\s)(?:min-)?height\s*:\s*(\d+)px/gi)].filter(m => Number(m[2]) < minTouch);

@@ -60,8 +60,34 @@ function visualAudit(doc, win, depth = 0) {
       const g = v => { v = Math.min(1, Math.max(0, v)); return 255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055); };
       return { r: g(4.0767416621 * l - 3.3077115913 * mm + 0.2309699292 * s), g: g(-1.2684380046 * l + 2.6097574011 * mm - 0.3413193965 * s), b: g(-0.0041960863 * l - 0.7034186147 * mm + 1.707614701 * s), a: m[5] == null ? 1 : m[5].endsWith('%') ? parseFloat(m[5]) / 100 : +m[5] };
     }
+    // Tailwind 4 빌드에 따라 lab()으로도 나온다(2026-11-02 pogomate.com). CIE Lab(D50) → XYZ → D65 → sRGB
+    m = str.match(/^(lab|lch)\(\s*([\d.]+%?|none)\s+(-?[\d.]+%?|none)\s+(-?[\d.]+(?:deg)?%?|none)(?:\s*\/\s*([\d.]+%?))?\s*\)$/);
+    if (m) {
+      const num = (v, pctOf) => v === 'none' ? 0 : v.endsWith('%') ? parseFloat(v) / 100 * pctOf : parseFloat(v);
+      const L = num(m[2], 100);
+      let A, B;
+      if (m[1] === 'lch') { const C = num(m[3], 150), h = num(m[4], 1) * Math.PI / 180; A = C * Math.cos(h); B = C * Math.sin(h); }
+      else { A = num(m[3], 125); B = num(m[4], 125); }
+      const k = 24389 / 27, e = 216 / 24389, fy = (L + 16) / 116, fx = fy + A / 500, fz = fy - B / 200;
+      const X = 0.96422 * (fx ** 3 > e ? fx ** 3 : (116 * fx - 16) / k), Y = L > k * e ? fy ** 3 : L / k, Z = 0.82521 * (fz ** 3 > e ? fz ** 3 : (116 * fz - 16) / k);
+      const x = 0.9554734527 * X - 0.0230985369 * Y + 0.0632593087 * Z, y = -0.028369707 * X + 1.009995458 * Y + 0.021041399 * Z, z = 0.0123140017 * X - 0.0205076964 * Y + 1.3303659366 * Z;
+      const g = v => { v = Math.min(1, Math.max(0, v)); return 255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055); };
+      return { r: g(3.2409699419 * x - 1.5373831776 * y - 0.4986107603 * z), g: g(-0.9692436363 * x + 1.8759675015 * y + 0.0415550574 * z), b: g(0.0556300797 * x - 0.2039769589 * y + 1.0569715142 * z), a: m[5] == null ? 1 : m[5].endsWith('%') ? parseFloat(m[5]) / 100 : +m[5] };
+    }
     const named = { white: [255, 255, 255], black: [0, 0, 0], red: [255, 0, 0], blue: [0, 0, 255], green: [0, 128, 0], gray: [128, 128, 128], grey: [128, 128, 128] };
     if (named[str]) return { r: named[str][0], g: named[str][1], b: named[str][2], a: 1 };
+    // 그 밖의 형식(color(display-p3), color-mix 등)은 브라우저에게 sRGB로 바꿔 달라고 한다. jsdom에는 canvas가 없어 못 읽은 채로 둔다
+    if (!win.__jsdom && doc.createElement) {
+      try {
+        const cv = (parse.cv ||= doc.createElement('canvas')), ctx = (parse.ctx ||= cv.getContext('2d', { willReadFrequently: true }));
+        cv.width = cv.height = 1;
+        ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = '#000'; ctx.fillStyle = str;
+        if (ctx.fillStyle === '#000000' && !/^(#000|black|rgb\(0, 0, 0\))/.test(str)) return null;
+        ctx.fillRect(0, 0, 1, 1);
+        const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+        return { r, g, b, a: a / 255 };
+      } catch (e) { return null; }
+    }
     return null;
   };
   const hex = c => '#' + [c.r, c.g, c.b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
@@ -169,7 +195,9 @@ function visualAudit(doc, win, depth = 0) {
     if (!sib) return;
     const a = backgroundOf(el), b = backgroundOf(sib);
     if (a.unknown || b.unknown) return;
-    const bgRatio = contrast(a, b);
+    // 고른 표시를 안쪽 요소(알약 span, 날짜 동그라미)에 칠하는 경우가 많다. 안쪽 세 겹까지 처음 나오는 바탕을 본다
+    const fillOf = (e, under) => { for (const x of [...e.querySelectorAll('*')].slice(0, 6)) { const c = parse(cs(x).backgroundColor); if (c && c.a > 0.05) return blend(c, under); } return under; };
+    const bgRatio = Math.max(contrast(a, b), contrast(fillOf(el, a), fillOf(sib, b)));
     // 탭은 아래 테두리, 세로 메뉴는 왼쪽 테두리로 고른 것을 표시하기도 한다. 세 쪽 중 가장 뚜렷한 쪽을 본다
     const edge = (e, side, under) => { const s = cs(e); if (!(parseFloat(s[`border${side}Width`]) > 0) || s[`border${side}Style`] === 'none') return under; const c = parse(s[`border${side}Color`]); return c ? blend(c, under) : under; };
     const bw = Math.max(...['Top', 'Bottom', 'Left'].map(side => contrast(edge(el, side, a), edge(sib, side, b))));

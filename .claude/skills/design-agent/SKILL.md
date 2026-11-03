@@ -120,7 +120,7 @@ node .claude/skills/design-agent/scripts/check-screen.mjs 만든화면.html --se
   - 결과는 900자씩 쪽으로 나뉜다. 끝에 「다음: visualReport(document, window, 2)」가 있으면 이어서 부른다. 숫자 전체가 필요하면 `JSON.stringify(visualAudit(document, window))`
 - HTML 파일: `node .claude/skills/design-agent/scripts/check-visual.mjs 화면.html` (자바스크립트로 그리는 화면이면 `--run-scripts`. 내가 만든 파일에만)
 - 띄울 수도 없고 공개 주소도 없으면 소스로 어림한다: CSS 변수·Tailwind 설정의 색 값으로 대비를 계산하고(oklch도 계산한다), 클래스(`text-xs`, `p-3`)를 세어 크기·여백 분포를 본다. 리뷰에 「소스로 어림한 값, 실제 화면은 못 봄」이라고 밝힌다
-- 재는 것: 바탕·주 글자색(글자 수 기준), 글자 대비(WCAG 4.5:1·3:1, 꺼진 버튼 제외, 겹친 opacity 반영), 고른 것과 안 고른 것의 차이(3:1, 바탕·위·아래·왼쪽 테두리·막대·밑줄·외곽선, Radix `data-state`도), 입력칸 테두리가 주변과 3:1(WCAG 1.4.11), 문장 안 링크가 링크로 보이나, 색 기운 수, 색 글자 비율, 순수 회색, 글자 크기 단계·본문 크기(글자 수 기준)·제목과 본문 비, 굵은 글자 비율, 서체 수, 여백 4배수 비율, 모서리·그림자 종류. 색 형식은 hex·rgb·hsl·color(srgb)·oklch·oklab(Tailwind 4·shadcn)을 읽는다
+- 재는 것: 바탕·주 글자색(글자 수 기준), 글자 대비(WCAG 4.5:1·3:1, 꺼진 버튼 제외, 겹친 opacity 반영), 고른 것과 안 고른 것의 차이(3:1, 바탕·위·아래·왼쪽 테두리·막대·밑줄·외곽선, Radix `data-state`도), 입력칸 테두리가 주변과 3:1(WCAG 1.4.11), 문장 안 링크가 링크로 보이나, 색 기운 수, 색 글자 비율, 순수 회색, 글자 크기 단계·본문 크기(글자 수 기준)·제목과 본문 비, 굵은 글자 비율, 서체 수, 여백 4배수 비율, 모서리·그림자 종류. 색 형식은 hex·rgb·hsl·color(srgb)·oklch·oklab·lab·lch(Tailwind 4·shadcn)를 읽고, 그 밖의 형식은 브라우저에서 canvas로 바꿔 읽는다. 고른 표시를 안쪽 요소(알약, 날짜 동그라미)에 칠한 경우도 본다
 - 못 재는 것: 그라데이션·사진 위 글자, 다른 출처·sandbox iframe 안(「안을 재지 못한 iframe」에 주소가 나온다. 그 주소를 직접 열어 따로 잰다), 겹침·잘림(스크린샷으로)
 - 사용자가 고쳐 달라고 하면 고치고 다시 재서 전후 숫자를 보여 준다
 

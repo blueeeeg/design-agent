@@ -1,6 +1,20 @@
 {
-  "_about": "그 서비스에서 일부러 정한 디자인 규칙. 리뷰할 서비스의 저장소 맨 위에 design-rules.json으로 둔다(이 카탈로그 저장소에는 두지 않는다). check-visual.mjs·check-screen.mjs에 --rules design-rules.json으로 넣으면, decided에 적은 주제는 「흔한 관례와 다르다」로 알리지 않고, 적지 않은 취향 항목은 끝에 「정한 건지 확인」으로 모은다. 대비·누를 곳 크기·두 번 눌림 같은 규격 항목은 이 파일과 상관없이 늘 알린다. decided의 키는 accent(강조색 쓰는 범위), palette(색 팔레트), font(서체), typescale(글자 크기 단계), weight(굵기), spacing(여백 단계), radius(모서리), shadow(그림자), decor(장식: 카드 띠·글래스·대문자 소제목·카드 안 카드·이모지 제목), copy(글투), pattern(패턴 방식. pattern.loading처럼 패턴 id를 붙이면 그 패턴만). 값은 무엇을 정했는지 한 줄과 근거 위치. 아래 값은 모두 지어낸 예시다",
+  "_about": "그 서비스에서 일부러 정한 디자인 규칙. 리뷰할 서비스의 저장소 맨 위에 design-rules.json으로 둔다(이 카탈로그 저장소에는 두지 않는다). check-visual.mjs·check-screen.mjs에 --rules design-rules.json으로 넣으면, decided에 적은 주제는 「흔한 관례와 다르다」로 알리지 않고, 적지 않은 취향 항목은 끝에 「정한 건지 확인」으로 모은다. 대비·누를 곳 크기·두 번 눌림 같은 규격 항목은 이 파일과 상관없이 늘 알린다. decided의 키는 accent(강조색 쓰는 범위), palette(색 팔레트), font(서체), typescale(글자 크기 단계), weight(굵기), spacing(여백 단계), radius(모서리), shadow(그림자), decor(장식: 카드 띠·글래스·대문자 소제목·카드 안 카드·이모지 제목), copy(글투), pattern(패턴 방식. pattern.loading처럼 패턴 id를 붙이면 그 패턴만). 값은 무엇을 정했는지 한 줄과 근거 위치. recommend.mjs --design-md --rules design-rules.json은 values(시스템이 정한 크기: targetMin 최소 누를 곳, fontBase 본문 글자, rowHeight 목록 행, space 여백 단계. v는 px 숫자, token은 실제 변수 이름 그대로, src는 읽은 파일)와 roles(화면 역할마다 시스템 토큰 이름. 쓸 수 있는 역할: accent, onAccent, text, textSub, bg, surface, border, inputBorder, focus, danger, success, warning, font, radiusControl, radiusCard, shadowFloat)를 읽어 DESIGN.md 값마다 출처를 단다. 시스템 값이 규격보다 작으면 규격을 따른다. 시스템에서 읽은 것만 적고, 못 읽은 칸은 비워 둔다. 아래 값은 모두 지어낸 예시다",
   "system": "예: tokens/ 폴더의 토큰 파일, components/ui/, Figma 라이브러리 주소",
+  "values": {
+    "targetMin": { "v": 48, "token": "size/touch-min", "src": "tokens/size.json" },
+    "fontBase": { "v": 16, "token": "font-size/16", "src": "tokens/typography.json" }
+  },
+  "roles": {
+    "accent": "color/brand-500",
+    "onAccent": "color/white",
+    "text": "color/gray-900",
+    "textSub": "color/gray-600",
+    "border": "color/gray-200",
+    "danger": "color/red-600",
+    "font": "font-family/sans",
+    "radiusControl": "radius/8"
+  },
   "decided": {
     "font": "예: Pretendard 한 가지. 숫자는 tabular-nums. 근거: tokens/typography.json",
     "radius": "예: 8·12·16 세 단계와 알약(999px). 근거: tokens/radius.json",

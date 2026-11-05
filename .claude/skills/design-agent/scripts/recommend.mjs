@@ -4,9 +4,11 @@
 //   node recommend.mjs --sel platform=mobile,skill=first,device=personal,content=photo [--action once|none] [--patterns loading,empty]
 //   node recommend.mjs --sel ... --design-md [--picks loading=skeleton,delete=undo]   # DESIGN.md 초안을 찍는다
 //   node recommend.mjs --sel ... --design-md --system seed   # 바탕으로 쓸 디자인 시스템을 DESIGN.md에 적는다
+//   node recommend.mjs --sel ... --design-md --rules design-rules.json   # 서비스 규칙(시스템 값·역할과 토큰·정한 것) 위에서 쓴다
 //   node recommend.mjs --list    # 조건 축, 패턴 id, 디자인 시스템 id 목록
+// --system이나 --rules가 있으면 layout 값마다 출처(시스템 / 규격 / 스킬 권장)를 달고, 「역할과 토큰」「시스템에 맡긴 것」을 더한다
 import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { paramsFor, PARAM } from './params.mjs';
 
@@ -80,6 +82,26 @@ const list = wanted ? wanted.map(id => PATTERNS.find(p => p.id === id) || (conso
 const picks = kv(arg('--picks'));
 const system = arg('--system');
 if (system && !SYS[system]) { console.error(`없는 디자인 시스템 id: ${system}. --list로 확인`); process.exit(1); }
+// 서비스 규칙 파일(그 서비스 저장소의 design-rules.json). 형식은 references/design-rules.example.json
+const rulesPath = arg('--rules');
+let RULES = null;
+if (rulesPath) {
+  try { RULES = JSON.parse(readFileSync(resolve(rulesPath), 'utf8')); }
+  catch (e) { console.error(`--rules 파일을 못 읽었다: ${rulesPath} (${e.message}). 값을 짐작해 채우지 않는다`); process.exit(1); }
+}
+const onSystem = !!(system || RULES);
+// 역할과 토큰: 화면이 쓰는 역할마다 시스템의 토큰 이름을 하나씩 잇는다
+const ROLES = {
+  accent: '주 버튼·강조', onAccent: '강조 위 글자', text: '본문 글자', textSub: '보조 글자',
+  bg: '바탕', surface: '카드·띄운 층 바탕', border: '구분선', inputBorder: '입력칸 테두리', focus: '포커스 표시',
+  danger: '위험·오류', success: '성공', warning: '경고',
+  font: '서체', radiusControl: '버튼·입력칸 모서리', radiusCard: '카드 모서리', shadowFloat: '띄운 층 그림자',
+};
+const TOPICS = { accent: '강조색 쓰는 범위', palette: '색 팔레트', font: '서체', typescale: '글자 크기 단계', weight: '굵기', spacing: '여백 단계', radius: '모서리', shadow: '그림자', decor: '장식', copy: '글투', pattern: '패턴 방식' };
+if (RULES) {
+  for (const k of Object.keys(RULES.roles || {})) if (!ROLES[k]) console.error(`roles에 모르는 역할: ${k}. 쓸 수 있는 것: ${Object.keys(ROLES).join(', ')}`);
+  for (const k of Object.keys(RULES.values || {})) if (!PARAM[k]) console.error(`values에 모르는 값: ${k}. 쓸 수 있는 것: ${Object.keys(PARAM).join(', ')}`);
+}
 
 if (!args.includes('--design-md')) {
   console.log(`조건: ${VISIBLE.map(a => label(a.key, sel[a.key])).join(' · ')} · 작업의 무게 ${actionLabel}\n`);
@@ -106,6 +128,39 @@ if (!args.includes('--design-md')) {
 // ---------- DESIGN.md 초안 (카탈로그 「AI용 디자인 규칙 만들기」와 같은 틀) ----------
 const { params, paramSrc, picked } = paramsFor(sel); // 근거 문서(있으면)는 DESIGN.md에 주석으로 붙인다
 const srcNote = p => (paramSrc[p] ? `   # ${paramSrc[p]}` : '');
+// 시스템 위에서 쓸 때 값마다 출처를 단다. 판단 순서: 규격 > 시스템(서비스가 정한 값) > 스킬 권장
+// 규격은 조건의 「제약」 값이다. 시스템 값이 규격보다 작으면 규격을 따르고 그렇다고 적는다
+const floorOf = (p, finalTarget) => {
+  const cons = Object.values(picked).map(o => o.params?.[p]).filter(e => e && e.s === '제약');
+  let top = cons.length ? cons.reduce((x, y) => (y.v > x.v ? y : x)) : null;
+  if (p === 'rowHeight' && finalTarget && (!top || finalTarget > top.v)) top = { v: finalTarget, src: '최소 누를 곳 크기보다 작게 두지 않는다' };
+  return top;
+};
+const layoutLine = (key, p, chosen) => {
+  if (!onSystem) return `  ${key}: ${params[p]}px${srcNote(p)}`;
+  const sv = RULES?.values?.[p];
+  if (sv && typeof sv.v === 'number') {
+    const floor = floorOf(p, p === 'rowHeight' ? chosen.targetMin : null);
+    const from = [sv.token, sv.src].filter(Boolean).join(' · ');
+    if (floor && sv.v < floor.v) return { v: floor.v, line: `  ${key}: ${floor.v}px   # 규격: ${floor.src}. 시스템 값 ${sv.v}px(${from})는 이보다 작아 규격을 따른다` };
+    return { v: sv.v, line: `  ${key}: ${sv.v}px   # 시스템: ${from || '서비스 규칙 파일'}` };
+  }
+  const why = RULES ? '시스템에 없음' : '시스템 값 모름';
+  return { v: params[p], line: `  ${key}: ${params[p]}px   # 스킬 권장(${why})${paramSrc[p] ? ` · ${paramSrc[p]}` : ''}` };
+};
+const layoutLines = (() => {
+  if (!onSystem) return [['target-min', 'targetMin'], ['font-base', 'fontBase'], ['row-height', 'rowHeight'], ['spacing', 'space']].map(([k, p]) => layoutLine(k, p));
+  const chosen = {};
+  return [['target-min', 'targetMin'], ['font-base', 'fontBase'], ['row-height', 'rowHeight'], ['spacing', 'space']].map(([k, p]) => {
+    const r = layoutLine(k, p, chosen); chosen[p] = r.v; return r.line;
+  });
+})();
+const decided = RULES?.decided || {};
+const decidedPattern = id => (picks[id] ? null : decided[`pattern.${id}`]);
+const roleLines = onSystem ? Object.entries(ROLES).map(([k, name]) => `- ${name}: ${RULES?.roles?.[k] || '(채울 곳: 시스템의 토큰 이름)'}`) : [];
+const hasRoles = RULES?.roles && Object.keys(RULES.roles).length > 0;
+const brandLine = !onSystem ? 'brand: {}   # 색·서체·로고는 브랜드에서 채운다'
+  : hasRoles ? 'brand: tokens   # 시스템 토큰을 쓴다. 아래 「역할과 토큰」' : 'brand: {}   # 시스템 토큰 이름을 아래 「역할과 토큰」에 채운다';
 const rules = { 제약: [], 관례: [], 예시: [] };
 const seen = new Set();
 VISIBLE.forEach(a => (picked[a.key].rules || []).forEach(r => { if (!seen.has(r.t)) { seen.add(r.t); rules[r.s].push(r); } }));
@@ -114,6 +169,7 @@ const comp = list.map(p => {
   const { ranked, neutral } = score(p);
   const chosen = picks[p.id] ? ranked.find(s => s.o.id === picks[p.id]) : ranked[0];
   if (!chosen) { console.error(`${p.id}에 없는 방식: ${picks[p.id]}`); process.exit(1); }
+  if (decidedPattern(p.id)) return `- ${p.name}: 서비스가 정함 — ${decidedPattern(p.id)} (조건으로 본 추천은 ${ranked[0].o.name})`;
   const why = picks[p.id] && chosen !== ranked[0] ? `사용자가 골랐다(추천은 ${ranked[0].o.name})`
     : neutral ? '조건과 직접 걸리는 근거 없음, 가장 흔한 방식' : chosen.hits.map(reason).join(' / ');
   return `- ${p.name}${p.action && action !== 'none' ? ` (${actionLabel} 기준)` : ''}: ${chosen.o.name} — ${why}`;
@@ -123,12 +179,9 @@ console.log([
   'context:',
   ...VISIBLE.map(a => `  ${a.key}: ${sel[a.key]}   # ${picked[a.key].label}`),
   `  action: ${action}   # ${actionLabel}`,
-  'layout:',
-  `  target-min: ${params.targetMin}px${srcNote('targetMin')}`,
-  `  font-base: ${params.fontBase}px${srcNote('fontBase')}`,
-  `  row-height: ${params.rowHeight}px${srcNote('rowHeight')}`,
-  `  spacing: ${params.space}px${srcNote('space')}`,
-  'brand: {}   # 색·서체·로고는 브랜드에서 채운다',
+  onSystem ? 'layout:   # 값마다 출처: 규격 > 시스템 > 스킬 권장. 「스킬 권장」은 시스템에 같은 값이 있으면 그 값으로 바꾼다' : 'layout:',
+  ...layoutLines,
+  brandLine,
   '---',
   '',
   `# ${VISIBLE.map(a => picked[a.key].label).join(' · ')}`,
@@ -141,6 +194,17 @@ console.log([
   '## 꼭 지킬 것 — 규격·접근성 기준이 있다', ...rules['제약'].map(line), '',
   '## 보통 이렇게 — 흔히 이렇게 한다. 이유가 있으면 바꿔도 된다', ...rules['관례'].map(line), '',
   '## 참고', ...rules['예시'].map(line), '',
+  ...(onSystem ? [
+    '## 시스템에 맡긴 것 — 여기 다시 적지 않는다',
+    `- 컴포넌트 모양과 상태, 색·글자·모서리·그림자 값은 시스템${system ? `(${sysName(system)})` : ''} 것을 쓴다. 이 파일에 값을 옮겨 적지 않는다. 두 곳에 적으면 한쪽만 낡는다`,
+    '- 시스템에 있는 컴포넌트를 새로 그리지 않는다. 없는 것만 시스템 토큰으로 만들고, 새로 만들었다고 알린다',
+    ...(RULES?.system ? [`- 시스템 위치: ${RULES.system}`] : []),
+    ...Object.entries(decided).filter(([k]) => !k.startsWith('pattern.')).map(([k, v]) => `- 서비스가 정한 ${TOPICS[k] || k}: ${v}`),
+    '',
+    '## 역할과 토큰 — 화면은 이 토큰 이름만 쓴다',
+    '<!-- 표에 없는 색·값을 새로 만들지 않는다. 필요하면 여기 먼저 더하고 알린다. 시스템을 못 읽었으면 비슷한 값으로 채우지 않고 비워 둔다 -->',
+    ...roleLines, '',
+  ] : []),
   '## 패턴별 방식', ...comp, '',
   '## 디자인 시스템 기준',
   ...list.flatMap(p => {
@@ -151,7 +215,7 @@ console.log([
   }),
   '',
   ...(system ? ['## 바탕 디자인 시스템', `- ${sysName(system)}: ${SYS[system].url}`, `- ${SYS[system].focus}`, ...(SYS[system].ai.length ? [`- AI 연결: ${SYS[system].ai.join(', ')}`] : []), `- 이용 조건: ${SYS[system].license}`, '- 위 패턴별 방식을 이 시스템의 컴포넌트로 만든다. 이름이 다르면 컴포넌트 사전에서 같은 것을 찾는다', ''] : []),
-  '## 쓰지 말 것', ...ANTI.map(t => `- ${t}`), '',
+  '## 쓰지 말 것', ...(RULES ? ['<!-- 서비스가 정한 것과 겹치는 줄은 서비스 쪽을 따른다 -->'] : []), ...ANTI.map(t => `- ${t}`), '',
   '## 원칙',
   '<!-- 데이터에서 나오지 않는 판단. 대화에서 정한 것을 사람이 채운다 -->',
 ].join('\n'));

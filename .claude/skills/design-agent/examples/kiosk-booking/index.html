@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>새솔 도서관 · 스터디룸 예약</title>
+<!--
+  잘 만든 예시: 도서관 로비의 공용 키오스크로 스터디룸 예약(태블릿 가로 1280×800)
+  조건: platform=tablet, skill=first, device=shared, content=text, 예약은 두 번 되면 안 되는 작업(once)
+  가상의 도서관이다. 회원증 번호는 예시 숫자다.
+  흐름: 방 → 시간 → 회원 확인 → 확인 → 완료(20초 뒤 첫 화면). 한동안 손대지 않으면 처음으로 돌아간다.
+  화면 아래 「예시 넘겨 보기」 줄은 이 예시를 보는 사람용이고 실제 키오스크에는 없다.
+-->
+<style>
+  :root {
+    --bg: #eef1ef;
+    --surface: #ffffff;
+    --text: #14201a;
+    --text-2: #3d4a43;
+    --text-3: #56635c;
+    --line: #cfd6d2;
+    --line-field: #7a8580;    /* 입력칸 테두리: 흰 바탕과 3:1 넘게 */
+    --accent: #1f6a4a;
+    --accent-tint: #e2efe8;
+    --warn-tint: #f6eed8;
+    --warn-text: #6b5310;
+    --danger: #b3261e;
+    --danger-tint: #fdeeed;
+
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-pill: 999px;
+    --shadow: 0 2px 8px rgba(20, 32, 26, .08);
+
+    --font: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 18px;
+    line-height: 1.6;
+    word-break: keep-all;
+    -webkit-user-select: none; user-select: none;
+  }
+  h1, h2, h3, p, ul, ol, dl, dd { margin: 0; padding: 0; }
+  ul, ol { list-style: none; }
+  button, input { font: inherit; color: inherit; margin: 0; }
+  button { background: none; border: 0; padding: 0; cursor: pointer; touch-action: manipulation; }
+  svg { display: block; flex: none; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  [tabindex="-1"]:focus { outline: none; }  /* 화면이 바뀔 때 제목으로 옮긴 포커스는 테두리를 그리지 않는다 */
+  [hidden] { display: none !important; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+  .kiosk {
+    position: relative;
+    width: 100%; max-width: 1280px; height: 800px; margin: 0 auto;
+    display: grid; grid-template-rows: 88px 1fr;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* ---- 머리: 이름 · 단계 · 처음으로 ---- */
+  .head {
+    display: flex; align-items: center; gap: 32px;
+    padding: 0 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .place { white-space: nowrap; }
+  .place b { display: block; font-size: 18px; line-height: 1.3; }
+  .place span { display: block; font-size: 16px; line-height: 1.3; color: var(--text-3); }
+
+  .steps { flex: 1; display: flex; justify-content: center; gap: 8px; }
+  .steps li {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px 0 4px; height: 48px;
+    border-radius: var(--r-pill);
+    color: var(--text-3); font-size: 18px; white-space: nowrap;
+  }
+  .steps li + li::before { content: ""; width: 24px; height: 2px; margin-right: 8px; background: var(--line); }
+  .steps .n {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--line-field); background: var(--surface);
+    font-size: 16px; font-weight: 500;
+  }
+  .steps li.done { color: var(--text-2); }
+  .steps li.done .n { border-color: var(--accent-tint); background: var(--accent-tint); color: var(--accent); }
+  .steps li[aria-current="step"] { color: var(--text); font-weight: 700; }
+  .steps li[aria-current="step"] .n { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+  .home {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 56px; padding: 0 24px;
+    border: 2px solid var(--line-field); border-radius: var(--r-md);
+    background: var(--surface);
+    font-size: 18px; font-weight: 500; white-space: nowrap;
+  }
+
+  /* ---- 몸: 왼쪽 질문 + 오른쪽 예약 내용 ---- */
+  .body { display: grid; grid-template-columns: 1fr 384px; min-height: 0; }
+  .stage { display: flex; flex-direction: column; padding: 40px 48px 32px; min-height: 0; }
+  .stage h1 { font-size: 36px; line-height: 1.3; font-weight: 700; }
+  .lead { margin-top: 8px; max-width: 36em; color: var(--text-2); }
+  .stage > section { flex: 1; min-height: 0; }
+  .content { margin-top: 32px; }
+  .foot { display: flex; align-items: center; gap: 16px; padding-top: 24px; }
+
+  .back {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 64px; padding: 0 24px 0 16px;
+    border: 2px solid var(--line-field); border-radius: var(--r-md);
+    background: var(--surface);
+    font-size: 18px; font-weight: 500;
+  }
+  .foot .help { color: var(--text-3); font-size: 16px; }
+
+  /* 그 자리에 남는 오류 문구 */
+  .field-error {
+    display: flex; align-items: flex-start; gap: 8px;
+    margin-top: 16px; padding: 12px 16px;
+    border-radius: var(--r-md);
+    background: var(--danger-tint); color: var(--danger);
+    font-weight: 700;
+  }
+  .field-error svg { margin-top: 2px; }
+
+  /* ---- 큰 버튼으로 하나 고르기 ---- */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tile {
+    position: relative;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+    min-height: 136px; padding: 20px 24px;
+    border: 2px solid var(--line); border-radius: var(--r-lg);
+    background: var(--surface);
+    text-align: left;
+  }
+  .tile b { font-size: 22px; line-height: 1.3; }
+  .tile .desc { color: var(--text-2); }
+  .tile[aria-checked="true"] { border-color: var(--accent); background: var(--accent-tint); }
+  .tile .mark {
+    position: absolute; top: 20px; right: 20px;
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--line-field); background: var(--surface); color: transparent;
+  }
+  .tile[aria-checked="true"] .mark { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .tile[aria-disabled="true"] { background: var(--bg); cursor: not-allowed; }
+  .tile[aria-disabled="true"] .mark { display: none; }
+
+  .chip {
+    display: inline-flex; align-items: center;
+    height: 32px; padding: 0 12px;
+    border-radius: var(--r-pill);
+    font-size: 16px; font-weight: 500;
+  }
+  .chip.free { background: var(--accent-tint); color: var(--accent); }
+  .tile[aria-checked="true"] .chip.free { background: var(--surface); }
+  .chip.soon { background: var(--warn-tint); color: var(--warn-text); }
+  .chip.closed { background: var(--surface); color: var(--text-2); border: 1px solid var(--line); }
+
+  .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .slot {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 72px;
+    border: 2px solid var(--line); border-radius: var(--r-md);
+    background: var(--surface);
+    font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  .slot small { font-size: 16px; font-weight: 400; color: var(--text-3); line-height: 1.3; }
+  .slot[aria-checked="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .slot[aria-checked="true"] small { color: #fff; }
+  .slot[aria-disabled="true"] { background: var(--bg); color: var(--text-3); cursor: not-allowed; }
+
+  .duration { display: flex; align-items: center; gap: 24px; margin-top: 24px; }
+  .duration .label b { display: block; font-size: 22px; line-height: 1.3; }
+  .duration .label span { color: var(--text-3); font-size: 16px; }
+  .stepper { display: flex; align-items: center; margin-left: auto; border: 2px solid var(--line-field); border-radius: var(--r-md); background: var(--surface); }
+  .stepper button { width: 72px; height: 64px; display: flex; align-items: center; justify-content: center; }
+  .stepper button:disabled { color: var(--line); cursor: not-allowed; }
+  .stepper output { min-width: 112px; text-align: center; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ---- 회원증 번호: 화면 숫자판 ---- */
+  .member { display: grid; grid-template-columns: 1fr 344px; gap: 40px; align-items: start; }
+  .member label { display: block; font-weight: 700; }
+  .member .code {
+    width: 100%; height: 72px; margin-top: 8px; padding: 0 20px;
+    border: 2px solid var(--line-field); border-radius: var(--r-md);
+    background: var(--surface);
+    font-size: 28px; font-weight: 700; letter-spacing: .12em; font-variant-numeric: tabular-nums;
+  }
+  .member .code[aria-invalid="true"] { border-color: var(--danger); }
+  .member .count { margin-top: 8px; color: var(--text-3); font-size: 16px; }
+  .member .where { margin-top: 24px; color: var(--text-2); }
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .keypad button {
+    height: 72px;
+    border: 2px solid var(--line); border-radius: var(--r-md);
+    background: var(--surface);
+    font-size: 28px; font-weight: 500; font-variant-numeric: tabular-nums;
+  }
+  .keypad button.word { font-size: 18px; color: var(--text-2); }
+
+  /* ---- 확인 ---- */
+  .review { max-width: 640px; border-top: 1px solid var(--line); }
+  .review div { display: flex; align-items: center; gap: 24px; min-height: 72px; border-bottom: 1px solid var(--line); }
+  .review dt { width: 128px; color: var(--text-3); }
+  .review dd { flex: 1; font-size: 22px; font-weight: 700; }
+  .review button { height: 48px; padding: 0 16px; border-radius: var(--r-md); color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+  .notice { margin-top: 24px; max-width: 36em; color: var(--text-2); }
+
+  /* ---- 오른쪽 예약 내용 ---- */
+  .panel {
+    display: flex; flex-direction: column;
+    padding: 40px 32px 32px;
+    background: var(--surface);
+    border-left: 1px solid var(--line);
+  }
+  .panel h2 { font-size: 22px; line-height: 1.3; font-weight: 700; }
+  .sum { margin-top: 24px; }
+  .sum div { padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .sum dt { font-size: 16px; color: var(--text-3); }
+  .sum dd { font-weight: 700; }
+  .sum dd.empty { font-weight: 400; color: var(--text-2); }
+  .rules { margin-top: 24px; }
+  .rules li { padding: 16px 0; border-bottom: 1px solid var(--line); color: var(--text-2); }
+  .panel .spacer { flex: 1; }
+  .cta {
+    width: 100%; height: 72px;
+    border-radius: var(--r-md);
+    background: var(--accent); color: #fff;
+    font-size: 22px; font-weight: 700;
+  }
+  .cta[aria-busy="true"] { cursor: progress; }
+  .cta:disabled { opacity: .7; }
+  .panel .after { margin-top: 12px; color: var(--text-2); font-size: 16px; }
+
+  /* ---- 완료 · 실패: 화면 하나를 통째로 ---- */
+  .full { display: flex; align-items: center; justify-content: center; padding: 40px; }
+  .result {
+    width: 720px; padding: 48px;
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .result .icon { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent-tint); color: var(--accent); }
+  .result.fail .icon { background: var(--danger-tint); color: var(--danger); }
+  .result h1 { margin-top: 24px; font-size: 36px; line-height: 1.3; font-weight: 700; }
+  .result .what { margin-top: 8px; color: var(--text-2); }
+  .ticket { display: flex; gap: 40px; margin-top: 32px; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .ticket dt { font-size: 16px; color: var(--text-3); }
+  .ticket dd { font-size: 22px; font-weight: 700; }
+  .ticket .no dd { font-size: 28px; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+  .result .next { margin-top: 24px; color: var(--text-2); }
+  .result .row { display: flex; align-items: center; gap: 24px; margin-top: 32px; }
+  .result .row .cta { width: auto; padding: 0 40px; }
+  .result .row .left { color: var(--text-3); font-size: 16px; }
+
+  /* ---- 예시 넘겨 보기(실제 화면에는 없음) ---- */
+  .demo {
+    max-width: 1280px; margin: 0 auto;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 24px 32px 40px;
+    border-top: 1px dashed var(--line-field);
+    color: var(--text-3); font-size: 16px;
+  }
+  .demo span { margin-right: 8px; }
+  .demo button { height: 48px; padding: 0 16px; border: 1px solid var(--line-field); border-radius: var(--r-md); background: var(--surface); color: var(--text-2); font-size: 16px; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- 아이콘: 모두 선 아이콘, 굵기 2, 24px 격자 -->
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-6.5 8 6.5V20h-5v-5h-6v5H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v5.5M12 16.2v.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M6 12h12M12 6v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<div class="kiosk" id="kiosk">
+  <header class="head">
+    <div class="place"><b>새솔 도서관</b><span>2층 스터디룸 예약</span></div>
+    <ol class="steps" id="steps" aria-label="예약 단계">
+      <li data-step="1"><span class="n">1</span><span>방 고르기</span></li>
+      <li data-step="2"><span class="n">2</span><span>시간 고르기</span></li>
+      <li data-step="3"><span class="n">3</span><span>회원 확인</span></li>
+      <li data-step="4"><span class="n">4</span><span>확인</span></li>
+    </ol>
+    <button class="home" type="button" id="home"><svg width="24" height="24" aria-hidden="true"><use href="#i-home"/></svg>처음으로</button>
+  </header>
+
+  <!-- 1~4단계 -->
+  <div class="body" id="flow">
+    <main class="stage">
+
+      <section data-step="1" aria-labelledby="t1">
+        <h1 id="t1">어느 방을 쓸까요?</h1>
+        <p class="lead">오늘(11월 4일 수요일) 이용만 예약할 수 있어요. 한 사람이 하루에 한 번 예약해요.</p>
+        <div class="content">
+          <div class="tiles" role="radiogroup" aria-labelledby="t1" data-pick="room">
+            <button class="tile" type="button" role="radio" aria-checked="false" data-value="스터디룸 A"><b>스터디룸 A</b><span class="desc">4명까지 · 화이트보드</span><span class="chip free">지금 비어 있음</span><span class="mark" aria-hidden="true"><svg width="20" height="20"><use href="#i-check"/></svg></span></button>
+            <button class="tile" type="button" role="radio" aria-checked="false" data-value="스터디룸 B"><b>스터디룸 B</b><span class="desc">6명까지 · 큰 모니터</span><span class="chip soon">오후 3시부터 비어요</span><span class="mark" aria-hidden="true"><svg width="20" height="20"><use href="#i-check"/></svg></span></button>
+            <button class="tile" type="button" role="radio" aria-checked="false" data-value="스터디룸 C"><b>스터디룸 C</b><span class="desc">2명까지 · 창가 자리</span><span class="chip free">지금 비어 있음</span><span class="mark" aria-hidden="true"><svg width="20" height="20"><use href="#i-check"/></svg></span></button>
+            <button class="tile" type="button" role="radio" aria-checked="false" aria-disabled="true" data-value="스터디룸 D"><b>스터디룸 D</b><span class="desc">4명까지 · 화이트보드</span><span class="chip closed">오늘 예약 마감</span><span class="mark" aria-hidden="true"><svg width="20" height="20"><use href="#i-check"/></svg></span></button>
+          </div>
+          <p class="field-error" id="e1" role="alert" hidden><svg width="24" height="24" aria-hidden="true"><use href="#i-alert"/></svg>방을 하나 골라 주세요. 「예약 마감」인 방은 고를 수 없어요.</p>
+        </div>
+      </section>
+
+      <section data-step="2" aria-labelledby="t2" hidden>
+        <h1 id="t2">몇 시부터 쓸까요?</h1>
+        <p class="lead" id="room-line">스터디룸 A · 오늘 11월 4일. 이미 예약된 시간은 「마감」으로 보여요.</p>
+        <div class="content">
+          <div class="slots" role="radiogroup" aria-labelledby="t2" data-pick="time">
+            <button class="slot" type="button" role="radio" aria-checked="false" aria-disabled="true" data-value="09:00">09:00<small>마감</small></button>
+            <button class="slot" type="button" role="radio" aria-checked="false" aria-disabled="true" data-value="10:00">10:00<small>마감</small></button>
+            <button class="slot" type="button" role="radio" aria-checked="false" data-value="11:00">11:00<small>비어 있음</small></button>
+            <button class="slot" type="button" role="radio" aria-checked="false" data-value="12:00">12:00<small>비어 있음</small></button>
+            <button class="slot" type="button" role="radio" aria-checked="false" aria-disabled="true" data-value="13:00">13:00<small>마감</small></button>
+            <button class="slot" type="button" role="radio" aria-checked="false" data-value="14:00">14:00<small>비어 있음</small></button>
+            <button class="slot" type="button" role="radio" aria-checked="false" data-value="15:00">15:00<small>비어 있음</small></button>
+            <button class="slot" type="button" role="radio" aria-checked="false" data-value="16:00">16:00<small>비어 있음</small></button>
+          </div>
+          <div class="duration">
+            <div class="label"><b>이용 시간</b><span>1시간부터 3시간까지</span></div>
+            <div class="stepper" role="group" aria-label="이용 시간">
+              <button type="button" id="less" aria-label="1시간 줄이기"><svg width="28" height="28" aria-hidden="true"><use href="#i-minus"/></svg></button>
+              <output id="hours" aria-live="polite">2시간</output>
+              <button type="button" id="more" aria-label="1시간 늘리기"><svg width="28" height="28" aria-hidden="true"><use href="#i-plus"/></svg></button>
+            </div>
+          </div>
+          <p class="field-error" id="e2" role="alert" hidden><svg width="24" height="24" aria-hidden="true"><use href="#i-alert"/></svg>시작 시각을 하나 골라 주세요.</p>
+        </div>
+      </section>
+
+      <section data-step="3" aria-labelledby="t3" hidden>
+        <h1 id="t3">회원증 번호를 눌러 주세요</h1>
+        <p class="lead">예약한 사람을 확인하는 데만 써요. 예약이 끝나면 이 화면에서 지워져요.</p>
+        <div class="content member">
+          <div>
+            <label for="code">회원증 번호 8자리</label>
+            <input class="code" id="code" type="text" inputmode="none" readonly aria-describedby="code-count e3" autocomplete="off">
+            <p class="count" id="code-count">0 / 8자리</p>
+            <p class="field-error" id="e3" role="alert" hidden><svg width="24" height="24" aria-hidden="true"><use href="#i-alert"/></svg><span id="e3-text">회원증 번호는 8자리예요.</span></p>
+            <p class="where">번호는 회원증 뒷면 바코드 아래에 있어요. 회원증이 없으면 1층 안내 데스크에서 바로 만들 수 있어요.</p>
+          </div>
+          <div class="keypad" role="group" aria-label="숫자판">
+            <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
+            <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button>
+            <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button>
+            <button type="button" class="word" data-key="clear">모두 지우기</button><button type="button" data-key="0">0</button><button type="button" class="word" data-key="back">한 자 지우기</button>
+          </div>
+        </div>
+      </section>
+
+      <section data-step="4" aria-labelledby="t4" hidden>
+        <h1 id="t4">이대로 예약할까요?</h1>
+        <p class="lead">고칠 것이 있으면 그 줄의 「바꾸기」를 눌러 주세요.</p>
+        <div class="content">
+          <dl class="review">
+            <div><dt>방</dt><dd id="r-room">스터디룸 A</dd><button type="button" data-go="1">바꾸기</button></div>
+            <div><dt>시간</dt><dd id="r-time">오늘 14:00 ~ 16:00</dd><button type="button" data-go="2">바꾸기</button></div>
+            <div><dt>회원증</dt><dd id="r-member">2025 ****</dd><button type="button" data-go="3">바꾸기</button></div>
+          </dl>
+        </div>
+      </section>
+
+      <div class="foot">
+        <button class="back" type="button" id="prev"><svg width="24" height="24" aria-hidden="true"><use href="#i-back"/></svg>이전</button>
+        <p class="help">1분 동안 아무것도 누르지 않으면 처음 화면으로 돌아가요.</p>
+      </div>
+    </main>
+
+    <aside class="panel" aria-labelledby="sum-title">
+      <h2 id="sum-title">예약 내용</h2>
+      <dl class="sum" id="sum">
+        <div><dt>방</dt><dd id="s-room" class="empty">아직 고르지 않았어요</dd></div>
+        <div><dt>시간</dt><dd id="s-time" class="empty">아직 고르지 않았어요</dd></div>
+        <div><dt>회원증</dt><dd id="s-member" class="empty">아직 누르지 않았어요</dd></div>
+      </dl>
+      <ul class="rules" id="rules" hidden>
+        <li>시작 시각에서 10분이 지나도 방 앞 화면에서 입실 확인을 하지 않으면 예약이 풀려요.</li>
+        <li>한 사람이 하루에 한 번 예약할 수 있어요.</li>
+        <li>뚜껑 있는 음료만 가지고 들어갈 수 있어요.</li>
+      </ul>
+      <span class="spacer"></span>
+      <button class="cta" type="button" id="next">다음</button>
+      <p class="after" id="after">방을 고르면 시간을 고를 수 있어요.</p>
+    </aside>
+  </div>
+
+  <!-- 완료 -->
+  <main class="full" id="done" hidden>
+    <section class="result" aria-labelledby="done-title">
+      <span class="icon" aria-hidden="true"><svg width="36" height="36"><use href="#i-check"/></svg></span>
+      <h1 id="done-title" tabindex="-1">예약했어요</h1>
+      <p class="what">입실할 때 방 앞 화면에 예약 번호를 눌러 주세요. 회원증 번호는 이 기기에서 지웠어요.</p>
+      <dl class="ticket">
+        <div><dt>방</dt><dd id="d-room">스터디룸 A</dd></div>
+        <div><dt>시간</dt><dd id="d-time">오늘 14:00 ~ 16:00</dd></div>
+        <div class="no"><dt>예약 번호</dt><dd id="d-no">4821</dd></div>
+      </dl>
+      <p class="next">예약 번호를 잊었으면 1층 안내 데스크에서 회원증으로 찾을 수 있어요.</p>
+      <div class="row">
+        <button class="cta" type="button" id="again">처음으로</button>
+        <p class="left" aria-live="off"><span id="left">20</span>초 뒤 다음 사람을 위해 처음 화면으로 돌아가요</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 실패: 그 사이 다른 사람이 같은 시간을 예약했을 때 -->
+  <main class="full" id="fail" hidden>
+    <section class="result fail" aria-labelledby="fail-title">
+      <span class="icon" aria-hidden="true"><svg width="36" height="36"><use href="#i-alert"/></svg></span>
+      <h1 id="fail-title" tabindex="-1">예약하지 못했어요</h1>
+      <p class="what">고르는 사이에 다른 분이 스터디룸 A 14:00를 먼저 예약했어요. 고른 방과 회원증 번호는 그대로 두었어요.</p>
+      <div class="row">
+        <button class="cta" type="button" id="pick-again">다른 시간 고르기</button>
+        <button class="back" type="button" id="fail-home"><svg width="24" height="24" aria-hidden="true"><use href="#i-home"/></svg>처음으로</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="demo" aria-label="예시 넘겨 보기">
+  <span>예시 넘겨 보기(실제 키오스크에는 없음)</span>
+  <button type="button" data-demo="step1">1 방</button>
+  <button type="button" data-demo="step2">2 시간</button>
+  <button type="button" data-demo="step3-error">3 회원 확인 · 오류</button>
+  <button type="button" data-demo="step4">4 확인</button>
+  <button type="button" data-demo="done">완료</button>
+  <button type="button" data-demo="fail">실패</button>
+</nav>
+
+<script>
+  const $ = s => document.querySelector(s);
+  const IDLE_MS = 60000, DONE_SECONDS = 20;
+  const blank = () => ({ step: 1, room: null, time: null, hours: 2, code: '' });
+  let st = blank(), submitting = false, idleTimer, doneTimer;
+
+  const endOf = (t, h) => `${String(Number(t.slice(0, 2)) + h).padStart(2, '0')}:00`;
+  const timeText = () => st.time ? `오늘 ${st.time} ~ ${endOf(st.time, st.hours)}` : null;
+  const masked = () => st.code.length === 8 ? `${st.code.slice(0, 4)} ****` : null;
+  const AFTER = { 1: '방을 고르면 시간을 고를 수 있어요.', 2: '시간을 고르면 회원증 번호를 눌러요.', 3: '번호를 다 누르면 예약 내용을 한 번 더 보여 드려요.', 4: '누르면 바로 예약돼요. 한 번만 눌러 주세요.' };
+
+  function show(view) {
+    $('#flow').hidden = view !== 'flow';
+    $('#steps').hidden = view !== 'flow';
+    $('#home').hidden = view !== 'flow';
+    $('#done').hidden = view !== 'done';
+    $('#fail').hidden = view !== 'fail';
+  }
+
+  function render() {
+    show('flow');
+    document.querySelectorAll('section[data-step]').forEach(s => { s.hidden = Number(s.dataset.step) !== st.step; });
+    document.querySelectorAll('#steps li').forEach(li => {
+      const n = Number(li.dataset.step);
+      li.classList.toggle('done', n < st.step);
+      if (n === st.step) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+      li.querySelector('.n').innerHTML = n < st.step ? '<svg width="18" height="18" aria-hidden="true"><use href="#i-check"/></svg><span class="sr">완료</span>' : String(n);
+    });
+    document.querySelectorAll('[data-pick] [role="radio"]').forEach(b => {
+      const key = b.closest('[data-pick]').dataset.pick;
+      b.setAttribute('aria-checked', String(st[key] === b.dataset.value));
+    });
+    $('#room-line').textContent = `${st.room || '스터디룸'} · 오늘 11월 4일. 이미 예약된 시간은 「마감」으로 보여요.`;
+    $('#hours').textContent = `${st.hours}시간`;
+    $('#less').disabled = st.hours <= 1;
+    $('#more').disabled = st.hours >= 3;
+    $('#code').value = st.code.replace(/(\d{4})(?=\d)/, '$1 ');
+    $('#code-count').textContent = `${st.code.length} / 8자리`;
+    const sum = (id, v, empty) => { const d = $(id); d.textContent = v || empty; d.classList.toggle('empty', !v); };
+    sum('#s-room', st.room, '아직 고르지 않았어요');
+    sum('#s-time', timeText(), '아직 고르지 않았어요');
+    sum('#s-member', masked(), '아직 누르지 않았어요');
+    $('#r-room').textContent = st.room || '';
+    $('#r-time').textContent = timeText() || '';
+    $('#r-member').textContent = masked() || '';
+    $('#prev').hidden = st.step === 1;
+    $('#sum').hidden = st.step === 4;
+    $('#rules').hidden = st.step !== 4;
+    $('#sum-title').textContent = st.step === 4 ? '예약 전에 알아 두세요' : '예약 내용';
+    $('#next').textContent = st.step === 4 ? '예약하기' : '다음';
+    $('#after').textContent = AFTER[st.step];
+  }
+
+  // 오류는 그 자리에 남는다. 고칠 때까지 지우지 않는다
+  function setError(step, text) {
+    const e = $(`#e${step}`);
+    if (step === 3) { $('#e3-text').textContent = text; $('#code').setAttribute('aria-invalid', 'true'); }
+    e.hidden = false;
+  }
+  function clearError(step) {
+    $(`#e${step}`).hidden = true;
+    if (step === 3) $('#code').removeAttribute('aria-invalid');
+  }
+
+  // 제출할 때 모아서 확인한다
+  function next() {
+    if (st.step === 1 && !st.room) return setError(1);
+    if (st.step === 2 && !st.time) return setError(2);
+    if (st.step === 3 && st.code.length !== 8) return setError(3, `회원증 번호는 8자리예요. 지금 ${st.code.length}자리를 눌렀어요. 회원증 뒷면 바코드 아래 숫자를 확인해 주세요.`);
+    if (st.step === 4) return book();
+    st.step++;
+    render();
+  }
+
+  // 두 번 눌러도 한 번만 예약된다: 누르는 즉시 잠그고 처리 중이라고 글로 알린다
+  function book() {
+    if (submitting) return;
+    submitting = true;
+    const b = $('#next');
+    b.disabled = true;
+    b.setAttribute('aria-busy', 'true');
+    b.textContent = '예약하는 중…';
+    $('#after').textContent = '잠시만 기다려 주세요. 다시 누르지 않아도 돼요.';
+    setTimeout(() => finish(true), 1200);
+  }
+
+  function finish(ok) {
+    const b = $('#next');
+    b.disabled = false;
+    b.removeAttribute('aria-busy');
+    submitting = false;
+    if (!ok) { show('fail'); $('#fail-title').focus(); return; }
+    $('#d-room').textContent = st.room;
+    $('#d-time').textContent = timeText();
+    $('#d-no').textContent = String(1000 + Math.floor(Math.random() * 9000));
+    st.code = '';                       // 개인 정보는 바로 지운다
+    $('#code').value = ''; $('#s-member').textContent = ''; $('#r-member').textContent = '';
+    show('done');
+    $('#done-title').focus();
+    let left = DONE_SECONDS;
+    $('#left').textContent = left;
+    clearInterval(doneTimer);
+    doneTimer = setInterval(() => { left--; $('#left').textContent = left; if (left <= 0) reset(); }, 1000);
+  }
+
+  function reset() {
+    clearInterval(doneTimer);
+    st = blank();
+    [1, 2, 3].forEach(clearError);
+    render();
+  }
+
+  // ---- 누르기 ----
+  document.addEventListener('click', e => {
+    const radio = e.target.closest('[data-pick] [role="radio"]');
+    if (radio) {
+      if (radio.getAttribute('aria-disabled') === 'true') return;
+      const key = radio.closest('[data-pick]').dataset.pick;
+      st[key] = radio.dataset.value;
+      if (key === 'room') { st.time = null; clearError(1); } else clearError(2);
+      return render();
+    }
+    const key = e.target.closest('[data-key]');
+    if (key) {
+      const k = key.dataset.key;
+      if (k === 'clear') st.code = '';
+      else if (k === 'back') st.code = st.code.slice(0, -1);
+      else if (st.code.length < 8) st.code += k;
+      if (st.code.length === 8) clearError(3);
+      return render();
+    }
+    const go = e.target.closest('[data-go]');
+    if (go) { st.step = Number(go.dataset.go); return render(); }
+  });
+  $('#next').addEventListener('click', next);
+  $('#prev').addEventListener('click', () => { if (st.step > 1) { st.step--; render(); } });
+  $('#less').addEventListener('click', () => { st.hours = Math.max(1, st.hours - 1); render(); });
+  $('#more').addEventListener('click', () => { st.hours = Math.min(3, st.hours + 1); render(); });
+  $('#home').addEventListener('click', reset);
+  $('#again').addEventListener('click', reset);
+  $('#fail-home').addEventListener('click', reset);
+  $('#pick-again').addEventListener('click', () => { st.step = 2; st.time = null; render(); });
+
+  // 한동안 손대지 않으면 처음으로(다음 사람이 앞사람 흔적을 보지 않게)
+  const poke = () => { clearTimeout(idleTimer); idleTimer = setTimeout(() => { if ($('#done').hidden) reset(); }, IDLE_MS); };
+  ['pointerdown', 'keydown'].forEach(t => document.addEventListener(t, poke));
+  poke();
+
+  // ---- 예시 넘겨 보기 ----
+  const filled = { step: 1, room: '스터디룸 A', time: '14:00', hours: 2, code: '20251104' };
+  function demo(name) {
+    clearInterval(doneTimer);
+    [1, 2, 3].forEach(clearError);
+    if (name === 'step1') st = { ...blank(), room: '스터디룸 A' };
+    if (name === 'step2') st = { ...filled, step: 2, code: '' };
+    if (name === 'step3-error') { st = { ...filled, step: 3, code: '202511' }; render(); return setError(3, '회원증 번호는 8자리예요. 지금 6자리를 눌렀어요. 회원증 뒷면 바코드 아래 숫자를 확인해 주세요.'); }
+    if (name === 'step4') st = { ...filled, step: 4 };
+    if (name === 'done') { st = { ...filled, step: 4 }; render(); return finish(true); }
+    if (name === 'fail') { st = { ...filled, step: 4 }; render(); return finish(false); }
+    render();
+  }
+  document.querySelectorAll('[data-demo]').forEach(b => b.addEventListener('click', () => demo(b.dataset.demo)));
+
+  render();
+  const start = document.body.dataset.start || location.hash.slice(1);
+  if (start) demo(start);
+</script>
+</body>
+</html>

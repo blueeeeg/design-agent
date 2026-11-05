@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>다락 문구 관리 · 재고</title>
+<!--
+  잘 만든 예시: 사내 관리 화면의 재고 표(데스크톱 1280px)
+  조건: platform=desktop, skill=daily, device=personal, content=numbers
+  가상의 문구 회사·상품이다.
+  가벼운 작업(숨기기, 재고 수 고치기)은 묻지 않고 바로 하고 되돌리기를 준다.
+  되돌릴 수 없는 작업(영구 삭제)만 대화상자로 한 번 묻는다.
+-->
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --head: #f5f6f8;
+    --text: #161b26;
+    --text-2: #454c5a;
+    --text-3: #5f6776;
+    --line: #e2e5eb;
+    --line-field: #858c99;     /* 입력칸·고르기 테두리: 흰 바탕과 3:1 넘게 */
+    --accent: #2453a6;
+    --accent-tint: #eaf0fb;
+    --accent-on-dark: #a9c1f5;
+    --danger: #b42318;
+
+    --r-sm: 4px;
+    --r-md: 8px;
+    --shadow-layer: 0 8px 24px rgba(22, 27, 38, .16), 0 0 0 1px rgba(22, 27, 38, .08);
+
+    --font: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-width: 1200px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: keep-all;
+  }
+  h1, h2, h3, p, ul, ol, fieldset, legend { margin: 0; padding: 0; }
+  ul, ol { list-style: none; }
+  fieldset { border: 0; }
+  button, input, select { font: inherit; color: inherit; margin: 0; }
+  button { background: none; border: 0; padding: 0; cursor: pointer; }
+  svg { display: block; flex: none; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; text-align: right; }
+
+  /* ---- 머리: 위쪽 메뉴 + 늘 펼친 검색창 ---- */
+  .top {
+    display: flex; align-items: center; gap: 24px;
+    height: 56px; padding: 0 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; white-space: nowrap; }
+  .menu { display: flex; align-self: stretch; gap: 4px; }
+  .menu a {
+    display: flex; align-items: center;
+    padding: 0 12px;
+    border-bottom: 2px solid transparent;
+    color: var(--text-2); text-decoration: none;
+  }
+  .menu a[aria-current="page"] { border-bottom-color: var(--accent); color: var(--text); font-weight: 700; }
+  .top-search { position: relative; margin-left: auto; width: 320px; }
+  .top-search svg { position: absolute; left: 8px; top: 8px; color: var(--text-3); pointer-events: none; }
+  .top-search input {
+    width: 100%; height: 36px; padding: 0 40px 0 32px;
+    border: 1px solid var(--line-field); border-radius: var(--r-md);
+    background: var(--surface);
+  }
+  .top-search kbd {
+    position: absolute; right: 8px; top: 8px;
+    padding: 0 4px; border: 1px solid var(--line); border-radius: var(--r-sm);
+    font: inherit; font-size: 12px; line-height: 18px; color: var(--text-3);
+  }
+  .account { height: 36px; padding: 0 12px; border-radius: var(--r-md); color: var(--text-2); white-space: nowrap; }
+
+  /* ---- 몸: 옆 필터 + 표 ---- */
+  .body { display: grid; grid-template-columns: 216px 1fr; min-height: calc(100vh - 56px); }
+
+  .filter-panel {
+    padding: 24px 16px 24px 24px;
+    border-right: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .filter-panel h2 { font-size: 16px; line-height: 1.4; font-weight: 700; }
+  .filter-panel .hint { margin-top: 4px; font-size: 12px; color: var(--text-3); }
+  .group { margin-top: 24px; }
+  .group legend, .group label.title { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: var(--text-2); }
+  .group select {
+    width: 100%; height: 32px; padding: 0 8px;
+    border: 1px solid var(--line-field); border-radius: var(--r-sm);
+    background: var(--surface);
+  }
+  .check { display: flex; align-items: center; gap: 8px; min-height: 28px; }
+  .check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+  .check .n { margin-left: auto; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .reset { margin-top: 24px; height: 32px; padding: 0 12px; border: 1px solid var(--line-field); border-radius: var(--r-sm); background: var(--surface); }
+
+  .main { padding: 24px 24px 32px; min-width: 0; }
+  .page-head { display: flex; align-items: flex-end; gap: 16px; }
+  .page-head h1 { font-size: 28px; line-height: 1.3; font-weight: 700; }
+  .page-head .sub { margin-top: 4px; color: var(--text-3); }
+  .page-head .actions { margin-left: auto; display: flex; gap: 8px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 32px; padding: 0 12px;
+    border: 1px solid var(--line-field); border-radius: var(--r-sm);
+    background: var(--surface); color: var(--text);
+    white-space: nowrap;
+  }
+  .btn.primary { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 700; }
+  .btn.danger { color: var(--danger); }
+  .btn.danger-fill { border-color: var(--danger); background: var(--danger); color: #fff; font-weight: 700; }
+  .btn[aria-busy="true"] { cursor: progress; }
+  .btn:disabled { opacity: .6; }
+
+  /* 상태별 개수: 거르기를 겸한다 */
+  .tabs { display: flex; gap: 8px; margin-top: 16px; border-bottom: 1px solid var(--line); }
+  .tabs button {
+    display: flex; align-items: baseline; gap: 8px;
+    height: 40px; padding: 0 12px;
+    border-bottom: 2px solid transparent;
+    color: var(--text-2);
+  }
+  .tabs button strong { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .tabs button[aria-pressed="true"] { border-bottom-color: var(--accent); color: var(--text); }
+  .tabs button[aria-pressed="true"] strong { color: var(--accent); }
+
+  /* 표를 감싸는 상자 하나. 안쪽은 선으로만 나눈다 */
+  .table-box {
+    margin-top: 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+  .toolbar {
+    display: flex; align-items: center; gap: 8px;
+    height: 48px; padding: 0 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .toolbar .count { color: var(--text-2); }
+  .toolbar .count strong { color: var(--text); }
+  .toolbar .spacer { flex: 1; }
+  .toolbar.bulk { background: var(--accent-tint); }
+  .toolbar.bulk .count strong { color: var(--accent); }
+  .divider { width: 1px; height: 20px; background: var(--line-field); margin: 0 4px; }
+
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  th, td { height: 32px; padding: 0 12px; border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  th { background: var(--head); font-size: 12px; font-weight: 700; color: var(--text-2); text-align: left; }
+  th.num { text-align: right; }
+  td.code { color: var(--text-3); font-variant-numeric: tabular-nums; }
+  tbody tr.is-selected td { background: var(--accent-tint); }
+  th.pick, td.pick { width: 40px; padding-right: 0; }
+  td.pick input, th.pick input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); vertical-align: middle; }
+  .is-low { color: var(--danger); font-weight: 700; }
+
+  .state { display: inline-flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.on { background: #2f8a57; }
+  .dot.low { background: #c98a12; }
+  .dot.out { background: #c2412d; }
+  .dot.off { background: #9aa1ad; }
+
+  /* 그 자리 고치기: 숫자를 누르면 칸이 입력칸으로 바뀐다 */
+  .qty-edit {
+    min-width: 40px; min-height: 24px; padding: 0 4px; margin-right: -4px;
+    text-align: right;
+    border-radius: var(--r-sm);
+    font-variant-numeric: tabular-nums;
+    text-decoration: underline dotted var(--line-field);
+    text-underline-offset: 4px;
+  }
+  td.editing { position: relative; overflow: visible; }
+  td.editing input {
+    width: 72px; height: 24px; padding: 0 4px;
+    border: 2px solid var(--accent); border-radius: var(--r-sm);
+    background: var(--surface);
+    text-align: right; font-variant-numeric: tabular-nums;
+  }
+  .edit-hint {
+    position: absolute; right: 8px; top: 32px; z-index: 2;
+    padding: 4px 8px;
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    box-shadow: var(--shadow-layer);
+    font-size: 12px; color: var(--text-2); white-space: nowrap;
+  }
+
+  .empty-row td { height: 96px; text-align: left; color: var(--text-2); white-space: normal; }
+  .empty-row button { margin-left: 8px; color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
+
+  .pager {
+    display: flex; align-items: center; gap: 4px;
+    height: 48px; padding: 0 12px;
+    color: var(--text-2);
+  }
+  .pager .spacer { flex: 1; }
+  .pager .page {
+    min-width: 32px; height: 32px; padding: 0 8px;
+    border: 1px solid transparent; border-radius: var(--r-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .pager .page[aria-current="page"] { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .pager select { height: 32px; padding: 0 8px; margin-right: 16px; border: 1px solid var(--line-field); border-radius: var(--r-sm); background: var(--surface); }
+
+  /* 되돌리기 스낵바 */
+  .snackbar {
+    position: fixed; left: 24px; bottom: 24px; z-index: 10;
+    display: flex; align-items: center; gap: 16px;
+    padding: 8px 12px;
+    border-radius: var(--r-md);
+    background: var(--text); color: #fff;
+    box-shadow: var(--shadow-layer);
+  }
+  .snackbar button { height: 32px; padding: 0 12px; color: var(--accent-on-dark); font-weight: 700; }
+
+  /* 영구 삭제 확인 */
+  dialog.confirm {
+    width: 440px; padding: 24px;
+    border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--surface); color: var(--text);
+    box-shadow: var(--shadow-layer);
+  }
+  dialog.confirm::backdrop { background: rgba(22, 27, 38, .4); }
+  dialog.confirm h2 { font-size: 18px; line-height: 1.4; font-weight: 700; }
+  dialog.confirm p { margin-top: 8px; color: var(--text-2); }
+  dialog.confirm ul { margin-top: 16px; padding: 8px 12px; border-radius: var(--r-sm); background: var(--bg); }
+  dialog.confirm li { line-height: 1.8; }
+  dialog.confirm .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="brand">
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 15h14M5 15V8l5-4 5 4v7" fill="none" stroke="#2453a6" stroke-width="1.75" stroke-linejoin="round"/><path d="M8 15v-4h4v4" fill="none" stroke="#2453a6" stroke-width="1.75"/></svg>
+    다락 문구 관리
+  </span>
+  <nav class="menu" aria-label="큰 메뉴">
+    <a href="#">대시보드</a>
+    <a href="#">주문</a>
+    <a href="#" aria-current="page">재고</a>
+    <a href="#">상품</a>
+    <a href="#">정산</a>
+  </nav>
+  <label class="top-search">
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M16 16l4 4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+    <input id="q" type="search" placeholder="상품 이름이나 코드로 찾기" aria-label="상품 이름이나 코드로 찾기" autocomplete="off">
+    <kbd aria-hidden="true">/</kbd>
+  </label>
+  <button class="account" type="button">내 계정</button>
+</header>
+
+<div class="body">
+  <aside class="filter-panel" aria-labelledby="filter-title">
+    <h2 id="filter-title">필터</h2>
+    <p class="hint">고르면 바로 표에 반영돼요</p>
+
+    <div class="group">
+      <label class="title" for="wh">창고</label>
+      <select id="wh"><option>성수 1창고</option><option>김포 2창고</option><option>모든 창고</option></select>
+    </div>
+
+    <fieldset class="group">
+      <legend>분류</legend>
+      <label class="check"><input type="checkbox" name="cat" value="노트" checked>노트<span class="n">312</span></label>
+      <label class="check"><input type="checkbox" name="cat" value="펜" checked>펜<span class="n">408</span></label>
+      <label class="check"><input type="checkbox" name="cat" value="파일·바인더" checked>파일·바인더<span class="n">276</span></label>
+      <label class="check"><input type="checkbox" name="cat" value="데스크 소품" checked>데스크 소품<span class="n">288</span></label>
+    </fieldset>
+
+    <fieldset class="group">
+      <legend>재고</legend>
+      <label class="check"><input type="checkbox" id="below">안전 재고보다 적은 것만</label>
+    </fieldset>
+
+    <fieldset class="group">
+      <legend>마지막 입고</legend>
+      <label class="check"><input type="radio" name="in" checked>전체</label>
+      <label class="check"><input type="radio" name="in">7일 안</label>
+      <label class="check"><input type="radio" name="in">30일 넘음</label>
+    </fieldset>
+
+    <button class="reset" type="button" id="reset">필터 초기화</button>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1>재고</h1>
+        <p class="sub">성수 1창고 · 마지막 동기화 10분 전(2026-11-04 09:42)</p>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button">내보내기</button>
+        <button class="btn primary" type="button">입고 등록</button>
+      </div>
+    </div>
+
+    <div class="tabs" role="group" aria-label="상태별 보기">
+      <button type="button" aria-pressed="true">전체 <strong>1,284</strong></button>
+      <button type="button" aria-pressed="false">판매 중 <strong>1,213</strong></button>
+      <button type="button" aria-pressed="false">재고 부족 <strong>23</strong></button>
+      <button type="button" aria-pressed="false">품절 <strong>7</strong></button>
+      <button type="button" aria-pressed="false">숨김 <strong>41</strong></button>
+    </div>
+
+    <section class="table-box" aria-label="재고 표">
+      <div class="toolbar bulk" id="bulk">
+        <span class="count"><strong id="sel-n">3</strong>개 선택됨</span>
+        <span class="divider" aria-hidden="true"></span>
+        <button class="btn" type="button">재고 한꺼번에 고치기</button>
+        <button class="btn" type="button" id="hide">숨기기</button>
+        <button class="btn danger" type="button" id="del">영구 삭제</button>
+        <span class="spacer"></span>
+        <button class="btn" type="button" id="clear">선택 풀기</button>
+      </div>
+
+      <table>
+        <colgroup>
+          <col style="width:40px"><col><col style="width:96px"><col style="width:96px"><col style="width:96px">
+          <col style="width:104px"><col style="width:104px"><col style="width:96px"><col style="width:80px"><col style="width:128px">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="pick"><input type="checkbox" id="all" aria-label="이 쪽 모두 고르기"></th>
+            <th>상품</th>
+            <th>코드</th>
+            <th>분류</th>
+            <th>상태</th>
+            <th class="num">현재 재고(개)</th>
+            <th class="num">안전 재고(개)</th>
+            <th class="num">7일 출고(개)</th>
+            <th class="num">단가(원)</th>
+            <th>마지막 입고</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td class="pick"><input type="checkbox" aria-label="모눈 노트 A5 80매 고르기"></td><td>모눈 노트 A5 80매</td><td class="code">DN-1021</td><td>노트</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="300">1,240</button></td><td class="num">300</td><td class="num">412</td><td class="num">3,800</td><td><time datetime="2026-11-02T14:20" title="2026-11-02 14:20">2일 전 · 11-02</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="스프링 노트 B5 고르기"></td><td>스프링 노트 B5</td><td class="code">DN-1034</td><td>노트</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="200">860</button></td><td class="num">200</td><td class="num">198</td><td class="num">4,500</td><td><time datetime="2026-10-30T10:05" title="2026-10-30 10:05">5일 전 · 10-30</time></td></tr>
+          <tr class="is-selected"><td class="pick"><input type="checkbox" checked aria-label="젤 펜 0.5 검정 12자루 고르기"></td><td>젤 펜 0.5 검정 12자루</td><td class="code">DN-2010</td><td>펜</td><td><span class="state"><i class="dot low" aria-hidden="true"></i>재고 부족</span></td><td class="num"><button class="qty-edit is-low" type="button" data-safe="150">84</button></td><td class="num">150</td><td class="num">236</td><td class="num">9,600</td><td><time datetime="2026-10-23T16:40" title="2026-10-23 16:40">12일 전 · 10-23</time></td></tr>
+          <tr class="is-selected"><td class="pick"><input type="checkbox" checked aria-label="젤 펜 0.5 파랑 12자루 고르기"></td><td>젤 펜 0.5 파랑 12자루</td><td class="code">DN-2011</td><td>펜</td><td><span class="state"><i class="dot low" aria-hidden="true"></i>재고 부족</span></td><td class="num"><button class="qty-edit is-low" type="button" data-safe="150">42</button></td><td class="num">150</td><td class="num">171</td><td class="num">9,600</td><td><time datetime="2026-10-23T16:40" title="2026-10-23 16:40">12일 전 · 10-23</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="형광펜 5색 세트 고르기"></td><td>형광펜 5색 세트</td><td class="code">DN-2102</td><td>펜</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="400">2,315</button></td><td class="num">400</td><td class="num">520</td><td class="num">6,200</td><td><time datetime="2026-11-03T09:12" title="2026-11-03 09:12">어제 · 11-03</time></td></tr>
+          <tr class="is-selected"><td class="pick"><input type="checkbox" checked aria-label="클립보드 A4 고르기"></td><td>클립보드 A4</td><td class="code">DN-3005</td><td>파일·바인더</td><td><span class="state"><i class="dot out" aria-hidden="true"></i>품절</span></td><td class="num"><button class="qty-edit is-low" type="button" data-safe="50">0</button></td><td class="num">50</td><td class="num">64</td><td class="num">5,900</td><td><time datetime="2026-10-04T11:30" title="2026-10-04 11:30">31일 전 · 10-04</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="투명 파일 20매 고르기"></td><td>투명 파일 20매</td><td class="code">DN-3012</td><td>파일·바인더</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="500">3,480</button></td><td class="num">500</td><td class="num">610</td><td class="num">2,900</td><td><time datetime="2026-11-01T15:00" title="2026-11-01 15:00">3일 전 · 11-01</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="3공 링 바인더 고르기"></td><td>3공 링 바인더</td><td class="code">DN-3020</td><td>파일·바인더</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="100">512</button></td><td class="num">100</td><td class="num">88</td><td class="num">7,400</td><td><time datetime="2026-10-26T13:45" title="2026-10-26 13:45">9일 전 · 10-26</time></td></tr>
+          <tr id="row-hidden"><td class="pick"><input type="checkbox" aria-label="원목 연필꽂이 고르기"></td><td>원목 연필꽂이</td><td class="code">DN-4001</td><td>데스크 소품</td><td><span class="state"><i class="dot off" aria-hidden="true"></i>숨김</span></td><td class="num"><button class="qty-edit" type="button" data-safe="30">120</button></td><td class="num">30</td><td class="num">0</td><td class="num">12,000</td><td><time datetime="2026-10-15T10:20" title="2026-10-15 10:20">20일 전 · 10-15</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="메모 큐브 500매 고르기"></td><td>메모 큐브 500매</td><td class="code">DN-4013</td><td>데스크 소품</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="300">1,906</button></td><td class="num">300</td><td class="num">344</td><td class="num">3,200</td><td><time datetime="2026-10-31T17:05" title="2026-10-31 17:05">4일 전 · 10-31</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="북엔드 2개 세트 고르기"></td><td>북엔드 2개 세트</td><td class="code">DN-4020</td><td>데스크 소품</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="60">274</button></td><td class="num">60</td><td class="num">41</td><td class="num">15,800</td><td><time datetime="2026-10-19T09:50" title="2026-10-19 09:50">16일 전 · 10-19</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="마스킹 테이프 3롤 고르기"></td><td>마스킹 테이프 3롤</td><td class="code">DN-4031</td><td>데스크 소품</td><td><span class="state"><i class="dot low" aria-hidden="true"></i>재고 부족</span></td><td class="num editing"><input type="text" inputmode="numeric" value="240" aria-label="마스킹 테이프 3롤 현재 재고" data-safe="120" data-was="96"><span class="edit-hint" aria-hidden="true">Enter 저장 · Esc 취소</span></td><td class="num">120</td><td class="num">205</td><td class="num">4,800</td><td><time datetime="2026-10-28T14:10" title="2026-10-28 14:10">7일 전 · 10-28</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="연필 HB 12자루 고르기"></td><td>연필 HB 12자루</td><td class="code">DN-2201</td><td>펜</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="600">4,120</button></td><td class="num">600</td><td class="num">702</td><td class="num">3,600</td><td><time datetime="2026-11-03T16:25" title="2026-11-03 16:25">어제 · 11-03</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="줄 노트 A5 60매 고르기"></td><td>줄 노트 A5 60매</td><td class="code">DN-1018</td><td>노트</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="300">1,033</button></td><td class="num">300</td><td class="num">287</td><td class="num">3,200</td><td><time datetime="2026-10-29T11:00" title="2026-10-29 11:00">6일 전 · 10-29</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="중형 스테이플러 고르기"></td><td>중형 스테이플러</td><td class="code">DN-4040</td><td>데스크 소품</td><td><span class="state"><i class="dot out" aria-hidden="true"></i>품절</span></td><td class="num"><button class="qty-edit is-low" type="button" data-safe="40">0</button></td><td class="num">40</td><td class="num">37</td><td class="num">8,900</td><td><time datetime="2026-09-20T10:00" title="2026-09-20 10:00">45일 전 · 09-20</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="인덱스 탭 6색 고르기"></td><td>인덱스 탭 6색</td><td class="code">DN-3031</td><td>파일·바인더</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="150">745</button></td><td class="num">150</td><td class="num">132</td><td class="num">2,400</td><td><time datetime="2026-10-27T15:35" title="2026-10-27 15:35">8일 전 · 10-27</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="크라프트 봉투 10매 고르기"></td><td>크라프트 봉투 10매</td><td class="code">DN-4052</td><td>데스크 소품</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="200">1,380</button></td><td class="num">200</td><td class="num">156</td><td class="num">2,000</td><td><time datetime="2026-11-02T10:40" title="2026-11-02 10:40">2일 전 · 11-02</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="수정 테이프 5mm 고르기"></td><td>수정 테이프 5mm</td><td class="code">DN-2305</td><td>펜</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="200">692</button></td><td class="num">200</td><td class="num">248</td><td class="num">1,800</td><td><time datetime="2026-10-25T13:15" title="2026-10-25 13:15">10일 전 · 10-25</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="도트 노트 A5 80매 고르기"></td><td>도트 노트 A5 80매</td><td class="code">DN-1022</td><td>노트</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="300">908</button></td><td class="num">300</td><td class="num">263</td><td class="num">3,800</td><td><time datetime="2026-11-02T14:20" title="2026-11-02 14:20">2일 전 · 11-02</time></td></tr>
+          <tr><td class="pick"><input type="checkbox" aria-label="3단 서류 보관함 고르기"></td><td>3단 서류 보관함</td><td class="code">DN-3040</td><td>파일·바인더</td><td><span class="state"><i class="dot on" aria-hidden="true"></i>판매 중</span></td><td class="num"><button class="qty-edit" type="button" data-safe="40">158</button></td><td class="num">40</td><td class="num">22</td><td class="num">18,500</td><td><time datetime="2026-10-21T16:00" title="2026-10-21 16:00">14일 전 · 10-21</time></td></tr>
+        </tbody>
+        <tbody id="empty" hidden>
+          <tr class="empty-row"><td colspan="10"><span id="empty-text">찾는 상품이 없어요.</span><button type="button" id="empty-reset">검색어와 필터 풀기</button></td></tr>
+        </tbody>
+      </table>
+
+      <div class="pager">
+        <span>1–20 / 1,284개</span>
+        <span class="spacer"></span>
+        <label for="per">한 쪽에</label>
+        <select id="per"><option>20개씩</option><option>50개씩</option><option>100개씩</option></select>
+        <button class="page" type="button" aria-label="이전 쪽" disabled>이전</button>
+        <button class="page" type="button" aria-current="page">1</button>
+        <button class="page" type="button">2</button>
+        <button class="page" type="button">3</button>
+        <span aria-hidden="true">…</span>
+        <button class="page" type="button">65</button>
+        <button class="page" type="button">다음</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="snackbar" id="snack" role="status">
+  <span id="snack-text">원목 연필꽂이를 숨겼어요. 판매 목록에서 빠져요.</span>
+  <button type="button" id="undo">되돌리기</button>
+</div>
+
+<dialog class="confirm" id="confirm" aria-labelledby="confirm-title">
+  <h2 id="confirm-title">상품 <span id="del-n">3</span>개를 영구 삭제할까요?</h2>
+  <p>재고 기록과 입고 내역도 함께 지워지고 되돌릴 수 없어요. 판매만 멈추려면 숨기기를 쓰세요.</p>
+  <ul id="del-list"></ul>
+  <div class="row">
+    <button class="btn" type="button" id="cancel">취소</button>
+    <button class="btn danger-fill" type="button" id="really">영구 삭제</button>
+  </div>
+</dialog>
+
+<script>
+  const $ = s => document.querySelector(s);
+  const rows = () => [...document.querySelectorAll('#rows tr')];
+  const fmt = n => n.toLocaleString('ko-KR');
+  const nameOf = tr => tr.children[1].textContent;
+  const STATE = { on: '판매 중', low: '재고 부족', out: '품절', off: '숨김' };
+  const setState = (tr, key) => { tr.querySelector('.state').innerHTML = `<i class="dot ${key}" aria-hidden="true"></i>${STATE[key]}`; };
+  const stateOf = tr => tr.querySelector('.dot').classList[1];
+
+  // ---- 고르기와 한꺼번에 하기 ----
+  function syncSelection() {
+    const picked = rows().filter(tr => !tr.hidden && tr.querySelector('.pick input').checked);
+    rows().forEach(tr => tr.classList.toggle('is-selected', tr.querySelector('.pick input').checked));
+    $('#bulk').hidden = picked.length === 0;
+    $('#sel-n').textContent = picked.length;
+    const all = $('#all'), shown = rows().filter(tr => !tr.hidden);
+    all.checked = picked.length > 0 && picked.length === shown.length;
+    all.indeterminate = picked.length > 0 && picked.length < shown.length;
+    return picked;
+  }
+  $('#rows').addEventListener('change', e => { if (e.target.closest('.pick')) syncSelection(); });
+  $('#all').addEventListener('change', e => { rows().filter(tr => !tr.hidden).forEach(tr => { tr.querySelector('.pick input').checked = e.target.checked; }); syncSelection(); });
+  $('#clear').addEventListener('click', () => { rows().forEach(tr => { tr.querySelector('.pick input').checked = false; }); syncSelection(); });
+
+  // ---- 되돌리기 스낵바: 5초 뒤 닫힌다. 마우스나 포커스가 올라가 있으면 기다린다 ----
+  let undoFn = () => setState($('#row-hidden'), 'on');
+  let timer;
+  function snack(text, undo) {
+    $('#snack-text').textContent = text;
+    undoFn = undo;
+    $('#undo').hidden = !undo;
+    $('#snack').hidden = false;
+    clearTimeout(timer);
+    timer = setTimeout(closeSnack, 5000);
+  }
+  function closeSnack() { if ($('#snack').matches(':hover, :focus-within')) { timer = setTimeout(closeSnack, 2000); return; } $('#snack').hidden = true; }
+  $('#undo').addEventListener('click', () => { undoFn && undoFn(); $('#snack').hidden = true; });
+  timer = setTimeout(closeSnack, 8000);
+
+  // 숨기기: 다시 하면 그만인 작업이라 묻지 않고 바로 하고, 되돌리기를 준다
+  $('#hide').addEventListener('click', () => {
+    const picked = syncSelection();
+    const before = picked.map(tr => [tr, stateOf(tr)]);
+    picked.forEach(tr => setState(tr, 'off'));
+    snack(`상품 ${picked.length}개를 숨겼어요. 판매 목록에서 빠져요.`, () => before.forEach(([tr, k]) => setState(tr, k)));
+  });
+
+  // 영구 삭제: 되돌릴 수 없어 한 번 묻는다. 누른 뒤에는 버튼을 잠근다
+  $('#del').addEventListener('click', () => {
+    const picked = syncSelection();
+    $('#del-n').textContent = picked.length;
+    $('#del-list').innerHTML = picked.map(tr => `<li>${nameOf(tr)}</li>`).join('');
+    $('#really').textContent = `${picked.length}개 영구 삭제`;
+    $('#confirm').showModal();
+    $('#cancel').focus();
+  });
+  $('#cancel').addEventListener('click', () => $('#confirm').close());
+  $('#really').addEventListener('click', e => {
+    const b = e.currentTarget;
+    b.disabled = true;
+    b.setAttribute('aria-busy', 'true');
+    b.textContent = '삭제하는 중…';
+    setTimeout(() => {
+      const picked = syncSelection();
+      picked.forEach(tr => tr.remove());
+      $('#confirm').close();
+      b.disabled = false;
+      b.removeAttribute('aria-busy');
+      syncSelection();
+      snack(`상품 ${picked.length}개를 삭제했어요.`, null);
+    }, 700);
+  });
+
+  // ---- 그 자리에서 재고 수 고치기 ----
+  function openEdit(btn) {
+    const td = btn.parentElement, was = btn.textContent;
+    td.classList.add('editing');
+    td.innerHTML = `<input type="text" inputmode="numeric" value="${was.replace(/,/g, '')}" aria-label="${nameOf(td.parentElement)} 현재 재고" data-safe="${btn.dataset.safe}" data-was="${was.replace(/,/g, '')}"><span class="edit-hint" aria-hidden="true">Enter 저장 · Esc 취소</span>`;
+    const input = td.querySelector('input');
+    input.focus(); input.select();
+  }
+  function closeEdit(input, save) {
+    const td = input.parentElement, tr = td.parentElement;
+    const n = save && /^\d+$/.test(input.value.trim()) ? Number(input.value.trim()) : Number(input.dataset.was);
+    const safe = Number(input.dataset.safe);
+    td.classList.remove('editing');
+    td.innerHTML = `<button class="qty-edit${n < safe ? ' is-low' : ''}" type="button" data-safe="${safe}">${fmt(n)}</button>`;
+    if (stateOf(tr) !== 'off') setState(tr, n === 0 ? 'out' : n < safe ? 'low' : 'on');
+  }
+  $('#rows').addEventListener('click', e => { const b = e.target.closest('.qty-edit'); if (b) openEdit(b); });
+  $('#rows').addEventListener('keydown', e => {
+    if (!e.target.matches('.editing input')) return;
+    if (e.key === 'Enter') closeEdit(e.target, true);
+    if (e.key === 'Escape') closeEdit(e.target, false);
+  });
+  $('#rows').addEventListener('focusout', e => { if (e.target.matches('.editing input')) closeEdit(e.target, true); });
+
+  // ---- 찾기·거르기: 바로 반영, 없으면 표 안에 한 줄 ----
+  function applyFilter() {
+    const q = $('#q').value.trim();
+    const cats = [...document.querySelectorAll('input[name="cat"]:checked')].map(c => c.value);
+    const below = $('#below').checked;
+    let shown = 0;
+    rows().forEach(tr => {
+      const cells = tr.children;
+      const qtyCell = cells[5].querySelector('button, input');
+      const qty = Number((qtyCell.value ?? qtyCell.textContent).replace(/,/g, ''));
+      const ok = (!q || nameOf(tr).includes(q) || cells[2].textContent.includes(q.toUpperCase()))
+        && cats.includes(cells[3].textContent)
+        && (!below || qty < Number(qtyCell.dataset.safe));
+      tr.hidden = !ok;
+      if (ok) shown++;
+    });
+    $('#empty').hidden = shown > 0;
+    $('#empty-text').textContent = q ? `‘${q}’에 맞는 상품이 이 쪽에 없어요.` : '고른 필터에 맞는 상품이 없어요.';
+    syncSelection();
+  }
+  $('#q').addEventListener('input', applyFilter);
+  document.querySelectorAll('.filter-panel input').forEach(i => i.addEventListener('change', applyFilter));
+  const resetAll = () => { $('#q').value = ''; document.querySelectorAll('input[name="cat"]').forEach(c => { c.checked = true; }); $('#below').checked = false; applyFilter(); };
+  $('#reset').addEventListener('click', resetAll);
+  $('#empty-reset').addEventListener('click', resetAll);
+
+  // 「/」를 누르면 검색창으로
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && !e.target.matches('input, textarea, select')) { e.preventDefault(); $('#q').focus(); }
+  });
+
+  syncSelection();
+</script>
+</body>
+</html>

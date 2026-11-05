@@ -301,11 +301,52 @@ function visualAudit(doc, win, depth = 0) {
     return c && hsl(c).s >= 0.3;
   }).map(el => ({ sample: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 20) }));
   const glass = allVisible.filter(el => /blur\(/.test(cs(el).backdropFilter || cs(el).webkitBackdropFilter || '')).map(el => ({ sample: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 20) }));
+  // 레이아웃을 계산하는 브라우저인가(jsdom은 크기가 0이라 크기·위치로 재는 검사는 브라우저에서만 한다)
+  const layout = !win.__jsdom && typeof doc.documentElement.getBoundingClientRect === 'function';
+  const layout0 = el => (layout ? el.getBoundingClientRect().width : 0);
+  const sampleOf = el => (el.textContent || el.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ').slice(0, 20);
+
+  // ---- 카드 안쪽 여백이 쪽마다 다름: 왼쪽과 오른쪽이 다르거나, 위·아래와 옆이 크게 다르다(Stageshow의 uneven padding에서 생각을 얻었다, 2026-11-04) ----
+  // 한쪽 여백이 0이면 그림을 끝까지 붙인 카드라 일부러 그런 것으로 보고 넘긴다
+  const unevenPads = cards.filter(el => !control(el)).map(el => {
+    const s = cs(el), p = ['Top', 'Right', 'Bottom', 'Left'].map(k => px(s[`padding${k}`], el) || 0);
+    if (p.some(v => v === 0)) return null;
+    const [t, r, b, l] = p, side = Math.max(l, r), vert = Math.min(t, b);
+    const odd = Math.abs(l - r) >= 4 || (Math.abs(side - vert) >= 12 && Math.max(side, vert) > Math.min(side, vert) * 1.6);
+    return odd ? { sample: sampleOf(el), pad: p.join('/') } : null;
+  }).filter(Boolean);
+
+  // ---- 아이콘: 채운 아이콘과 선 아이콘이 같은 크기에 섞임, 아이콘 자리의 이모지, AI 기능에 반짝이 ----
+  const SHAPES = 'path, circle, rect, line, polyline, polygon, ellipse';
+  const svgProp = (shape, svg, prop) => {
+    if (!win.__jsdom) { const v = cs(shape)[prop]; if (v) return /none|transparent|rgba\([^)]*,\s*0\)/.test(v) ? 'none' : v; }
+    for (let e = shape; e && e !== svg.parentElement; e = e.parentElement) { const v = e.getAttribute(prop); if (v) return v; }
+    return prop === 'fill' ? 'black' : 'none';
+  };
+  const iconKinds = {};
+  allVisible.filter(e => e.tagName.toLowerCase() === 'svg').forEach(svg => {
+    const w = layout0(svg) || px(svg.getAttribute('width'), svg) || px(cs(svg).width, svg);
+    if (!w || w > 32) return;
+    const shapes = [...svg.querySelectorAll(SHAPES)];
+    if (!shapes.length) return;
+    const outline = shapes.every(sh => svgProp(sh, svg, 'fill') === 'none');
+    const filled = shapes.every(sh => svgProp(sh, svg, 'fill') !== 'none' && svgProp(sh, svg, 'stroke') === 'none');
+    if (!outline && !filled) return;
+    const k = Math.round(w / 4) * 4;
+    (iconKinds[k] ||= { size: k, outline: 0, filled: 0 })[outline ? 'outline' : 'filled']++;
+  });
+  const mixedIcons = Object.values(iconKinds).filter(g => g.outline >= 2 && g.filled >= 2);
+  // 이모지는 메시지·반응 같은 내용이지 아이콘이 아니다. 버튼·링크·목록·탭·라벨 글이 이모지로 시작하면 아이콘 자리로 본다(제목은 check-screen.mjs가 본다)
+  const EMOJI = /^\s*(?:(?![©®™])\p{Extended_Pictographic})/u;
+  const emojiIcons = textEls.filter(el => !/^H[1-6]$/.test(el.tagName) && el.closest('button, a, li, label, nav, [role="tab"], [role="button"], th, dt') && EMOJI.test([...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(''))).map(el => ({ sample: sampleOf(el) }));
+  // AI 기능을 반짝이·마술봉으로 표시하는 것(흔한 AI 기본값. 제품이 원래 쓰는 아이콘이면 그대로 둔다)
+  const sparkles = allVisible.filter(e => (e.tagName.toLowerCase() === 'svg' && /\bsparkles?\b|\bwand\b|auto-?awesome/i.test(`${e.getAttribute('class') || ''} ${e.getAttribute('data-lucide') || ''} ${e.getAttribute('data-icon') || ''}`)) || (textSet.has(e) && /✨|🪄/.test(e.textContent || ''))).map(e => ({ sample: sampleOf(e.closest('button, a, h1, h2, h3, span, div') || e) || '(아이콘)' }));
+  // 모바일·태블릿 입력칸 글자: iOS Safari는 16px 미만 입력칸을 누르면 화면을 확대한다(조건이 있을 때만 판단)
+  const smallInputs = [...doc.body.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=submit]):not([type=button]), select, textarea')].filter(visible).map(el => ({ sample: el.getAttribute('aria-label') || el.getAttribute('placeholder') || el.name || el.tagName.toLowerCase(), size: Math.round((px(cs(el).fontSize, el) || 16) * 10) / 10 })).filter(x => x.size < 16);
 
   // ---- 넘침·잘림: 레이아웃을 계산하는 브라우저에서만(jsdom은 크기가 0) ----
-  const layout = !win.__jsdom && typeof doc.documentElement.getBoundingClientRect === 'function';
   let overflowX = 0;
-  const wide = [], clipped = [];
+  const wide = [], clipped = [], targets = [], tightInset = [], nearAligned = [], fatRows = [], inventedMarks = [];
   let ellipsis = 0;
   if (layout) {
     const vw = doc.documentElement.clientWidth || win.innerWidth;
@@ -315,10 +356,96 @@ function visualAudit(doc, win, depth = 0) {
       const r = el.getBoundingClientRect(), p = el.parentElement?.getBoundingClientRect();
       if (r.width > 0 && r.right > vw + 1 && p && p.right <= vw + 1 && wide.length < 5) wide.push({ tag: el.tagName.toLowerCase(), cls: (typeof el.className === 'string' ? el.className : el.getAttribute('class') || '').split(/\s+/)[0] || '', sample: (el.textContent || '').trim().slice(0, 20), over: Math.round(r.right - vw) });
     });
+    // 화면 읽기 프로그램용으로 1px에 숨긴 글자(sr-only)는 일부러 자른 것이라 뺀다(2026-11-05 예시 화면에서 오탐)
+    // 큰 페이지에서 같은 요소를 여러 번 재지 않게 한 번 잰 값을 둔다
+    const memo = (fn, m = new WeakMap()) => el => { if (!m.has(el)) m.set(el, fn(el)); return m.get(el); };
+    const srOnly = memo(el => { const s = cs(el), r = el.getBoundingClientRect(); return r.width <= 2 || r.height <= 2 || (s.clip && s.clip !== 'auto') || (s.clipPath && s.clipPath !== 'none'); });
     textEls.forEach(el => {
       const s = cs(el);
-      if (!/hidden|clip/.test(`${s.overflow} ${s.overflowX}`) || el.scrollWidth <= el.clientWidth + 1) return;
+      if (!/hidden|clip/.test(`${s.overflow} ${s.overflowX}`) || el.scrollWidth <= el.clientWidth + 1 || srOnly(el)) return;
       if (s.textOverflow === 'ellipsis') ellipsis++; else clipped.push({ sample: (el.textContent || '').trim().slice(0, 20) });
+    });
+
+    // 누를 곳의 실제 크기. 문장 안 링크는 WCAG 2.5.8 예외라 뺀다
+    allVisible.filter(e => e.matches('button, a[href], [role="button"], [role="tab"], [role="link"], select, input:not([type=hidden]):not([type=checkbox]):not([type=radio])') && !e.closest('[disabled], [aria-disabled="true"]')).forEach(e => {
+      if (e.matches('a[href]') && e.parentElement && [...e.parentElement.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 1)) return;
+      if (e.parentElement && e.parentElement.closest('button, a[href], [role="button"]')) return;
+      const r = e.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return;
+      // ::before·::after를 밖으로 넓혀 누를 영역을 키우는 방법(inset: -4px 0)도 있다. 그만큼 더한다(2026-11-05 예시 화면에서 오탐)
+      let w = r.width, h = r.height;
+      for (const ps of ['::before', '::after']) {
+        const s = win.getComputedStyle(e, ps);
+        if (!s || s.content === 'none' || s.content === 'normal' || s.position !== 'absolute') continue;
+        const out = v => Math.max(0, -(parseFloat(v) || 0));
+        w = Math.max(w, r.width + out(s.left) + out(s.right)); h = Math.max(h, r.height + out(s.top) + out(s.bottom));
+      }
+      targets.push({ sample: sampleOf(e) || e.tagName.toLowerCase(), w: Math.round(w), h: Math.round(h) });
+    });
+
+    // 상자 관계(Stageshow의 tight inset·near aligned·fat row에서 생각을 얻었다, 2026-11-04)
+    const ownTextRect = memo(el => {
+      const nodes = [...el.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim());
+      if (!nodes.length) return null;
+      const rg = doc.createRange(); rg.setStartBefore(nodes[0]); rg.setEndAfter(nodes[nodes.length - 1]);
+      const r = rg.getBoundingClientRect();
+      return r.width > 0 ? r : null;
+    });
+    // self: 상자 자신이 글을 가진 경우(<li>첫째 행</li>)도 넣는다
+    const textsIn = (box, self) => (self && textSet.has(box) ? [box] : []).concat([...box.querySelectorAll('*')].filter(el => textSet.has(el)));
+    // 글자가 상자(카드, 칠한 칸, 버튼) 끝에 8px 안쪽으로 붙음. 작은 배지·칩(높이 32 미만, 폭 64 미만)은 뺀다
+    // 바탕도 테두리도 없는 버튼(링크 모양·탭)은 상자로 보지 않는다
+    const boxedButton = p => p.matches('button, [role="button"]') && (filledOwn(p) || parseFloat(cs(p).borderLeftWidth) > 0);
+    const boxOf = el => { for (let p = el, i = 0; p && p !== doc.body && i < 5; p = p.parentElement, i++) if (cardSet.has(p) || boxedButton(p) || filledOwn(p)) return p; return null; };
+    textEls.slice(0, 3000).forEach(el => {
+      const box = boxOf(el), t = ownTextRect(el);
+      if (!box || !t) return;
+      const b = box.getBoundingClientRect(), s = cs(box);
+      if (b.width < 64 || b.height < 32 || /hidden|clip/.test(`${cs(el).overflow}`)) return;
+      const left = t.left - b.left - (parseFloat(s.borderLeftWidth) || 0), right = b.right - (parseFloat(s.borderRightWidth) || 0) - t.right;
+      const gap = Math.min(left, right);
+      if (gap >= -1 && gap < 8 && tightInset.length < 30) tightInset.push({ sample: sampleOf(el), gap: Math.round(gap * 10) / 10 });
+    });
+    // 카드 안에서 글 시작선이 1~3px 차이로 어긋남. 맞추거나 일부러 들여 쓴다
+    // 부모가 가운데로 모으면(flex·grid의 align-items·justify-items center) 왼쪽 끝이 글 길이에 따라 달라 견주지 않는다
+    const centeredByParent = el => { const ps = el.parentElement && cs(el.parentElement); return !!ps && /flex|grid/.test(ps.display) && (ps.alignItems === 'center' && /column/.test(ps.flexDirection || '') || ps.justifyItems === 'center'); };
+    cards.slice(0, 200).forEach(card => {
+      // 오른쪽 정렬(숫자 칸)은 오른쪽 끝을, 나머지는 왼쪽 끝을 견준다. 정렬이 다른 글끼리는 견주지 않는다(2026-11-05 예시 화면에서 오탐)
+      const side = el => (/right|end/.test(cs(el).textAlign) ? 'right' : 'left');
+      const inCard = textsIn(card);
+      if (inCard.length > 40) return;
+      const lefts = inCard.filter(el => !/center|justify/.test(cs(el).textAlign) && !/^inline/.test(cs(el).display) && !centeredByParent(el) && !srOnly(el)).map(el => ({ el, r: ownTextRect(el), side: side(el) })).filter(x => x.r);
+      for (let i = 0; i < lefts.length; i++) for (let j = i + 1; j < lefts.length; j++) {
+        if (lefts[i].side !== lefts[j].side) continue;
+        const d = Math.abs(lefts[i].r[lefts[i].side] - lefts[j].r[lefts[j].side]);
+        if (d > 0.5 && d <= 3) { nearAligned.push({ sample: `${sampleOf(lefts[i].el)} / ${sampleOf(lefts[j].el)}`, d: Math.round(d * 10) / 10 }); return; }
+      }
+    });
+    // 한 줄짜리 행이 글자의 세 배보다 높고, 같은 목록에서 둘 넘게 그렇다(사진·그림이 있는 행은 뺀다)
+    allVisible.filter(e => e.matches('ul, ol, [role="list"], tbody')).forEach(list => {
+      const rows = [...list.children].slice(0, 60).filter(visible);
+      if (rows.length < 3) return;
+      // 그림·아바타·스위치·입력칸처럼 글 아닌 것이 행 높이를 정하는 행은 뺀다
+      const visual = row => row.querySelector('img, video, canvas, picture, input, select, textarea, [role="switch"], [role="img"]') || [...row.querySelectorAll('svg')].slice(0, 3).some(v => v.getBoundingClientRect().height > 24) || [...row.querySelectorAll('*')].slice(0, 30).some(x => { const xs = cs(x); return (xs.backgroundImage && xs.backgroundImage !== 'none') || (!textSet.has(x) && filledOwn(x) && x.getBoundingClientRect().height > 24); });
+      const fat = rows.filter(row => {
+        if (visual(row)) return false;
+        const ts = textsIn(row, true).map(el => ({ el, r: ownTextRect(el) })).filter(x => x.r);
+        if (!ts.length) return false;
+        const fs = px(cs(ts[0].el).fontSize, ts[0].el) || 16, lineH = fs * 1.6;
+        const top = Math.min(...ts.map(x => x.r.top)), bottom = Math.max(...ts.map(x => x.r.bottom));
+        return bottom - top < lineH * 1.3 && row.getBoundingClientRect().height > lineH * 3;
+      });
+      if (fat.length >= 2 && fat.length * 2 >= rows.length) fatRows.push({ sample: sampleOf(fat[0]), h: Math.round(fat[0].getBoundingClientRect().height), n: fat.length, of: rows.length });
+    });
+    // 지어낸 로고: 머리글·내비 근처의 색 네모 안 글자 한두 개(동그라미는 아바타일 수 있어 뺀다)
+    allVisible.forEach(e => {
+      if (e.childElementCount > 1 || (e.textContent || '').trim().length > 2 || !e.closest('header, nav, [class*="logo" i], [class*="brand" i]')) return;
+      const own = (e.textContent || '').trim();
+      if (!/^[A-Za-z가-힣]{1,2}$/.test(own)) return;
+      const r = e.getBoundingClientRect();
+      if (r.width < 20 || r.width > 48 || Math.abs(r.width - r.height) > 2 || radiusOf(e) >= r.width / 2 - 1) return;
+      const c = parse(cs(e).backgroundColor);
+      if (c && c.a > 0.5 && hsl(c).s >= 0.3) inventedMarks.push({ sample: own });
     });
   }
 
@@ -401,6 +528,16 @@ function visualAudit(doc, win, depth = 0) {
     wide,
     clipped,
     ellipsis,
+    targets,
+    tightInset,
+    nearAligned,
+    fatRows,
+    inventedMarks,
+    unevenPads,
+    mixedIcons,
+    emojiIcons,
+    sparkles,
+    smallInputs,
     aiDefaults,
     aiFonts,
     sig,
@@ -410,10 +547,12 @@ function visualAudit(doc, win, depth = 0) {
 }
 
 // ---------- 기준과 견줘 문장으로 ----------
-// 돌려주는 것: [{ sec: '색'|'글자'|'여백·모양', level: '꼭'|'권장'|'확인'|'좋음'|'정보', text }]
-function visualJudge(r) {
+// cond: 서비스 조건에서 나온 기준(params.mjs condFor. 브라우저는 window.__designCond). 없으면 조건과 상관없는 흔한 기준을 쓴다
+// 돌려주는 것: [{ sec: '색'|'글자'|'여백·모양', level: '꼭'|'권장'|'확인'|'좋음'|'정보', text, fail?, topic? }]
+function visualJudge(r, cond) {
   const out = [];
-  const say = (sec, level, text) => out.push({ sec, level, text });
+  // fail은 references/failures.md의 실패 이름(FAILS), topic이 있는 것은 브랜드·사내 시스템이 일부러 정했을 수 있는 것이다(visualHouse 참고)
+  const say = (sec, level, text, fail, topic) => out.push({ sec, level, text, ...(fail && { fail }), ...(topic && { topic }) });
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
   const HUE = h => ['빨강', '주황', '노랑', '연두', '초록', '초록', '청록', '하늘', '파랑', '남보라', '보라', '분홍'][Math.round(h / 30) % 12];
   const bgMain = r.colors.filter(c => c.bg).sort((a, b) => b.bg - a.bg)[0];
@@ -422,58 +561,109 @@ function visualJudge(r) {
   say('색', '정보', `바탕 ${r.pageBg || bgMain?.hex || '?'} · 주 글자색 ${textMain ? `${textMain.hex}(글자의 ${textMain.share}%)` : '?'} · 색 기운 ${accents.length}가지(${accents.slice(0, 5).map(g => `${HUE(g.hue)} ${g.colors[0]}`).join(', ') || '없음'})`);
   if (r.lowContrast.length) {
     const worst = r.lowContrast.slice().sort((a, b) => a.ratio - b.ratio).slice(0, 3).map(t => `「${t.sample}」 ${t.fg}/${t.bg} ${t.ratio}:1`).join(', ');
-    say('색', '꼭', `글자 대비가 모자란 곳 ${r.lowContrast.length}군데(본문 4.5:1, 큰 글자 3:1 · WCAG 2.2 1.4.3). 낮은 곳: ${worst}. 글자를 진하게 하거나 바탕을 바꾼다`);
+    say('색', '꼭', `글자 대비가 모자란 곳 ${r.lowContrast.length}군데(본문 4.5:1, 큰 글자 3:1 · WCAG 2.2 1.4.3). 낮은 곳: ${worst}. 글자를 진하게 하거나 바탕을 바꾼다`, 'hard');
   } else say('색', '좋음', `잴 수 있는 글자 ${r.textCount - r.unknownBg}개 모두 대비 기준을 넘는다`);
-  (r.frames || []).forEach(f => { if (f.lowContrast.length) say('색', '꼭', `iframe(${f.src}) 안 글자 대비가 모자란 곳 ${f.lowContrast.length}군데. 낮은 곳: ${f.lowContrast.slice(0, 2).map(t => `「${t.sample}」 ${t.ratio}:1`).join(', ')}`); });
+  (r.frames || []).forEach(f => { if (f.lowContrast.length) say('색', '꼭', `iframe(${f.src}) 안 글자 대비가 모자란 곳 ${f.lowContrast.length}군데. 낮은 곳: ${f.lowContrast.slice(0, 2).map(t => `「${t.sample}」 ${t.ratio}:1`).join(', ')}`, 'hard'); });
   if ((r.skippedFrames || []).length) say('색', '확인', `안을 재지 못한 iframe ${r.skippedFrames.length}개(다른 출처나 sandbox). 그 주소를 직접 연다: ${r.skippedFrames.slice(0, 3).join(', ')}${r.skippedFrames.length > 3 ? ' …' : ''}`);
   if (r.unknownBg) say('색', '확인', `그라데이션·그림 위 글자 ${r.unknownBg}개는 대비를 재지 못했다. 스크린샷으로 본다`);
-  if ((r.weakSelected || []).length) say('색', '꼭', `고른 것과 안 고른 것의 차이가 약하다 ${r.weakSelected.length}군데(3:1 미만 · WCAG 2.2 1.4.11): ${r.weakSelected.slice(0, 3).map(w => `「${w.sample}」 ${w.ratio}:1`).join(', ')}. 고른 것은 바탕을 진하게 하거나 굵은 테두리·표시를 더한다`);
-  if ((r.weakInputs || []).length) say('색', '꼭', `입력칸 테두리가 주변과 잘 안 갈린다 ${r.weakInputs.length}군데(3:1 미만 · WCAG 2.2 1.4.11): ${r.weakInputs.slice(0, 3).map(w => `「${w.sample}」 ${w.ratio}:1`).join(', ')}. 테두리 색을 진하게(흰 바탕이면 #8a8f98 안팎)`);
-  if ((r.hiddenLinks || []).length) say('색', '권장', `문장 안 링크가 링크로 안 보인다 ${r.hiddenLinks.length}군데(밑줄 없고 주변 글자와 3:1 미만): ${r.hiddenLinks.slice(0, 3).map(l => `「${l.sample}」`).join(', ')}. 밑줄을 단다`);
+  if ((r.weakSelected || []).length) say('색', '꼭', `고른 것과 안 고른 것의 차이가 약하다 ${r.weakSelected.length}군데(3:1 미만 · WCAG 2.2 1.4.11): ${r.weakSelected.slice(0, 3).map(w => `「${w.sample}」 ${w.ratio}:1`).join(', ')}. 고른 것은 바탕을 진하게 하거나 굵은 테두리·표시를 더한다`, 'confusing');
+  if ((r.weakInputs || []).length) say('색', '꼭', `입력칸 테두리가 주변과 잘 안 갈린다 ${r.weakInputs.length}군데(3:1 미만 · WCAG 2.2 1.4.11): ${r.weakInputs.slice(0, 3).map(w => `「${w.sample}」 ${w.ratio}:1`).join(', ')}. 테두리 색을 진하게(흰 바탕이면 #8a8f98 안팎)`, 'confusing');
+  if ((r.hiddenLinks || []).length) say('색', '권장', `문장 안 링크가 링크로 안 보인다 ${r.hiddenLinks.length}군데(밑줄 없고 주변 글자와 3:1 미만): ${r.hiddenLinks.slice(0, 3).map(l => `「${l.sample}」`).join(', ')}. 밑줄을 단다`, 'confusing');
   const loud = accents.filter(g => g.uses >= 3);
-  if (loud.length > 3) say('색', '권장', `눈에 띄게 쓴 색 기운이 ${loud.length}가지다(${loud.map(g => HUE(g.hue)).join('·')}). 브랜드 강조 1가지 + 상태색(빨강·초록·노랑)만 남기고 나머지는 회색 단계로`);
+  if (loud.length > 3) say('색', '권장', `눈에 띄게 쓴 색 기운이 ${loud.length}가지다(${loud.map(g => HUE(g.hue)).join('·')}). 브랜드 강조 1가지 + 상태색(빨강·초록·노랑)만 남기고 나머지는 회색 단계로`, 'flat', 'accent');
   const accentChars = (r.textColors || []).filter(t => { const c = r.colors.find(x => x.hex === t.hex); return c && c.chroma; }).reduce((n, t) => n + t.chars, 0);
   const allChars = (r.textColors || []).reduce((n, t) => n + t.chars, 0);
-  if (pct(accentChars, allChars) > 20) say('색', '권장', `글자의 ${pct(accentChars, allChars)}%가 색 글자다. 강조색은 누를 곳과 꼭 볼 숫자에만, 보조 글은 회색으로`);
-  if (r.pureGrays.length) say('색', '확인', `색 기운이 없는 순수 회색 ${r.pureGrays.slice(0, 4).join(', ')}. 바탕·브랜드 색 쪽으로 아주 조금 기운을 넣는다(흔한 AI 기본값)`);
-  if (r.colors.length > 24) say('색', '확인', `서로 다른 색 값이 ${r.colors.length}개다. 비슷한 회색·파랑을 역할 변수 몇 개로 묶는다`);
+  if (pct(accentChars, allChars) > 20) say('색', '권장', `글자의 ${pct(accentChars, allChars)}%가 색 글자다. 강조색은 누를 곳과 꼭 볼 숫자에만, 보조 글은 회색으로`, 'flat', 'accent');
+  if (r.pureGrays.length) say('색', '확인', `색 기운이 없는 순수 회색 ${r.pureGrays.slice(0, 4).join(', ')}. 바탕·브랜드 색 쪽으로 아주 조금 기운을 넣는다(흔한 AI 기본값)`, 'generic', 'palette');
+  if (r.colors.length > 24) say('색', '확인', `서로 다른 색 값이 ${r.colors.length}개다. 비슷한 회색·파랑을 역할 변수 몇 개로 묶는다`, 'uneven', 'palette');
   const scale = r.sizes.map(s => s.size);
   say('글자', '정보', `크기 ${scale.length}단계(${scale.slice(0, 8).join('·')}px), 본문 ${r.bodySize}px(글자 수 기준), 가장 큰 글자 ${r.maxSize}px, 서체 ${Object.keys(r.families).slice(0, 3).join(', ') || '?'}`);
   const ratio = r.maxSize / r.bodySize;
-  if (ratio < 1.6) say('글자', '권장', `가장 큰 글자가 본문의 ${ratio.toFixed(1)}배뿐이다. 페이지 제목을 본문의 1.8~2배로 키운다`);
+  if (ratio < 1.6) say('글자', '권장', `가장 큰 글자가 본문의 ${ratio.toFixed(1)}배뿐이다. 페이지 제목을 본문의 1.8~2배로 키운다`, 'flat', 'typescale');
   else say('글자', '좋음', `제목이 본문의 ${ratio.toFixed(1)}배라 위계가 보인다`);
-  if (scale.length > 7) say('글자', '권장', `크기가 ${scale.length}가지로 많다. 제목·소제목·본문·보조 4~6단계로 줄인다(15와 16처럼 비슷한 값은 하나로)`);
-  if (r.bodySize < 14) say('글자', '권장', `본문이 ${r.bodySize}px로 작다. 화면 본문은 보통 14~16px(모바일 입력칸은 16px 이상)`);
-  if (r.smallText) say('글자', '확인', `12px보다 작은 글자 ${r.smallText}개. 꼭 필요한 정보면 키운다`);
-  if (pct(r.bold, r.textCount) > 40) say('글자', '권장', `글자 덩어리의 ${pct(r.bold, r.textCount)}%가 굵다. 굵기는 제목과 핵심 숫자에만`);
-  if (Object.keys(r.families).length > 2) say('글자', '권장', `서체가 ${Object.keys(r.families).length}가지다. 본문 1가지(+숫자·코드용 1가지)로`);
+  if (scale.length > 7) say('글자', '권장', `크기가 ${scale.length}가지로 많다. 제목·소제목·본문·보조 4~6단계로 줄인다(15와 16처럼 비슷한 값은 하나로)`, 'uneven', 'typescale');
+  // 조건이 있으면 그 조건의 본문 기준(여럿이 쓰는 기기 18px, 매일 쓰는 데스크톱 14px 등), 없으면 흔한 하한 14px
+  const bodyMin = cond?.bodyMin || 14;
+  if (cond) say('글자', '정보', `조건 기준: 본문 ${bodyMin}px 이상${cond.bodySrc ? `(${cond.bodySrc})` : ''}, 누를 곳 ${cond.targetMin}px 이상${cond.src?.targetMin ? `(${cond.src.targetMin})` : ''}`);
+  if (r.bodySize < bodyMin) say('글자', '권장', `본문이 ${r.bodySize}px로 작다. ${cond ? `이 조건의 본문은 ${bodyMin}px 이상${cond.bodySrc ? `(${cond.bodySrc})` : ''}` : '화면 본문은 보통 14~16px'}`, 'hard', 'typescale');
+  const smallMin = bodyMin >= 18 ? 14 : 12, smallN = (r.sizes || []).filter(s => s.size < smallMin).reduce((n, s) => n + s.n, 0);
+  if (smallN) say('글자', '확인', `${smallMin}px보다 작은 글자 ${smallN}개. 꼭 필요한 정보면 키운다`, 'hard');
+  if (cond && cond.inputMin && (r.smallInputs || []).length) say('글자', '권장', `입력칸 글자가 ${cond.inputMin}px보다 작다 ${r.smallInputs.length}곳: ${r.smallInputs.slice(0, 3).map(x => `「${x.sample}」 ${x.size}px`).join(', ')}. iOS Safari는 16px 미만 입력칸을 누르면 화면을 확대한다`, 'hard');
+  if (pct(r.bold, r.textCount) > 40) say('글자', '권장', `글자 덩어리의 ${pct(r.bold, r.textCount)}%가 굵다. 굵기는 제목과 핵심 숫자에만`, 'flat', 'weight');
+  if (Object.keys(r.families).length > 2) say('글자', '권장', `서체가 ${Object.keys(r.families).length}가지다. 본문 1가지(+숫자·코드용 1가지)로`, 'uneven', 'font');
   const sp = r.spacing.filter(s => s.v >= 2);
   const off = sp.filter(s => s.v % 4 !== 0).reduce((n, s) => n + s.n, 0), all = sp.reduce((n, s) => n + s.n, 0);
   say('여백·모양', '정보', `여백 값 ${sp.length}가지(많이 쓴 값 ${sp.slice(0, 6).map(s => s.v).join('·')}px), 모서리 ${r.radii.length}가지(${r.radii.slice(0, 4).map(x => x.v).join('·')}px), 그림자 ${r.shadows}가지`);
-  if (pct(off, all) > 25) say('여백·모양', '권장', `여백의 ${pct(off, all)}%가 4의 배수가 아니다. 4·8·12·16·24·32 단계 안에서만 쓴다`);
-  if (sp.length > 14) say('여백·모양', '확인', `여백 값이 ${sp.length}가지로 흩어져 있다. 단계 6~8개로 줄인다`);
-  if (r.radii.length > 4) say('여백·모양', '권장', `모서리 둥글기가 ${r.radii.length}가지다. 두세 단계로 맞춘다`);
-  if (r.shadows > 4) say('여백·모양', '권장', `그림자가 ${r.shadows}가지다. 떠 있는 층과 카드 두 단계로`);
+  if (pct(off, all) > 25) say('여백·모양', '권장', `여백의 ${pct(off, all)}%가 4의 배수가 아니다. 4·8·12·16·24·32 단계 안에서만 쓴다`, 'uneven', 'spacing');
+  if (sp.length > 14) say('여백·모양', '확인', `여백 값이 ${sp.length}가지로 흩어져 있다. 단계 6~8개로 줄인다`, 'uneven', 'spacing');
+  if (r.radii.length > 4) say('여백·모양', '권장', `모서리 둥글기가 ${r.radii.length}가지다. 두세 단계로 맞춘다`, 'uneven', 'radius');
+  if (r.shadows > 4) say('여백·모양', '권장', `그림자가 ${r.shadows}가지다. 떠 있는 층과 카드 두 단계로`, 'uneven', 'shadow');
   const list = (a, n = 3) => a.slice(0, n).map(x => `「${x.sample}」`).join(', ');
   // 한글 조판(국내 글에서만 나온 문제, 2026-11-03 조사)
-  if ((r.tightLines || []).length) say('글자', '권장', `한글 문단 ${r.paraCount}개 중 ${r.tightLines.length}개가 행간 1.5 미만이다(normal 포함 · WCAG 2.2 1.4.8): ${list(r.tightLines)}. 한글 본문은 line-height 1.5~1.7`);
-  if ((r.centeredLong || []).length) say('글자', '권장', `80자 넘는 글 ${r.centeredLong.length}개가 가운데 정렬이다: ${list(r.centeredLong)}. 줄 시작이 들쭉날쭉해 읽기 어렵다. 긴 글은 왼쪽 정렬로`);
-  if ((r.italicKo || []).length) say('글자', '권장', `기울인 한글 ${r.italicKo.length}개: ${list(r.italicKo)}. 한글 서체에는 이탤릭이 없어 억지로 기울인 글자가 된다. 강조는 굵기나 색으로`);
-  if ((r.italicNear || []).length) say('글자', '확인', `한글 문장 안의 영문 이탤릭 ${r.italicNear.length}개: ${list(r.italicNear)}. 한글은 바로 서 있어 영문만 기울면 따로 논다(국내 글에서 AI 티로 꼽혔다). 책·작품 이름이 아니면 바로 세운다`);
-  if ((r.eyebrows || []).length >= 2) say('글자', '확인', `자간을 벌린 작은 대문자 소제목 ${r.eyebrows.length}개: ${list(r.eyebrows)}. AI 기본값으로 많이 꼽히는 모양이다. 의도한 게 아니면 일반 소제목으로`);
-  if ((r.aiFonts || []).length) say('글자', '확인', `AI가 자주 고르는 서체 ${r.aiFonts.join(', ')}. 고른 이유가 있으면 그대로 둔다. 한글이 들어가면 한글 서체를 함께 정한다`);
+  if ((r.tightLines || []).length) say('글자', '권장', `한글 문단 ${r.paraCount}개 중 ${r.tightLines.length}개가 행간 1.5 미만이다(normal 포함 · WCAG 2.2 1.4.8): ${list(r.tightLines)}. 한글 본문은 line-height 1.5~1.7`, 'hard');
+  if ((r.centeredLong || []).length) say('글자', '권장', `80자 넘는 글 ${r.centeredLong.length}개가 가운데 정렬이다: ${list(r.centeredLong)}. 줄 시작이 들쭉날쭉해 읽기 어렵다. 긴 글은 왼쪽 정렬로`, 'hard');
+  if ((r.italicKo || []).length) say('글자', '권장', `기울인 한글 ${r.italicKo.length}개: ${list(r.italicKo)}. 한글 서체에는 이탤릭이 없어 억지로 기울인 글자가 된다. 강조는 굵기나 색으로`, 'hard');
+  if ((r.italicNear || []).length) say('글자', '확인', `한글 문장 안의 영문 이탤릭 ${r.italicNear.length}개: ${list(r.italicNear)}. 한글은 바로 서 있어 영문만 기울면 따로 논다(국내 글에서 AI 티로 꼽혔다). 책·작품 이름이 아니면 바로 세운다`, 'generic', 'decor');
+  if ((r.eyebrows || []).length >= 2) say('글자', '확인', `자간을 벌린 작은 대문자 소제목 ${r.eyebrows.length}개: ${list(r.eyebrows)}. AI 기본값으로 많이 꼽히는 모양이다. 의도한 게 아니면 일반 소제목으로`, 'generic', 'decor');
+  if ((r.aiFonts || []).length) say('글자', '확인', `AI가 자주 고르는 서체 ${r.aiFonts.join(', ')}. 고른 이유가 있으면 그대로 둔다. 한글이 들어가면 한글 서체를 함께 정한다`, 'generic', 'font');
   // 카드 모양
-  if ((r.nestedCards || []).length) say('여백·모양', '권장', `카드 안에 또 카드 ${r.nestedCards.length}군데: ${list(r.nestedCards)}. 바깥 테두리 하나만 두고 안쪽은 여백과 선으로 나눈다`);
-  if ((r.sideStripes || []).length) say('여백·모양', '확인', `둥근 카드 한쪽에 두꺼운 색 띠 ${r.sideStripes.length}개: ${list(r.sideStripes)}. 「AI가 만든 티」로 가장 많이 꼽히는 모양이다. 상태를 알리려는 거면 글자나 아이콘으로`);
-  if ((r.glass || []).length) say('여백·모양', '확인', `반투명 흐림(글래스) ${r.glass.length}개: ${list(r.glass)}. 뒤에 무엇이 오느냐에 따라 글자 대비가 바뀌고 이 검사는 흐림을 계산하지 못한다. 목적이 없으면 불투명한 면으로`);
+  if ((r.nestedCards || []).length) say('여백·모양', '권장', `카드 안에 또 카드 ${r.nestedCards.length}군데: ${list(r.nestedCards)}. 바깥 테두리 하나만 두고 안쪽은 여백과 선으로 나눈다`, 'boxed', 'decor');
+  if ((r.sideStripes || []).length) say('여백·모양', '확인', `둥근 카드 한쪽에 두꺼운 색 띠 ${r.sideStripes.length}개: ${list(r.sideStripes)}. 「AI가 만든 티」로 가장 많이 꼽히는 모양이다. 상태를 알리려는 거면 글자나 아이콘으로`, 'generic', 'decor');
+  if ((r.glass || []).length) say('여백·모양', '확인', `반투명 흐림(글래스) ${r.glass.length}개: ${list(r.glass)}. 뒤에 무엇이 오느냐에 따라 글자 대비가 바뀌고 이 검사는 흐림을 계산하지 못한다. 목적이 없으면 불투명한 면으로`, 'generic', 'decor');
   // 넘침·잘림(브라우저에서만)
-  if (r.overflowX > 1) say('여백·모양', '꼭', `페이지가 가로로 ${r.overflowX}px 넘친다(WCAG 2.2 1.4.10). 넘친 것: ${(r.wide || []).map(w => `<${w.tag}${w.cls ? '.' + w.cls : ''}> ${w.over}px`).join(', ') || '?'}`);
-  if ((r.clipped || []).length) say('여백·모양', '권장', `칸 밖으로 나가 잘린 글자 ${r.clipped.length}개(말줄임 표시 없음): ${list(r.clipped)}. 칸을 늘리거나 줄바꿈을 허용한다`);
-  if (r.ellipsis >= 10) say('여백·모양', '확인', `말줄임(…)으로 잘린 글자 ${r.ellipsis}개. 다 볼 방법(펼치기, 목록 보기)이 있는지 본다`);
-  if (r.layout === false) say('여백·모양', '정보', '넘침·잘림은 브라우저에서 잴 때만 본다');
-  if ((r.aiDefaults || []).length) say('색', '확인', `${r.aiDefaults.join(', ')}. 보라 그라데이션을 막으면 AI가 다음으로 고르는 조합이다(2026-11-03 조사). 브랜드에서 정한 색이면 그대로 둔다`);
+  if (r.overflowX > 1) say('여백·모양', '꼭', `페이지가 가로로 ${r.overflowX}px 넘친다(WCAG 2.2 1.4.10). 넘친 것: ${(r.wide || []).map(w => `<${w.tag}${w.cls ? '.' + w.cls : ''}> ${w.over}px`).join(', ') || '?'}`, 'hard');
+  if ((r.clipped || []).length) say('여백·모양', '권장', `칸 밖으로 나가 잘린 글자 ${r.clipped.length}개(말줄임 표시 없음): ${list(r.clipped)}. 칸을 늘리거나 줄바꿈을 허용한다`, 'hard');
+  if (r.ellipsis >= 10) say('여백·모양', '확인', `말줄임(…)으로 잘린 글자 ${r.ellipsis}개. 다 볼 방법(펼치기, 목록 보기)이 있는지 본다`, 'hard');
+  // 누를 곳 크기(브라우저에서만): 24px 미만은 WCAG 2.2 2.5.8(AA, 간격 예외가 있다), 조건의 최소보다 작은 것은 따로
+  const targets = r.targets || [], minT = cond?.targetMin || 24;
+  const under24 = targets.filter(t => Math.min(t.w, t.h) < 24), underMin = minT > 24 ? targets.filter(t => Math.min(t.w, t.h) >= 24 && Math.min(t.w, t.h) < minT) : [];
+  const tlist = a => a.slice(0, 3).map(t => `「${t.sample}」 ${t.w}×${t.h}`).join(', ');
+  if (under24.length) say('여백·모양', '권장', `24px보다 작은 누를 곳 ${under24.length}개: ${tlist(under24)}(WCAG 2.2 2.5.8. 이웃과 24px 넘게 떨어져 있으면 예외). 누를 영역을 키운다`, 'hard');
+  if (underMin.length) say('여백·모양', '권장', `이 조건의 최소 ${minT}px보다 작은 누를 곳 ${underMin.length}개: ${tlist(underMin)}${cond?.src?.targetMin ? `(${cond.src.targetMin})` : ''}`, 'hard');
+  // 상자 관계(브라우저에서만)
+  if ((r.tightInset || []).length) say('여백·모양', '권장', `글자가 상자 끝에 8px 안쪽으로 붙은 곳 ${r.tightInset.length}군데: ${r.tightInset.slice(0, 3).map(t => `「${t.sample}」 ${t.gap}px`).join(', ')}. 카드·칸은 12px, 버튼은 좌우 12px 이상 띄운다`, 'boxed');
+  if ((r.nearAligned || []).length) say('여백·모양', '확인', `같은 카드 안 글 시작선이 1~3px 어긋난 곳 ${r.nearAligned.length}군데: ${r.nearAligned.slice(0, 2).map(t => `「${t.sample}」 ${t.d}px`).join(', ')}. 실수로 보인다. 맞추거나 들여쓰기면 아이콘 폭만큼 확실히`, 'uneven');
+  const fatRows = (r.fatRows || []).filter(t => t.h > (cond?.rowHeight || 0) + 8);
+  if (fatRows.length) say('여백·모양', '확인', `한 줄짜리 행이 글자보다 훨씬 높은 목록 ${fatRows.length}개: ${fatRows.slice(0, 2).map(t => `「${t.sample}」 ${t.h}px(${t.of}행 중 ${t.n}행)`).join(', ')}. 행 안에 공기를 넣지 말고 안쪽 여백(12px, 촘촘하면 8px)으로`, 'flat', 'spacing');
+  if ((r.unevenPads || []).length) say('여백·모양', '확인', `안쪽 여백이 쪽마다 다른 카드 ${r.unevenPads.length}개: ${r.unevenPads.slice(0, 3).map(t => `「${t.sample}」 위/오른/아래/왼 ${t.pad}px`).join(', ')}. 카드는 네 쪽을 같게(위아래만 조금 줄이는 정도)`, 'uneven', 'spacing');
+  // 아이콘
+  if ((r.mixedIcons || []).length) say('여백·모양', '확인', `같은 크기 아이콘에 채운 것과 선만 있는 것이 섞였다: ${r.mixedIcons.map(g => `${g.size}px 채움 ${g.filled}·선 ${g.outline}`).join(', ')}. 한 세트·한 굵기로`, 'uneven', 'decor');
+  if ((r.emojiIcons || []).length) say('글자', '확인', `아이콘 자리에 이모지 ${r.emojiIcons.length}개: ${list(r.emojiIcons)}. 이모지는 메시지·반응 같은 내용에만, 아이콘은 한 세트로`, 'generic', 'decor');
+  if ((r.sparkles || []).length) say('여백·모양', '확인', `AI 기능에 반짝이·마술봉 표시 ${r.sparkles.length}개: ${list(r.sparkles)}. 흔한 AI 기본값이다. 그 기능이 무엇을 하는지 보여 주는 말이나 아이콘으로`, 'generic', 'decor');
+  if ((r.inventedMarks || []).length) say('여백·모양', '확인', `색 네모 안 글자 한두 개로 만든 로고 ${r.inventedMarks.length}개: ${list(r.inventedMarks)}. AI가 지어내는 로고 모양이다. 실제 로고나 글자 로고로`, 'generic', 'decor');
+  if (r.layout === false) say('여백·모양', '정보', '넘침·잘림, 누를 곳 크기, 상자 끝에 붙은 글자, 어긋난 시작선, 높은 행, 글자 로고는 브라우저에서 잴 때만 본다');
+  if ((r.aiDefaults || []).length) say('색', '확인', `${r.aiDefaults.join(', ')}. 보라 그라데이션을 막으면 AI가 다음으로 고르는 조합이다(2026-11-03 조사). 브랜드에서 정한 색이면 그대로 둔다`, 'generic', 'palette');
   return out;
 }
+
+// ---------- 실패 이름 ----------
+// 「밤티 같다」를 고칠 수 있는 말로 나눈 것(references/failures.md). 고치는 순서도 이 순서다
+const FAILS = { accident: '사고 위험', hard: '읽기·누르기 어려움', confusing: '헷갈림', missing: '빠진 상태', mismatch: '조건에 안 맞음', flat: '위계 없음', boxed: '상자 남발', uneven: '제각각', generic: '흔한 기본값' };
+// 「해당하는 실패: 위계 없음 2 · 흔한 기본값 3」. 걸린 게 없으면 빈 문자열
+function failSummary(findings) {
+  const n = {};
+  for (const f of findings) if (f.fail) n[f.fail] = (n[f.fail] || 0) + 1;
+  const keys = Object.keys(FAILS).filter(k => n[k]);
+  return keys.length ? `해당하는 실패: ${keys.map(k => `${FAILS[k]} ${n[k]}`).join(' · ')}` : '';
+}
+
+// ---------- 서비스에서 정한 것 ----------
+// 브랜드·사내 시스템이 일부러 정했을 수 있는 주제. 규칙이 있는 서비스에서 이것을 「고칠 것」으로 말하면 브랜드를 흔한 관례로 깎는다
+const HOUSE_TOPICS = { accent: '강조색 쓰는 범위', palette: '색 팔레트', font: '서체', typescale: '글자 크기 단계', weight: '굵기', spacing: '여백 단계', radius: '모서리', shadow: '그림자', decor: '장식(카드 띠·글래스·대문자 소제목·카드 안 카드·이모지 제목)', copy: '글투', pattern: '패턴 방식' };
+// rules: design-rules.json 내용({ decided: { font: '…', 'pattern.loading': '…' } }) 또는 { house: true }. 없으면 그대로 돌려준다
+// 돌려주는 것: { main: 그대로 말할 것, ask: 정한 건지 물을 것, skipped: 정해 둬서 뺀 주제 이름 }
+function visualHouse(findings, rules) {
+  if (!rules || !(rules.house || rules.decided)) return { main: findings, ask: [], skipped: [] };
+  const keys = Object.keys(rules.decided || {});
+  const main = [], ask = [], skipped = new Set();
+  for (const f of findings) {
+    if (!f.topic) main.push(f);
+    else if (keys.some(k => f.topic === k || f.topic.startsWith(k + '.'))) skipped.add(HOUSE_TOPICS[f.topic.split('.')[0]] || f.topic);
+    else ask.push(f);
+  }
+  return { main, ask, skipped: [...skipped] };
+}
+const houseName = topic => `${HOUSE_TOPICS[topic.split('.')[0]] || topic}${topic.includes('.') ? `(${topic.split('.')[1]})` : ''}`;
 
 // ---------- 화면끼리 견주기 ----------
 // list: [{ label, sig }]. sig는 visualAudit(...).sig. 두 개면 「전·후」, 여럿이면 「화면끼리」 어긋난 값을 문장으로 돌려준다
@@ -507,7 +697,7 @@ function visualCompare(list) {
     if (dh <= 8 && Math.abs(a.s - b.s) <= 0.12 && Math.abs(a.l - b.l) <= 0.06 && (pa.some(p => !pb.includes(p)) || pb.some(p => !pa.includes(p)))) near.push(`${hexes[i]}(${pa.join(', ')}) ↔ ${hexes[j]}(${pb.join(', ')})`);
   }
   if (near.length) out.push(`비슷하지만 다른 색: ${near.slice(0, 4).join(' · ')}. 하나로 맞춘다`);
-  const head = list.length === 2 ? `전·후(${labels.join(' → ')})에 달라진 값` : `화면 ${list.length}개(${labels.join(', ')})에서 어긋난 값`;
+  const head = list.length === 2 ? `전·후(${labels.join(' → ')})에 달라진 값` : `화면 ${list.length}개(${labels.join(', ')})에서 어긋난 값(제각각)`;
   return out.length ? `${head}\n- ${out.join('\n- ')}` : `${head}: 없음. 견준 값(바탕, 본문 크기, 서체, 제목, 주 버튼, 링크 색, 모서리, 비슷한 색)이 모두 같다`;
 }
 
@@ -523,14 +713,19 @@ function visualCollect(label, doc, win) {
 function visualForget(win) { try { (win || window).sessionStorage.removeItem('__visualSigs'); } catch (e) { /* 없음 */ } return '모은 화면을 지웠다'; }
 
 // 브라우저용: 짧은 리뷰 글을 바로 돌려준다. 도구 출력이 잘리지 않게 max 글자씩 쪽을 나눈다(page=1부터)
+// 서비스 규칙이 있으면 먼저 window.__designRules = { house: true } 또는 design-rules.json 내용을 넣는다. 쪽을 넘겨도 남아 있다
 function visualReport(doc, win, page = 1, max = 900) {
-  const r = visualAudit(doc || document, win || window);
+  const w = win || window;
+  const r = visualAudit(doc || document, w);
   const order = ['꼭', '권장', '확인', '좋음', '정보'];
-  const lines = visualJudge(r).sort((a, b) => order.indexOf(a.level) - order.indexOf(b.level)).map(f => `[${f.level === '정보' ? '값' : f.level}·${f.sec}] ${f.text}`);
+  const h = visualHouse(visualJudge(r, w.__designCond), w.__designRules);
+  const lines = (failSummary(h.main) ? [failSummary(h.main)] : []).concat(h.main.sort((a, b) => order.indexOf(a.level) - order.indexOf(b.level)).map(f => `[${f.level === '정보' ? '값' : f.level}·${f.fail ? FAILS[f.fail] : f.sec}] ${f.text}`))
+    .concat(h.ask.map(f => `[정한 건지 확인·${houseName(f.topic)}${f.fail ? `·${FAILS[f.fail]}` : ''}] ${f.text}`))
+    .concat(h.skipped.length ? [`[정해 둬서 뺌] ${h.skipped.join(', ')}. 정한 값과 맞는지는 아직 재지 않는다`] : []);
   const pages = [[]];
   let len = 0;
   for (const l of lines) { if (len + l.length > max && pages[pages.length - 1].length) { pages.push([]); len = 0; } pages[pages.length - 1].push(l); len += l.length + 1; }
   const n = Math.min(Math.max(1, page), pages.length);
   return pages[n - 1].join('\n') + (pages.length > 1 ? `\n(${n}/${pages.length}쪽${n < pages.length ? `, 다음: visualReport(document, window, ${n + 1})` : ''})` : '');
 }
-if (typeof module !== 'undefined') module.exports = { visualAudit, visualJudge, visualReport, visualCompare, visualCollect, visualForget };
+if (typeof module !== 'undefined') module.exports = { visualAudit, visualJudge, visualHouse, visualReport, visualCompare, visualCollect, visualForget, houseName, failSummary, HOUSE_TOPICS, FAILS };

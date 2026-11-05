@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>상자 관계 시험 화면</title>
+<!-- 2026-11-04에 더한 검사 시험용. 브라우저에서만 재는 것(누를 곳 크기, 상자 끝에 붙은 글자, 1~3px 어긋난 시작선, 높은 행, 글자 로고)과
+     jsdom에서도 재는 것(쪽마다 다른 안쪽 여백, 채운·선 아이콘 섞임, 아이콘 자리 이모지, 반짝이, 작은 입력칸 글자)이 하나씩 걸린다 -->
+<style>
+  body { margin: 0; font-family: -apple-system, "Apple SD Gothic Neo", sans-serif; font-size: 16px; line-height: 1.6; color: #1f2328; background: #fff; }
+  header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+  .mark { width: 32px; height: 32px; border-radius: 8px; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  main { padding: 16px; display: grid; gap: 16px; max-width: 480px; }
+  .card { border: 1px solid #c9ced6; border-radius: 12px; padding: 16px; }
+  .tight { border: 1px solid #c9ced6; border-radius: 12px; padding: 4px; }
+  .uneven { border: 1px solid #c9ced6; border-radius: 12px; padding: 8px 28px 8px 16px; }
+  ul.rows { list-style: none; margin: 0; padding: 0; }
+  ul.rows li { height: 96px; display: flex; align-items: center; border-bottom: 1px solid #c9ced6; }
+  .tiny { width: 18px; height: 18px; padding: 0; border: 1px solid #8a8f98; border-radius: 4px; background: #fff; }
+  input { font-size: 14px; border: 1px solid #8a8f98; border-radius: 8px; padding: 8px 12px; }
+  .icons { display: flex; gap: 8px; }
+</style>
+</head>
+<body>
+<header><div class="mark">S</div><span>스터디룸</span></header>
+<main>
+  <div class="tight">상자 끝에 붙은 글자입니다</div>
+  <div class="card">
+    <p style="margin:0">이번 주 예약</p>
+    <p style="margin:0 0 0 2px">2px 어긋난 둘째 줄</p>
+  </div>
+  <div class="uneven"><p style="margin:0">왼쪽과 오른쪽 여백이 다른 카드</p></div>
+  <ul class="rows"><li>첫째 행</li><li>둘째 행</li><li>셋째 행</li></ul>
+  <nav><a href="#">🏠 처음으로</a></nav>
+  <button><svg class="lucide-sparkles" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="M8 1v14M1 8h14"/></svg>AI로 정리하기</button>
+  <div class="icons">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="6"/></svg>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"><rect x="2" y="2" width="12" height="12"/></svg>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6"/></svg>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="12" height="12"/></svg>
+  </div>
+  <button class="tiny" aria-label="닫기">×</button>
+  <label>이름 <input placeholder="이름"></label>
+</main>
+</body>
+</html>

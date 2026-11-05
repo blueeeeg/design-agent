@@ -1,0 +1,10 @@
+{
+  "_about": "그 서비스에서 일부러 정한 디자인 규칙. 리뷰할 서비스의 저장소 맨 위에 design-rules.json으로 둔다(이 카탈로그 저장소에는 두지 않는다). check-visual.mjs·check-screen.mjs에 --rules design-rules.json으로 넣으면, decided에 적은 주제는 「흔한 관례와 다르다」로 알리지 않고, 적지 않은 취향 항목은 끝에 「정한 건지 확인」으로 모은다. 대비·누를 곳 크기·두 번 눌림 같은 규격 항목은 이 파일과 상관없이 늘 알린다. decided의 키는 accent(강조색 쓰는 범위), palette(색 팔레트), font(서체), typescale(글자 크기 단계), weight(굵기), spacing(여백 단계), radius(모서리), shadow(그림자), decor(장식: 카드 띠·글래스·대문자 소제목·카드 안 카드·이모지 제목), copy(글투), pattern(패턴 방식. pattern.loading처럼 패턴 id를 붙이면 그 패턴만). 값은 무엇을 정했는지 한 줄과 근거 위치. 아래 값은 모두 지어낸 예시다",
+  "system": "예: tokens/ 폴더의 토큰 파일, components/ui/, Figma 라이브러리 주소",
+  "decided": {
+    "font": "예: Pretendard 한 가지. 숫자는 tabular-nums. 근거: tokens/typography.json",
+    "radius": "예: 8·12·16 세 단계와 알약(999px). 근거: tokens/radius.json",
+    "weight": "예: 멀리서 읽는 태블릿 화면이라 메뉴 이름·가격은 모두 굵게. 2026-11-03 디자인팀 확인",
+    "pattern.delete": "예: 지우기는 서비스 전체에서 확인창으로 통일"
+  }
+}

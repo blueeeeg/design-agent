@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { paramsFor, PARAM } from './params.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
 const read = f => JSON.parse(readFileSync(join(ROOT, 'data', f), 'utf8'));
@@ -28,8 +29,6 @@ axisByKey.action = axesData.action;
 const findOpt = (k, id) => axisByKey[k]?.options.find(o => o.id === id);
 const label = (k, id) => findOpt(k, id)?.label ?? id;
 const SCORE = { 제약: 100, 관례: 3, 예시: 1 };
-const PARAM = { targetMin: ['최소 터치·클릭 영역', 24], fontBase: ['기본 글자 크기', 14], rowHeight: ['목록 행 높이', 44], space: ['여백 단계', 8] };
-const CONV_ORDER = ['skill', 'device', 'content', 'platform'];
 
 // 숨긴 축(예전 도메인 축)은 점수에 넣지 않는다
 const PATTERNS = elementsData.elements.map(p => ({
@@ -105,19 +104,7 @@ if (!args.includes('--design-md')) {
 }
 
 // ---------- DESIGN.md 초안 (카탈로그 「AI용 디자인 규칙 만들기」와 같은 틀) ----------
-const picked = Object.fromEntries(VISIBLE.map(a => [a.key, findOpt(a.key, sel[a.key])]));
-const params = {};
-const paramSrc = {}; // 값마다 근거 문서(있으면). DESIGN.md에 주석으로 붙인다
-for (const p of Object.keys(PARAM)) {
-  const cons = VISIBLE.map(a => picked[a.key].params?.[p]).filter(e => e && e.s === '제약');
-  const top = cons.length ? cons.reduce((x, y) => (y.v > x.v ? y : x)) : null;
-  let floor = top ? top.v : 0; // 바닥은 제약만. 기본값은 제약도 관례도 없을 때만(core.js resolve와 같다)
-  let floorSrc = top ? top.src : '';
-  if (p === 'rowHeight' && params.targetMin > floor) { floor = params.targetMin; floorSrc = `최소 터치 영역 · ${paramSrc.targetMin}`; }
-  const conv = CONV_ORDER.map(k => picked[k].params?.[p]).find(e => e && e.s === '관례');
-  params[p] = conv ? Math.max(floor, conv.v) : (floor || PARAM[p][1]);
-  paramSrc[p] = (conv && conv.v === params[p] ? conv.src : floor === params[p] ? floorSrc : '') || '';
-}
+const { params, paramSrc, picked } = paramsFor(sel); // 근거 문서(있으면)는 DESIGN.md에 주석으로 붙인다
 const srcNote = p => (paramSrc[p] ? `   # ${paramSrc[p]}` : '');
 const rules = { 제약: [], 관례: [], 예시: [] };
 const seen = new Set();

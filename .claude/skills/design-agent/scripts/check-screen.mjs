@@ -1,16 +1,24 @@
 #!/usr/bin/env node
 // 만든 화면(HTML 파일)에서 흔한 실수를 찾는다. 사람이 볼 것을 줄이는 1차 검사이고, 다 잡지는 못한다
 // 쓰는 법: node check-screen.mjs page.html --sel platform=mobile,skill=first,device=shared,content=photo --action once
+//          --rules design-rules.json  (그 서비스에서 정한 것. 정한 주제는 빼고, 안 정한 취향 항목은 끝에 「정한 건지 확인」으로)
+//          --house                    (규칙 파일은 없지만 사내 시스템·브랜드 규칙이 있는 서비스)
 // 한계: <style> 안 CSS만 읽는다(<link> 파일은 안 읽는다). 레이아웃 계산이 없어 크기는 CSS에 적힌 값으로만 본다
 import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
 import { JSDOM } from 'jsdom';
+import { paramsFor } from './params.mjs';
 
 const args = process.argv.slice(2);
-const file = args.find(a => !a.startsWith('--') && !args[args.indexOf(a) - 1]?.startsWith('--'));
+const file = args.find((a, i) => !a.startsWith('--') && !['--sel', '--action', '--rules'].includes(args[i - 1]));
 const arg = name => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : null; };
 if (!file) { console.error('검사할 HTML 파일을 넣어 주세요. 예: node check-screen.mjs page.html --sel platform=mobile,skill=first'); process.exit(1); }
 const sel = Object.fromEntries((arg('--sel') || '').split(',').filter(Boolean).map(kv => kv.split('=')));
 const action = arg('--action') || 'none';
+const rules = arg('--rules') ? JSON.parse(readFileSync(arg('--rules'), 'utf8')) : args.includes('--house') ? {} : null;
+if (rules && args.includes('--house')) rules.house = true;
 
 const html = readFileSync(file, 'utf8');
 const { document: doc, getComputedStyle } = new JSDOM(html).window;
@@ -36,7 +44,11 @@ if (!text(doc.body) && doc.querySelector('script[src], script[type="module"]')) 
 
 const found = [];
 // 세기: 꼭 = 꼭 고칠 것(규격·사고), 권장 = 고치기를 권함, 확인 = 사람이 한 번 볼 것
-const add = (level, rule, why, els = []) => found.push({ level, rule, why, at: els.slice(0, 3).map(where) });
+// 서비스가 일부러 정했을 수 있는 항목(visual-audit.js HOUSE_TOPICS와 같은 주제 이름)
+const TOPIC = { '사진 목록에 스피너': 'pattern.loading', '굵은 글자가 너무 많음': 'weight', '보라·파랑 그라데이션': 'palette', 'Inter 한 가지 서체': 'font', '이모지 제목 표시': 'decor', '과장 문구': 'copy', '「A가 아니라 B」 문장': 'copy', '대시(—) 남발': 'copy' };
+// 실패 이름(references/failures.md, visual-audit.js FAILS)
+const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard' };
+const add = (level, rule, why, els = []) => found.push({ level, rule, why, at: els.slice(0, 3).map(where), fail: FAIL[rule], ...(TOPIC[rule] && { topic: TOPIC[rule] }) });
 
 if (badViewport) add('꼭', '확대 막기', `viewport에 「${viewport.trim()}」. user-scalable=no와 maximum-scale=1을 지운다(WCAG 2.2 1.4.4)`, [doc.querySelector('meta[name="viewport"]')]);
 
@@ -113,13 +125,24 @@ const dashes = (copy.match(/—/g) || []).length;
 if (dashes >= 3) add('확인', '대시(—) 남발', `화면 글에 「—」가 ${dashes}번 나온다. 문장을 나누거나 쉼표로`);
 
 // 11. 누를 곳 크기(CSS에 적힌 값만)
-const minTouch = sel.platform === 'desktop' ? 24 : sel.platform === 'tablet' ? 48 : 44;
+// 조건의 최소 누를 곳(params.mjs, recommend.mjs DESIGN.md와 같은 값). 플랫폼을 안 주면 모바일 기준 44px
+const minTouch = sel.platform ? paramsFor(sel).params.targetMin : 44;
 const small = [...css.matchAll(/([^{}]*(?:button|btn|\.icon)[^{}]*)\{[^}]*?(?:^|;|\s)(?:min-)?height\s*:\s*(\d+)px/gi)].filter(m => Number(m[2]) < minTouch);
 if (small.length) add('꼭', '누를 곳이 작음', `CSS에 ${small.map(m => `${m[1].trim().slice(0, 30)} ${m[2]}px`).slice(0, 3).join(', ')}. 이 조건의 최소는 ${minTouch}px`);
 
 const order = { 꼭: 0, 권장: 1, 확인: 2 };
 found.sort((a, b) => order[a.level] - order[b.level]);
-console.log(`검사: ${file}${Object.keys(sel).length ? ` · ${Object.entries(sel).map(([k, v]) => `${k}=${v}`).join(', ')}` : ''}${action !== 'none' ? ` · action=${action}` : ''}`);
-if (!found.length) console.log('걸린 것 없음. 이 검사가 못 보는 것(실제 크기, 대비, 흐름)은 스크린샷으로 확인한다');
-for (const f of found) console.log(`- [${f.level === '꼭' ? '꼭 고칠 것' : f.level === '권장' ? '고치기 권함' : '확인'}] ${f.rule}: ${f.why}${f.at.length ? `\n    위치: ${f.at.join(', ')}` : ''}`);
-process.exit(found.some(f => f.level === '꼭') ? 1 : 0);
+const ctx = {};
+vm.runInNewContext(`${readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'visual-audit.js'), 'utf8')}\nthis.visualHouse = visualHouse; this.houseName = houseName; this.failSummary = failSummary; this.FAILS = FAILS;`, ctx);
+const house = ctx.visualHouse(found, rules);
+const line = f => `${f.rule}: ${f.why}${f.at.length ? `\n    위치: ${f.at.join(', ')}` : ''}`;
+console.log(`검사: ${file}${Object.keys(sel).length ? ` · ${Object.entries(sel).map(([k, v]) => `${k}=${v}`).join(', ')}` : ''}${action !== 'none' ? ` · action=${action}` : ''}${rules ? ' · 서비스 규칙 있음' : ''}`);
+if (ctx.failSummary(house.main)) console.log(`${ctx.failSummary(house.main)} (이름 뜻과 고치는 순서: references/failures.md)`);
+if (!house.main.length) console.log(`${house.ask.length ? '규격·동작에서 ' : ''}걸린 것 없음. 이 검사가 못 보는 것(실제 크기, 대비, 흐름)은 스크린샷으로 확인한다`);
+for (const f of house.main) console.log(`- [${f.level === '꼭' ? '꼭 고칠 것' : f.level === '권장' ? '고치기 권함' : '확인'} · ${ctx.FAILS[f.fail]}] ${line(f)}`);
+if (house.ask.length) {
+  console.log('\n정한 건지 확인(서비스에서 일부러 정한 거면 그대로 두고, 아니면 고친다. 답은 design-rules.json에 적는다)');
+  for (const f of house.ask) console.log(`- [${ctx.houseName(f.topic)} · ${ctx.FAILS[f.fail]}] ${line(f)}`);
+}
+if (house.skipped.length) console.log(`\n정해 둬서 뺀 것: ${house.skipped.join(', ')}`);
+process.exit(house.main.some(f => f.level === '꼭') ? 1 : 0);

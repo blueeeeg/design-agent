@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시험: 번호가 두 번 붙음</title>
+<!-- 걸려야 하는 것: .steps(번호를 끄지 않은 ol + 글에 번호). 걸리면 안 되는 것: .done(CSS로 번호를 끈 ol), .plain(글에 번호 없는 ol) -->
+<style>
+  body { font-family: Pretendard, sans-serif; font-size: 16px; color: #1f2328; }
+  ul { list-style: none; }
+  .done { list-style: none; padding: 0; }
+</style>
+</head>
+<body>
+<ol class="steps"><li>1 고르기</li><li>2 픽업 시간</li><li>3 결제</li></ol>
+<ol class="done"><li>1. 주문 확인</li><li>2. 결제</li></ol>
+<ol class="plain"><li>빵을 고른다</li><li>시간을 고른다</li></ol>
+</body>
+</html>

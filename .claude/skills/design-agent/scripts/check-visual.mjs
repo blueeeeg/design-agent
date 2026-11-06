@@ -50,7 +50,8 @@ if (val('--from-json')) {
   for (const m of html.matchAll(/(--[\w-]+)\s*:\s*([^;{}]+)[;}]/g)) vars[m[1]] = m[2].trim();
   const sub = (s, depth = 0) => (depth > 8 ? s : s.replace(/var\(\s*(--[\w-]+)\s*(?:,\s*([^()]*(?:\([^()]*\))?[^()]*))?\)/g, (_, n, fb) => sub(vars[n] ?? (fb || '').trim(), depth + 1)));
   html = html.replace(/<style([^>]*)>([\s\S]*?)<\/style>/gi, (_, a, css) => `<style${a}>${sub(css)}</style>`).replace(/style="([^"]*)"/g, (_, s) => `style="${sub(s)}"`);
-  const dom = new JSDOM(html, { runScripts: flag('--run-scripts') ? 'dangerously' : 'outside-only', pretendToBeVisual: true });
+  // --run-scripts에서도 페이지가 밖으로 요청을 보내지 못하게 막는다(XHR·fetch·WebSocket)
+  const dom = new JSDOM(html, { runScripts: flag('--run-scripts') ? 'dangerously' : 'outside-only', pretendToBeVisual: true, beforeParse(w) { if (flag('--run-scripts')) { w.XMLHttpRequest = undefined; w.fetch = undefined; w.WebSocket = undefined; w.EventSource = undefined; } } });
   dom.window.__jsdom = true;
   // 스크립트가 그린 화면은 그릴 시간을 조금 준다(타이머로 스켈레톤을 걷는 화면 등)
   if (flag('--run-scripts')) await new Promise(res => setTimeout(res, Number(val('--wait') || 2500)));

@@ -3,16 +3,18 @@
 // 쓰는 법: node check-screen.mjs page.html --sel platform=mobile,skill=first,device=shared,content=photo --action once
 //          --rules design-rules.json  (그 서비스에서 정한 것. 정한 주제는 빼고, 안 정한 취향 항목은 끝에 「정한 건지 확인」으로)
 //          --house                    (규칙 파일은 없지만 사내 시스템·브랜드 규칙이 있는 서비스)
+//          --run-scripts              (화면을 자바스크립트로 그리면. 스크립트를 돌린 뒤의 화면을 본다. 페이지 스크립트를 실행하니 내가 만든 파일에만. 밖으로 보내는 요청은 막는다)
+//          --wait 2500                (--run-scripts에서 그릴 시간, ms)
 // 한계: <style> 안 CSS만 읽는다(<link> 파일은 안 읽는다). 레이아웃 계산이 없어 크기는 CSS에 적힌 값으로만 본다
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import { JSDOM } from 'jsdom';
+import { JSDOM, VirtualConsole } from 'jsdom';
 import { paramsFor } from './params.mjs';
 
 const args = process.argv.slice(2);
-const file = args.find((a, i) => !a.startsWith('--') && !['--sel', '--action', '--rules'].includes(args[i - 1]));
+const file = args.find((a, i) => !a.startsWith('--') && !['--sel', '--action', '--rules', '--wait'].includes(args[i - 1]));
 const arg = name => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : null; };
 if (!file) { console.error('검사할 HTML 파일을 넣어 주세요. 예: node check-screen.mjs page.html --sel platform=mobile,skill=first'); process.exit(1); }
 const sel = Object.fromEntries((arg('--sel') || '').split(',').filter(Boolean).map(kv => kv.split('=')));
@@ -20,7 +22,21 @@ const action = arg('--action') || 'none';
 const rules = arg('--rules') ? JSON.parse(readFileSync(arg('--rules'), 'utf8')) : args.includes('--house') ? {} : null;
 if (rules && args.includes('--house')) rules.house = true;
 
-const html = readFileSync(file, 'utf8');
+const raw = readFileSync(file, 'utf8');
+// 스크립트로 그리는 화면은 정적 HTML이 뼈대뿐이라 검사할 것이 거의 없다(2026-11-06 효과 비교에서 스킬이 만든 화면 둘이 정적 글자 8~9자)
+const runScripts = args.includes('--run-scripts');
+let html = raw;
+const scriptErrors = [];
+if (runScripts) {
+  // 페이지가 밖으로 요청을 보내지 못하게 막는다(XHR·fetch·WebSocket). <script src>와 외부 파일은 jsdom 기본값대로 받지 않는다
+  const vc = new VirtualConsole();
+  vc.on('jsdomError', e => { if (!/Not implemented/.test(e.message)) scriptErrors.push(e.message.split('\n')[0].slice(0, 120)); });
+  const d = new JSDOM(raw, { runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc, beforeParse(w) { w.XMLHttpRequest = undefined; w.fetch = undefined; w.WebSocket = undefined; w.EventSource = undefined; } });
+  const wait = Number(arg('--wait') || 2500);
+  await new Promise(res => setTimeout(res, Number.isFinite(wait) && wait >= 0 ? wait : 2500));
+  html = d.serialize();
+  d.window.close();
+}
 const { document: doc, getComputedStyle } = new JSDOM(html).window;
 const css = [...doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
 const scripts = [...doc.querySelectorAll('script')].map(s => s.textContent).join('\n');
@@ -32,6 +48,14 @@ const where = el => {
   return `<${el.tagName.toLowerCase()}${id}${cls}>`;
 };
 
+// 안에 넣은 스크립트가 화면을 그리는데 --run-scripts 없이 돌렸으면 알린다. 뼈대만 보고 「걸린 것 없음」이라고 하면 통과로 읽힌다
+const inlineJs = [...doc.querySelectorAll('script:not([src])')].reduce((n, s) => n + s.textContent.length, 0);
+const bodyShown = doc.body.cloneNode(true); bodyShown.querySelectorAll('script, style, template, noscript').forEach(x => x.remove());
+// 대략의 기준이다: 정적 글자가 80자를 넘는 껍데기(머리·바닥 글만 정적)는 놓친다
+const thin = inlineJs > 1500 && text(bodyShown).replace(/\s/g, '').length < 80;
+const drawnByJs = !runScripts && thin;
+// 스크립트를 돌렸는데도 그려진 것이 거의 없으면(오류로 멈춤 등) 통과로 읽히지 않게 한다
+const notDrawn = runScripts && (thin || scriptErrors.length > 0);
 // 확대 막기: 글자가 작아 보이는 사람이 손가락으로 키울 수 없다 — WCAG 2.2 1.4.4. 빈 껍데기 index.html에도 있으니 먼저 본다
 const viewport = doc.querySelector('meta[name="viewport"]')?.getAttribute('content') || '';
 const badViewport = /user-scalable\s*=\s*(no|0)|maximum-scale\s*=\s*1(\.0*)?(\s|,|$)/i.test(viewport);
@@ -47,7 +71,7 @@ const found = [];
 // 서비스가 일부러 정했을 수 있는 항목(visual-audit.js HOUSE_TOPICS와 같은 주제 이름)
 const TOPIC = { '사진 목록에 스피너': 'pattern.loading', '굵은 글자가 너무 많음': 'weight', '보라·파랑 그라데이션': 'palette', 'Inter 한 가지 서체': 'font', '이모지 제목 표시': 'decor', '과장 문구': 'copy', '「A가 아니라 B」 문장': 'copy', '대시(—) 남발': 'copy' };
 // 실패 이름(references/failures.md, visual-audit.js FAILS)
-const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard' };
+const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard', '번호가 두 번 붙음': 'confusing' };
 const add = (level, rule, why, els = []) => found.push({ level, rule, why, at: els.slice(0, 3).map(where), fail: FAIL[rule], ...(TOPIC[rule] && { topic: TOPIC[rule] }) });
 
 if (badViewport) add('꼭', '확대 막기', `viewport에 「${viewport.trim()}」. user-scalable=no와 maximum-scale=1을 지운다(WCAG 2.2 1.4.4)`, [doc.querySelector('meta[name="viewport"]')]);
@@ -84,6 +108,16 @@ if (lists.length && !/없습니다|없어요|비어 있|비었|아직 .*없|empt
 const shape = el => [...el.children].map(c => c.tagName).join('>');
 const uneven = lists.filter(l => l.children.length >= 3 && new Set([...l.children].map(shape)).size > 1);
 if (uneven.length) add('확인', '같은 목록 안 항목 구조가 다름', '같은 종류는 같은 자리에 같은 정보를 둔다(사진·이름·시간 위치)', uneven);
+// <ol>은 브라우저가 번호를 붙인다. 글에도 「1」「1.」을 넣으면 「1. 1 고르기」가 된다(2026-11-06 효과 비교에서 단계 표시줄 두 번)
+// CSS로 번호를 끄지 않았는지는 <style> 글로 본다(jsdom은 기본 번호 값을 주지 않는다)
+const olOff = sel => new RegExp(`(^|[},\\s])${sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*(>\\s*li\\s*)?[^{]*\\{[^}]*list-style(-type)?\\s*:\\s*none`).test(css);
+const doubleNum = [...doc.querySelectorAll('ol')].filter(ol => visible(ol)).filter(ol => {
+  const items = [...ol.children].filter(li => li.tagName === 'LI');
+  if (items.length < 2 || !items.every(li => /^\s*\d+\s*[.)]?(\s|$)/.test(li.textContent))) return false;
+  const names = ['ol', ...(ol.id ? [`#${ol.id}`] : []), ...[...ol.classList].map(c => `.${c}`), ...[...ol.classList].map(c => `ol.${c}`)];
+  return !names.some(olOff) && !/list-style(-type)?\s*:\s*none/.test(ol.getAttribute('style') || '');
+});
+if (doubleNum.length) add('권장', '번호가 두 번 붙음', '<ol>이 번호를 붙이는데 글에도 번호가 있어 「1. 1 고르기」처럼 보인다. 글의 번호를 지우거나 CSS로 list-style: none', doubleNum);
 
 // 7. 띄운 층(모달·시트·팝오버)에 테두리도 그림자도 없음
 const layers = [...doc.querySelectorAll('dialog, [role="dialog"], [class*="modal" i], [class*="sheet" i], [class*="popover" i], [class*="dropdown" i]')];
@@ -137,8 +171,10 @@ vm.runInNewContext(`${readFileSync(join(dirname(fileURLToPath(import.meta.url)),
 const house = ctx.visualHouse(found, rules);
 const line = f => `${f.rule}: ${f.why}${f.at.length ? `\n    위치: ${f.at.join(', ')}` : ''}`;
 console.log(`검사: ${file}${Object.keys(sel).length ? ` · ${Object.entries(sel).map(([k, v]) => `${k}=${v}`).join(', ')}` : ''}${action !== 'none' ? ` · action=${action}` : ''}${rules ? ' · 서비스 규칙 있음' : ''}`);
+if (drawnByJs) console.log('화면을 자바스크립트로 그리는 파일로 보인다. 지금은 뼈대만 봤다. --run-scripts를 붙여 다시 돌린다(내가 만든 파일만)');
+if (notDrawn) console.log(`스크립트를 돌렸지만 ${thin ? '그려진 것이 거의 없다' : '오류가 났다'}. 검사 결과를 통과로 보지 않는다. 브라우저에서 띄워 본다${scriptErrors.length ? `\n  스크립트 오류: ${scriptErrors.slice(0, 3).join(' / ')}` : ''}`);
 if (ctx.failSummary(house.main)) console.log(`${ctx.failSummary(house.main)} (이름 뜻과 고치는 순서: references/failures.md)`);
-if (!house.main.length) console.log(`${house.ask.length ? '규격·동작에서 ' : ''}걸린 것 없음. 이 검사가 못 보는 것(실제 크기, 대비, 흐름)은 스크린샷으로 확인한다`);
+if (!house.main.length && !drawnByJs && !notDrawn) console.log(`${house.ask.length ? '규격·동작에서 ' : ''}걸린 것 없음. 이 검사가 못 보는 것(실제 크기, 대비, 흐름)은 스크린샷으로 확인한다`);
 for (const f of house.main) console.log(`- [${f.level === '꼭' ? '꼭 고칠 것' : f.level === '권장' ? '고치기 권함' : '확인'} · ${ctx.FAILS[f.fail]}] ${line(f)}`);
 if (house.ask.length) {
   console.log('\n정한 건지 확인(서비스에서 일부러 정한 거면 그대로 두고, 아니면 고친다. 답은 design-rules.json에 적는다)');

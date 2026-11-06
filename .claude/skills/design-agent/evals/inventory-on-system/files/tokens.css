@@ -1,0 +1,41 @@
+/* 시험용으로 지어낸 디자인 시스템 토큰. 실제 회사 값이 아니다 */
+:root {
+  --ds-font-family: "Pretendard", "Apple SD Gothic Neo", sans-serif;
+  --ds-font-size-sm: 12px;
+  --ds-font-size-md: 14px;
+  --ds-font-size-lg: 16px;
+  --ds-font-size-xl: 20px;
+  --ds-font-size-2xl: 24px;
+  --ds-font-weight-regular: 400;
+  --ds-font-weight-bold: 600;
+  --ds-line-height: 1.5;
+
+  --ds-color-bg: #f6f7f9;
+  --ds-color-surface: #ffffff;
+  --ds-color-text: #1b1f24;
+  --ds-color-text-sub: #59636e;
+  --ds-color-border: #d0d7de;
+  --ds-color-border-strong: #8c959f;
+  --ds-color-primary: #0b5cad;
+  --ds-color-primary-hover: #094a8c;
+  --ds-color-on-primary: #ffffff;
+  --ds-color-danger: #b42318;
+  --ds-color-on-danger: #ffffff;
+  --ds-color-success: #1a7f37;
+  --ds-color-warning: #9a6700;
+  --ds-color-focus: #0b5cad;
+
+  --ds-space-1: 4px;
+  --ds-space-2: 8px;
+  --ds-space-3: 12px;
+  --ds-space-4: 16px;
+  --ds-space-5: 24px;
+  --ds-space-6: 32px;
+
+  --ds-radius-sm: 4px;
+  --ds-radius-md: 6px;
+
+  --ds-control-height: 32px;
+  --ds-table-row-height: 40px;
+  --ds-shadow-overlay: 0 8px 24px rgba(27, 31, 36, 0.16);
+}

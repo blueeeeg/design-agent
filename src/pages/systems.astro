@@ -70,7 +70,7 @@ const countOf = (el: string, sys: string) => (GUIDE[el] || []).filter(g => sys i
         <thead><tr><th scope="col">패턴</th>{systemsData.systems.map(s => <th scope="col"><a href={`#sys-${s.id}`}>{s.short}</a></th>)}</tr></thead>
         <tbody>
           {covered.map(e => (
-            <tr><th scope="row"><a href={`${BASE}elements/${e.id}/`}>{e.name}</a></th>{systemsData.systems.map(s => { const n = countOf(e.id, s.id); return <td class={n ? 'on' : ''} title={n ? `${s.short}: 기준 ${n}줄` : undefined}>{n ? <span class="dot" aria-label="있음">●</span> : ''}</td>; })}</tr>
+            <tr><th scope="row"><a href={`${BASE}elements/${e.id}/`}>{e.name}</a></th>{systemsData.systems.map(s => { const n = countOf(e.id, s.id); return <td class={n ? 'on' : ''} title={n ? `${s.short}: 기준 ${n}줄` : undefined}>{n ? <span class="dot" role="img" aria-label="있음"></span> : ''}</td>; })}</tr>
           ))}
         </tbody>
       </table>

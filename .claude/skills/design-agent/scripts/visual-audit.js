@@ -251,9 +251,11 @@ function visualAudit(doc, win, depth = 0) {
 
   // ---- 글자 크기·굵기 ----
   const sizes = {}, charsBySize = {};
-  texts.forEach(t => { sizes[t.size] = (sizes[t.size] || 0) + 1; charsBySize[t.size] = (charsBySize[t.size] || 0) + t.chars; });
+  // 고정폭 글자(코드, 영어 이름 같은 보조 라벨)는 본문이 아니다. 고르기 화면에서 이것이 글자 수로 본문을 이겨 「본문 12px」로 잘못 잡혔다(2026-11-06 카탈로그 /plan/)
+  const monoFam = f => /mono|courier|consolas|menlo|monaco|fira code|source code/i.test(f || '');
+  texts.forEach(t => { sizes[t.size] = (sizes[t.size] || 0) + 1; if (!monoFam(t.family)) charsBySize[t.size] = (charsBySize[t.size] || 0) + t.chars; });
   // 본문은 「글자 수가 가장 많은 크기」. 덩어리 수로 세면 키패드 숫자·버튼이 본문으로 잡힌다
-  const bodySize = +Object.entries(charsBySize).sort((a, b) => b[1] - a[1])[0]?.[0] || 16;
+  const bodySize = +Object.entries(charsBySize).sort((a, b) => b[1] - a[1])[0]?.[0] || +Object.keys(sizes)[0] || 16;
   const families = {};
   texts.forEach(t => { if (t.family) families[t.family] = (families[t.family] || 0) + 1; });
 

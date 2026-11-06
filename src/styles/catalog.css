@@ -5,6 +5,8 @@
   --ink: #14212B;
   --muted: #5A6974;
   --line: #D8E0E5;
+  /* 입력칸 테두리는 바탕·칸 안과 3:1이 넘어야 칸으로 보인다(WCAG 2.2 1.4.11). 나눔선(--line)보다 진하게 */
+  --field-line: #7F8D97;
   /* 사이트 자신은 거의 무채색: 링크·현재 위치는 글자색. 색은 예시 그림(--demo-*)과 주의(주황)·위험(빨강)만 갖는다 */
   --accent: #14212B;
   --accent-soft: #E7ECEF;
@@ -20,14 +22,14 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0E1418; --surface: #161F25; --ink: #E4EBEE; --muted: #93A3AD; --line: #283640;
+    --bg: #0E1418; --surface: #161F25; --ink: #E4EBEE; --muted: #93A3AD; --line: #283640; --field-line: #5E707C;
     --accent: #E4EBEE; --accent-soft: #23313A; --demo-accent: #5CC6BF; --demo-accent-soft: #15302F; --warn: #F0A646; --warn-soft: #33260F;
     --danger: #F07A64; --device: #36444D; --preview-bg: #0A0F12;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0E1418; --surface: #161F25; --ink: #E4EBEE; --muted: #93A3AD; --line: #283640;
+  --bg: #0E1418; --surface: #161F25; --ink: #E4EBEE; --muted: #93A3AD; --line: #283640; --field-line: #5E707C;
   --accent: #E4EBEE; --accent-soft: #23313A; --demo-accent: #5CC6BF; --demo-accent-soft: #15302F; --warn: #F0A646; --warn-soft: #33260F;
   --danger: #F07A64; --device: #36444D; --preview-bg: #0A0F12;
   color-scheme: dark;
@@ -566,7 +568,7 @@ a.brand { display: block; color: var(--ink); text-decoration: none; }
 .dcard h4 .en { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--muted); }
 .dcard .alias { color: var(--ink); }
 .dcard .one { color: var(--ink); font-size: 14px; }
-.dcard .uses a { text-decoration: none; }
+.dcard .uses a { text-decoration: none; display: inline-flex; align-items: center; min-height: 24px; }
 .dict-foot { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
 
 /* 디자인 시스템이 하는 말: 상자 없이 작은 글로. 방식에 대한 말은 카드 안, 패턴 전체는 머리 아래 */
@@ -574,13 +576,14 @@ a.brand { display: block; color: var(--ink); text-decoration: none; }
 .ds-common ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .ds-common .by, .ds-line .by { font-size: 12px; color: var(--muted); }
 .ds-common .fl, .ds-line .fl { font-size: 12px; color: var(--muted); white-space: nowrap; }
-.ds-common .by a, .ds-line .by a { text-decoration: none; }
+.ds-common .by a, .ds-line .by a { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-height: 24px; min-width: 24px; }
 
 /* 디자인 시스템(/systems/) */
 .sys-rules { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 10px; max-width: 80ch; }
 .sys-rules li { display: grid; gap: 2px; font-size: 14px; }
 .sys-rules .by { font-size: 12px; color: var(--muted); }
 .sys-rules .by a, .dict-cat h3 a { text-decoration: none; }
+.sys-rules .by a { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; min-width: 24px; }
 
 /* 위쪽 메뉴: 큰 메뉴 넷. 왼쪽 열은 그 아래에서 각 페이지의 목록을 맡는다 */
 :root { --topnav-h: 52px; }
@@ -593,7 +596,7 @@ a.brand { display: block; color: var(--ink); text-decoration: none; }
 .topnav nav a small { font-size: 12px; color: var(--muted); font-weight: 400; }
 .topnav nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* 왼쪽 열의 찾기 */
-.find { width: 100%; font: inherit; font-size: 14px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.find { width: 100%; font: inherit; font-size: 14px; padding: 6px 10px; border: 1px solid var(--field-line); border-radius: 6px; background: var(--surface); color: var(--ink); }
 .find:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .tools .count { font-size: 12px; color: var(--muted); }
 .tools .count:empty { display: none; }
@@ -627,7 +630,7 @@ a.brand { display: block; color: var(--ink); text-decoration: none; }
 .axsel > span small { font-weight: 400; color: var(--muted); }
 .plan-list { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1px solid var(--line); }
 .plan-row { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
-.plan-pat { font-size: 14px; color: var(--ink); text-decoration: none; }
+.plan-pat { font-size: 14px; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; min-height: 24px; }
 .plan-pat:hover { color: var(--accent); }
 .plan-pick { display: grid; gap: 2px; }
 .plan-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
@@ -661,7 +664,7 @@ a.brand { display: block; color: var(--ink); text-decoration: none; }
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .prompt.open .prompt-text { display: block; -webkit-line-clamp: unset; line-clamp: none; }
 .prompt-acts { display: flex; align-items: center; gap: 8px; }
-.prompt-more { font: inherit; font-size: 12px; padding: 0; border: 0; background: none; color: var(--accent); cursor: pointer; }
+.prompt-more { font: inherit; font-size: 12px; min-height: 24px; padding: 0 4px; border: 0; background: none; color: var(--accent); cursor: pointer; }
 .prompt-more:hover { text-decoration: underline; text-underline-offset: 3px; }
 .prompt-more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
 .prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -786,7 +789,9 @@ main { justify-self: start; max-width: 1640px; }
 .md-intro { border-bottom: 0; padding-bottom: 0; }
 .plan-list-section .md-intro p, .plan-rules .md-intro p { max-width: 68rem; }
 .matrix td.on { background: none; }
-.matrix td .dot { color: var(--ink); font-size: 10px; }
+.matrix td .dot { background: var(--ink); }
+/* 표 머리 시스템 이름·카드의 문서 링크도 누를 곳 24px(WCAG 2.2 2.5.8) */
+.matrix thead th a, .matrix tbody th a, .dslot .giting { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; min-width: 24px; }
 /* 패턴 페이지 왼쪽 목록: 묶음 이름 대신 묶음 사이 여백만 */
 .side nav .nav-gap { display: block; height: 14px; }
 .badge { white-space: nowrap; }

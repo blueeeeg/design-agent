@@ -813,7 +813,8 @@ function visualJudge(r, cond) {
   if (pct(r.bold, r.textCount) > 40) say('글자', '권장', `글자 덩어리의 ${pct(r.bold, r.textCount)}%가 굵다. 굵기는 제목과 핵심 숫자에만`, 'flat', 'weight');
   if (Object.keys(r.families).length > 2) say('글자', '권장', `서체가 ${Object.keys(r.families).length}가지다. 본문 1가지(+숫자·코드용 1가지)로`, 'uneven', 'font');
   const sp = r.spacing.filter(s => s.v >= 2);
-  const off = sp.filter(s => s.v % 4 !== 0).reduce((n, s) => n + s.n, 0), all = sp.reduce((n, s) => n + s.n, 0);
+  // 2px는 IBM Carbon 단계에 있는 값이다(visual-basics.md 「단계를 정한다」). 4의 배수와 함께 허용한다
+  const off = sp.filter(s => s.v % 4 !== 0 && s.v !== 2).reduce((n, s) => n + s.n, 0), all = sp.reduce((n, s) => n + s.n, 0);
   say('여백·모양', '정보', `여백 값 ${sp.length}가지(많이 쓴 값 ${sp.slice(0, 6).map(s => s.v).join('·')}px), 모서리 ${r.radii.length}가지(${r.radii.slice(0, 4).map(x => x.v).join('·')}px), 그림자 ${r.shadows}가지`);
   if (pct(off, all) > 25) say('여백·모양', '권장', `여백의 ${pct(off, all)}%가 4의 배수가 아니다. 4·8·12·16·24·32 단계 안에서만 쓴다`, 'uneven', 'spacing');
   if (sp.length > 14) say('여백·모양', '확인', `여백 값이 ${sp.length}가지로 흩어져 있다. 단계 6~8개로 줄인다`, 'uneven', 'spacing');

@@ -43,6 +43,7 @@ function renderAxes() {
 }
 
 // 패턴마다 추천 한 줄. 근거가 없으면 솔직히 「가장 흔한 방식」이라고 적는다.
+// 영어 이름은 패턴 페이지에 있다. 여기서는 빼서 작은 회색 글이 목록을 덮지 않게 한다(2026-11-06)
 // 「상태 알리기」 같은 묶음 이름은 쓰는 사람이 알 필요가 없어 한 목록으로 둔다(순서는 묶음 순서 그대로)
 function renderList() {
   const ordered = GROUP_ORDER.flatMap(g => PATTERNS.filter(p => p.group === g));
@@ -54,7 +55,7 @@ function renderList() {
     const next = res.scored.filter(s => s !== b).sort((x, y) => y.score - x.score)[0];
     return `<li class="plan-row" data-pattern="${p.id}">
       <a class="plan-pat" href="${BASE}elements/${p.id}/">${esc(p.name)}</a>
-      <div class="plan-pick"><span class="plan-name"><b>${esc(b.o.name)}</b> <small class="en">${esc(b.o.en)}</small></span>${why ? `<span class="plan-why">${esc(why)}</span>` : ''}${next && !res.neutral && next.score > 0 ? `<span class="plan-alt">다음 후보: ${esc(next.o.name)}</span>` : ''}</div>
+      <div class="plan-pick"><span class="plan-name"><b>${esc(b.o.name)}</b></span>${why ? `<span class="plan-why">${esc(why)}</span>` : ''}${next && !res.neutral && next.score > 0 ? `<span class="plan-alt">다음 후보: ${esc(next.o.name)}</span>` : ''}</div>
     </li>`;
   }).join('');
 }

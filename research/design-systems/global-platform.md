@@ -30,7 +30,7 @@ m3.material.io는 스크립트로 그려져 본문을 못 읽었다. Material �
 - 만든 곳: Ant Group(저작권 표기 Ant UED). 주소: https://ant.design
 - 구조: 디자인 가치/사양 + 컴포넌트 73개 + ProComponents 6개. 분류: 일반·레이아웃·내비게이션·데이터 입력(18)·데이터 표시(21)·피드백(11)·기타. 「패턴」 문서는 따로 없음
 - 이용 조건: 코드 MIT(https://github.com/ant-design/ant-design). 문서 글·아이콘 조건은 못 찾음
-- AI 연결: https://ant.design/llms.txt 있음(문서·컴포넌트 마크다운 링크 목록). MCP는 못 찾음
+- AI 연결: https://ant.design/llms.txt 있음(문서·컴포넌트 마크다운 링크 목록). MCP와 에이전트용 안내도 있다(2026-11-06 확인. 2026-10-29에는 MCP를 못 찾았다)
 - 특징: 데스크톱 관리자 화면 기준. 모바일 기준은 약하고 컴포넌트 사용 설명은 짧다
 
 ## 사용 기준
@@ -70,6 +70,7 @@ m3.material.io는 스크립트로 그려져 본문을 못 읽었다. Material �
 
 - 터치 영역(iOS/iPadOS): 기본 44×44pt, 최소 28×28pt. 컨트롤 사이 여백은 테두리 있는 것 12pt, 없는 것 24pt — Apple, https://developer.apple.com/design/human-interface-guidelines/accessibility
 - 클릭 영역(macOS): 기본 28×28pt, 최소 20×20pt. visionOS 기본 60×60pt. 즉 platform=데스크톱은 터치의 절반 크기가 허용된다 — Apple, 같은 주소
+  - 2026-10-28 HIG에 터치 화면 Mac 지침이 생겼다. 터치로 쓸 때는 컨트롤을 키운다. 숫자는 없어서 위 기준은 그대로 둔다 — Apple, https://developer.apple.com/design/whats-new/ (2026-11-06 확인)
 - Android: 48×48dp 이상, 간격 8dp 이상 — Google 접근성 도움말, https://support.google.com/accessibility/android/answer/7101858
 - Fluent 2: 터치 최소 iOS·웹 44×44, Android 48×48. 간격 단위 4 기준(2·6·10 보조) — https://fluent2.microsoft.design/layout
 - Fluent 2 폭 구간(px): small 320–479, medium 480–639, large 640–1023, x-large 1024–1365, xx-large 1366–1919, 1920+ — 같은 주소 (원문 표에 서로 어긋나는 값이 섞여 있었다)

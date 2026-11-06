@@ -27,7 +27,8 @@
 - `src/` — Astro 정적 사이트. 화면 밖 의존은 Google Fonts뿐. 방식을 더하면 `data/elements.json`에 적고 `src/scripts/renders.js`에 같은 id로 그림 함수를 더한다(없으면 페이지가 멈춘다)
 - `screens/{서비스}/` — 직접 찍은 화면. 이름 규칙은 `SHOTLIST.md`
 - `tools/` — 검사 스크립트
-- `refs-private/` — 외부 사이트에서 내려받은 개인 참고 이미지. 공개 금지. `index.html`이 패턴별 갤러리이고, 개발 서버(`npm run dev`)의 `/refs/`에서도 열린다. 이 연결은 `astro.config.mjs`가 개발 서버에서만 만들고 빌드에는 넣지 않는다. `fetch_lazyweb.py`로 다시 받고 `build_gallery.py`로 다시 만든다. 어느 이미지가 어느 요소인지, 요소 안 어느 상황(`case`, 상황 목록은 `build_gallery.py`의 CASES와 `cases.json`)인지, 카탈로그의 어느 방식(`method`)인지, 일부러 남긴 나쁜 예(`bad`)인지는 `lazyweb/review.json`에 직접 보고 적는다. 메모(`note`)는 요소마다 따로 쓰고 그 요소 이야기만 적는다. 이름은 카탈로그 방식 이름을 쓰고, 「」에는 화면에 실제로 쓰인 글자만 넣는다. Lazyweb 주제 이름만 믿고 넣지 않는다. 국내 웹사이트 섹션은 `jjinmango/`에 있다(찐망고 레퍼런스, `fetch_jjinmango.py`로 받고 판정은 `jjinmango/review.json`, 키는 사이트 항목 번호). 사이트 고지가 개인 참고용이라 여기에만 둔다
+- `refs-private/` — 외부 사이트에서 내려받은 개인 참고 이미지. 공개 금지. `index.html`이 패턴별 갤러리이고, 개발 서버(`npm run dev`)의 `/refs/`에서도 열린다. 이 연결은 `astro.config.mjs`가 개발 서버에서만 만들고 빌드에는 넣지 않는다. `fetch_lazyweb.py`로 다시 받고 `build_gallery.py`로 다시 만든다. Lazyweb 이미지는 2026-11-01 약관 개정(대량 수집 금지)으로 지금 있는 285장에서 더 받지 않는다(`SOURCES.md`). 어느 이미지가 어느 요소인지, 요소 안 어느 상황(`case`, 상황 목록은 `build_gallery.py`의 CASES와 `cases.json`)인지, 카탈로그의 어느 방식(`method`)인지, 일부러 남긴 나쁜 예(`bad`)인지는 `lazyweb/review.json`에 직접 보고 적는다. 메모(`note`)는 요소마다 따로 쓰고 그 요소 이야기만 적는다. 이름은 카탈로그 방식 이름을 쓰고, 「」에는 화면에 실제로 쓰인 글자만 넣는다. Lazyweb 주제 이름만 믿고 넣지 않는다. 국내 웹사이트 섹션은 `jjinmango/`에 있다(찐망고 레퍼런스, `fetch_jjinmango.py`로 받고 판정은 `jjinmango/review.json`, 키는 사이트 항목 번호). 사이트 고지가 개인 참고용이라 여기에만 둔다
+- `research/` — 조사 정리. 무언가를 찾아보거나 파악하면 `research/README.md` 목록에 한 항목을 더한다(날짜, 정리 위치, 가져온 것, 남은 것)
 - `SHOTLIST.md` — 서비스별 촬영 목록 / `SOURCES.md` — 화면 출처와 링크 / `NOTICE.md` — 권리 고지
 
 ## 글쓰기

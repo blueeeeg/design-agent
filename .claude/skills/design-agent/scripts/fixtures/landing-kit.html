@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시험: 제목 여백, 그라데이션 대비, 알약·아이콘 상자</title>
+<!-- 걸려야 하는 것: 제목 위·아래 여백이 같음(2곳 이상), 그라데이션 바탕 위 흰 글자, 그라데이션 글자, 큰 제목 위 알약 배지, 제목마다 앞에 색 네모 아이콘 상자(3개), 채운 버튼이 모두 알약 모양 -->
+<!-- 걸리면 안 되는 것: display:none인 메뉴 안의 옅은 글자(조상이 숨겼다) -->
+<style>
+  body { margin: 0; font-family: Pretendard, sans-serif; color: #1f2328; background: #ffffff; font-size: 16px; line-height: 1.6; }
+  main { max-width: 960px; margin: 0 auto; padding: 32px 16px; }
+  .menu { display: none; }
+  .menu a { color: #dddddd; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 14px; }
+  h1 { font-size: 40px; line-height: 1.3; margin: 16px 0; }
+  .hero { padding: 32px; background: linear-gradient(135deg, #ffffff, #4338ca); }
+  .hero p { color: #ffffff; margin: 0 0 16px; }
+  .shine { background: linear-gradient(90deg, #a5b4fc, #fbcfe8); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 16px; }
+  .btn { display: inline-block; padding: 12px 20px; border-radius: 999px; background: #4338ca; color: #fff; text-decoration: none; }
+  h2 { font-size: 24px; margin: 24px 0; }
+  p { margin: 0 0 16px; }
+  .feature { padding: 16px 0; }
+  .ico { width: 48px; height: 48px; border-radius: 12px; background: #eef2ff; }
+  h3 { font-size: 18px; margin: 12px 0 8px; }
+</style>
+</head>
+<body>
+<nav><ul class="menu"><li><a href="#a">숨은 메뉴 항목</a></li><li><a href="#b">다른 숨은 항목</a></li></ul></nav>
+<main>
+  <span class="badge">새 기능이 나왔어요</span>
+  <h1>매장 주문을 한 화면에서</h1>
+  <section class="hero">
+    <p>주문, 재고, 매출을 한곳에서 확인하세요. 처음 한 달은 무료로 쓸 수 있습니다.</p>
+    <a class="btn" href="#start">무료로 시작하기</a>
+    <a class="btn" href="#demo">상담 신청하기</a>
+  </section>
+  <p class="shine">지금 바로 시작할 수 있어요</p>
+  <p>매장마다 쓰는 방식이 달라서, 처음 열면 가게 종류를 묻고 그에 맞춰 화면을 꾸립니다.</p>
+  <h2>할 수 있는 일</h2>
+  <p>주문이 들어오면 알림이 오고, 주방 화면에 바로 뜹니다. 손님이 기다리는 시간이 줄어듭니다.</p>
+  <div class="feature"><div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16" stroke="#3730a3" fill="none"/></svg></div><h3>주문 보기</h3><p>들어온 주문을 시간순으로 봅니다.</p></div>
+  <div class="feature"><div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16" stroke="#3730a3" fill="none"/></svg></div><h3>재고 세기</h3><p>남은 수량을 품목별로 봅니다.</p></div>
+  <div class="feature"><div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="#3730a3" fill="none"/></svg></div><h3>매출 보기</h3><p>하루 매출을 시간대별로 봅니다.</p></div>
+  <p>궁금한 점이 있으면 언제든 고객센터에 남겨 주세요. 영업일 기준 하루 안에 답을 드립니다.</p>
+  <h2>요금</h2>
+  <p>매장 하나에 한 달 이만 원입니다. 매장이 늘어도 한 매장 값은 같습니다.</p>
+</main>
+</body>
+</html>

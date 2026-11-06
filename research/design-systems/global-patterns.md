@@ -8,7 +8,7 @@
 - 만든 곳: Shopify. 주소: https://shopify.dev/docs/api/polaris (옛 polaris.shopify.com/patterns/* 는 301로 여기로 넘어간다. 옛 주소의 패턴 문서는 못 읽음)
 - 구조: 웹 컴포넌트 기반. 앱 홈 / Admin·Checkout·고객계정·POS 확장으로 나뉨. 패턴 문서는 「app-home/patterns/compositions/*」(예: empty-state)와 앱 디자인 가이드(https://shopify.dev/docs/apps/design/user-experience/alerts)에 흩어져 있다
 - 이용 조건: 못 찾음(읽은 페이지에 라이선스 표기 없음)
-- AI 연결: 페이지마다 .md 원문 주소가 있음. llms.txt·MCP는 읽은 범위에서 못 찾음
+- AI 연결: 페이지마다 .md 원문 주소가 있음. llms.txt는 못 찾음. MCP는 Shopify Dev MCP로 Polaris 문서를 읽힐 수 있다(2026-11-06 확인). Polaris 2.0이 2026-10-22 정식이 됐다
 - 특징: 알림을 배너/인라인/토스트로 표 하나에 정리한 점이 좋다
 
 ### IBM Carbon
@@ -21,13 +21,13 @@
 - 주소: https://atlassian.design (patterns, foundations/content, components)
 - 구조: 토큰/프리미티브/컴포넌트/콘텐츠. 메시지 선택은 https://atlassian.design/patterns/messages/ (내용을 못 읽음)
 - 이용 조건: 못 찾음
-- AI 연결: MCP 서버·Figma 플러그인이 있다는 요약을 얻었으나 근거 페이지가 불확실해 「미확인」. llms.txt는 못 찾음
+- AI 연결: llms.txt와 MCP(얼리 액세스)가 있다(2026-11-06 확인). 2026-10-29에는 근거 페이지를 못 찾아 「미확인」이었다
 - 특징: 깃발(flag)·배너·인라인 메시지·모달을 심각도와 위치로 나눔
 
 ### GitHub Primer
 - 주소: https://primer.style/product/ui-patterns/ (UI 패턴 10개: 데이터 시각화, 저하된 경험, 빈 상태, 기능 온보딩, 폼, 로딩, 내비게이션, 알림 메시지, 점진적 공개, 저장)
 - 이용 조건: 못 찾음(읽은 범위에 없음)
-- AI 연결: MCP 서버 문서와 Figma 라이브러리 페이지가 목차에 있음(내용은 못 읽음)
+- AI 연결: MCP 서버 `@primer/mcp`(2026-11-06 확인), Figma 라이브러리 페이지가 목차에 있음(내용은 못 읽음)
 - 특징: 시간 구간별 로딩 기준과 「저장」 패턴이 독보적. 토스트를 권하지 않는다
 
 ### GOV.UK Design System
@@ -125,5 +125,5 @@
   - 이 5개에서 우리 skill 축(처음/가끔/매일)을 직접 쓰는 문서는 없다. 가장 가까운 것은 GOV.UK의 「연구 결과가 있을 때」 조건과 Primer 온보딩 노출 한도다. 축과의 연결은 우리의 해석(관례 수준)임을 표시한다
 
 ## 못 찾은 것
-- Polaris 옛 패턴 문서(삭제 확인, 오류 메시지), Atlassian 메시지 선택 페이지, Primer 알림 중 토스트 문서, 5개 모두의 문서 글·아이콘·폰트 라이선스(GOV.UK 글 OGL 제외), Atlassian의 MCP·llms.txt 근거, 모든 시스템의 토스트 표시 시간
+- Polaris 옛 패턴 문서(삭제 확인, 오류 메시지), Atlassian 메시지 선택 페이지, Primer 알림 중 토스트 문서, 5개 모두의 문서 글·아이콘·폰트 라이선스(GOV.UK 글 OGL 제외), 모든 시스템의 토스트 표시 시간. Atlassian의 MCP·llms.txt는 2026-11-06에 찾았다
 - 페이지 안에 AI에게 하는 지시처럼 보이는 글은 없었다

@@ -100,7 +100,7 @@ const marks = [...doc.querySelectorAll('[class*="status" i], [class*="badge" i],
 if (marks.length) add('꼭', '상태를 색만으로 표시', '색을 못 구분하는 사람은 모른다. 글자나 아이콘을 같이 쓴다 (WCAG 2.2 · 1.4.1)', marks);
 
 // 10. AI가 흔히 넣는 기본값
-if (/linear-gradient\([^)]*(#(?:[6-9a-f][0-9a-f])[0-4][0-9a-f]{3}|purple|violet|indigo|#7c3aed|#8b5cf6|#6366f1)/i.test(css)) add('권장', '보라·파랑 그라데이션', '근거 없이 넣는 흔한 기본값이다. 브랜드 색이 정한 게 아니면 뺀다');
+if (/linear-gradient\([^)]*(#(?:[6-9a-f][0-9a-f])[0-4][0-9a-f]{3}|purple|violet|indigo|#7c3aed|#8b5cf6|#6366f1)/i.test(css)) add('확인', '보라·파랑 그라데이션', '흔히 AI 티로 꼽히지만 사람이 만든 사이트에도 많아 이것만으로 AI 화면이라 할 수 없다(ai-design-check 2026-10-28 측정: AI 페이지 0%, 사람 사이트 24%). 브랜드 색이 정한 게 아니고 다른 기본값과 같이 나오면 뺀다');
 const fonts = [...css.matchAll(/font-family\s*:\s*([^;}]+)/gi)].map(m => m[1]);
 if (fonts.length && fonts.every(f => /^\s*['"]?Inter['"]?\s*(,\s*(sans-serif|system-ui|-apple-system).*)?$/i.test(f))) add('확인', 'Inter 한 가지 서체', '한글은 Inter에 없어 대체 글꼴로 섞인다. 한글 서체를 정한다');
 const emojiHeads = [...doc.querySelectorAll('h1, h2, h3, h4')].filter(h => /^\p{Extended_Pictographic}/u.test(text(h)));

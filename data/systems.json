@@ -1,5 +1,5 @@
 {
-  "_about": "국내외 디자인 시스템과, 그 문서들이 우리 패턴에 대해 하는 말. 2026-10-29 공개 문서를 읽고 우리 말로 요약했다(조사 원본은 research/design-systems/). 글을 옮기지 않고 링크만 건다. systems: 시스템 목록(short는 화면에 쓰는 짧은 이름). guidance: {패턴 id: [{text, opt, refs}]} — opt는 그 말이 가리키는 방식 id(패턴 전체에 대한 말이면 null), refs는 {시스템 id: 그 시스템의 해당 문서 주소 또는 null(주소를 모르면 /systems/의 카드로 보낸다)}. numbers: 숫자 기준. 페이지 /systems/와 패턴 페이지, llms.txt, design-agent 스킬이 읽는다",
+  "_about": "국내외 디자인 시스템과, 그 문서들이 우리 패턴에 대해 하는 말. 2026-10-29 공개 문서를 읽고 우리 말로 요약했다(조사 원본은 research/design-systems/. AI 연결은 2026-11-06에 다시 확인). 글을 옮기지 않고 링크만 건다. systems: 시스템 목록(short는 화면에 쓰는 짧은 이름). guidance: {패턴 id: [{text, opt, refs}]} — opt는 그 말이 가리키는 방식 id(패턴 전체에 대한 말이면 null), refs는 {시스템 id: 그 시스템의 해당 문서 주소 또는 null(주소를 모르면 /systems/의 카드로 보낸다)}. numbers: 숫자 기준. 페이지 /systems/와 패턴 페이지, llms.txt, design-agent 스킬이 읽는다",
   "systems": [
     {
       "id": "seed",
@@ -53,7 +53,9 @@
       "refFor": "다크패턴 피하기, UX 라이팅",
       "license": "Figma 키트는 앱인토스 밖 사용·복제 금지",
       "ai": [
-        "llms.txt"
+        "llms.txt",
+        "MCP",
+        "Claude 플러그인"
       ],
       "short": "토스"
     },
@@ -107,7 +109,9 @@
       "refFor": "관리자·업무 도구",
       "license": "코드 MIT",
       "ai": [
-        "llms.txt"
+        "llms.txt",
+        "MCP",
+        "에이전트 안내"
       ],
       "short": "Ant"
     },
@@ -120,7 +124,9 @@
       "focus": "알림을 배너·인라인·토스트로 나누는 기준",
       "refFor": "커머스 관리자",
       "license": "확인 못 함",
-      "ai": [],
+      "ai": [
+        "MCP(Shopify Dev MCP)"
+      ],
       "short": "Shopify"
     },
     {
@@ -146,7 +152,10 @@
       "focus": "깃발·배너·인라인 메시지·모달을 심각도와 위치로 나눈다",
       "refFor": "협업 도구의 알림",
       "license": "확인 못 함",
-      "ai": [],
+      "ai": [
+        "llms.txt",
+        "MCP(얼리 액세스)"
+      ],
       "short": "Atlassian"
     },
     {
@@ -159,6 +168,7 @@
       "refFor": "개발자 도구, 저장·로딩",
       "license": "확인 못 함",
       "ai": [
+        "MCP(@primer/mcp)",
         "Figma"
       ],
       "short": "Primer"
@@ -646,7 +656,7 @@
   "numbers": [
     {
       "k": "최소 터치 영역",
-      "v": "44×44(iOS·웹, KRDS 44px), 48×48(Android). 마우스는 더 작아도 된다(macOS 28pt)",
+      "v": "44×44(iOS·웹, KRDS 44px), 48×48(Android). 마우스는 더 작아도 된다(macOS 28pt). 터치로 쓰는 Mac에서는 컨트롤을 키운다(Apple 2026-10-28, 숫자 없음)",
       "by": [
         "apple",
         "material",

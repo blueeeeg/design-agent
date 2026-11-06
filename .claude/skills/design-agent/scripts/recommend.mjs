@@ -161,6 +161,18 @@ const roleLines = onSystem ? Object.entries(ROLES).map(([k, name]) => `- ${name}
 const hasRoles = RULES?.roles && Object.keys(RULES.roles).length > 0;
 const brandLine = !onSystem ? 'brand: {}   # 색·서체·로고는 브랜드에서 채운다'
   : hasRoles ? 'brand: tokens   # 시스템 토큰을 쓴다. 아래 「역할과 토큰」' : 'brand: {}   # 시스템 토큰 이름을 아래 「역할과 토큰」에 채운다';
+// 서비스 규칙을 에이전트가 읽기 좋게 네 갈래로 나눈다: 늘 지킬 것(적용 범위와 함께) / 예외 / 흔한 실수와 대신 할 것 / 비슷한 컴포넌트 고르기
+// Figma의 디자인 시스템 가이드라인 글(2026-10-23)이 에이전트용 규칙을 이렇게 나누는 데서 생각을 얻었다
+const G = RULES?.guide || {};
+const arr = v => (Array.isArray(v) ? v : []);
+const guideLines = [G.always, G.exceptions, G.mistakes, G.choose].some(v => arr(v).length) ? [
+  '## 서비스 규칙 — 이 서비스가 정했다. 아래 패턴별 방식보다 앞선다(규격에 걸리는 것은 빼고)',
+  ...(arr(G.always).length ? ['### 늘 지킬 것', ...arr(G.always).map(x => (typeof x === 'string' ? `- ${x}` : `- ${x.rule}${x.where ? ` — 적용: ${x.where}` : ''}`))] : []),
+  ...(arr(G.exceptions).length ? ['### 예외', ...arr(G.exceptions).map(x => (typeof x === 'string' ? `- ${x}` : `- ${x.rule || x.text || JSON.stringify(x)}${x.where ? ` — 적용: ${x.where}` : ''}`))] : []),
+  ...(arr(G.mistakes).length ? ['### 흔한 실수와 대신 할 것', ...arr(G.mistakes).map(x => (typeof x === 'string' ? `- ${x}` : `- ${x.wrong} → ${x.instead}`))] : []),
+  ...(arr(G.choose).length ? ['### 비슷한 컴포넌트 고르기', ...arr(G.choose).map(x => (typeof x === 'string' ? `- ${x}` : `- ${x.between}: ${x.when}`))] : []),
+  '',
+] : [];
 const rules = { 제약: [], 관례: [], 예시: [] };
 const seen = new Set();
 VISIBLE.forEach(a => (picked[a.key].rules || []).forEach(r => { if (!seen.has(r.t)) { seen.add(r.t); rules[r.s].push(r); } }));
@@ -205,6 +217,7 @@ console.log([
     '<!-- 표에 없는 색·값을 새로 만들지 않는다. 필요하면 여기 먼저 더하고 알린다. 시스템을 못 읽었으면 비슷한 값으로 채우지 않고 비워 둔다 -->',
     ...roleLines, '',
   ] : []),
+  ...guideLines,
   '## 패턴별 방식', ...comp, '',
   '## 디자인 시스템 기준',
   ...list.flatMap(p => {

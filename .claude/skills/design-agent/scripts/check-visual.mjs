@@ -65,11 +65,12 @@ if (!r.textCount) {
 }
 
 const ctx = {};
-vm.runInNewContext(`${AUDIT}\nthis.visualHouse = visualHouse; this.houseName = houseName; this.failSummary = failSummary; this.FAILS = FAILS;`, ctx);
+vm.runInNewContext(`${AUDIT}\nthis.visualHouse = visualHouse; this.houseName = houseName; this.failSummary = failSummary; this.cleanNote = cleanNote; this.FAILS = FAILS;`, ctx);
 const house = ctx.visualHouse(judged, rules);
 const LABEL = { 꼭: '꼭 고칠 것', 권장: '고치기 권함', 확인: '확인', 좋음: '좋음', 정보: '재 본 값' };
 console.log(`색·글자·여백 진단${file ? `: ${file}` : ''}${rules ? ` · 서비스 규칙 있음${val('--rules') ? `(${val('--rules')})` : ''}` : ''}`);
 if (ctx.failSummary(house.main)) console.log(`${ctx.failSummary(house.main)} (이름 뜻과 고치는 순서: references/failures.md)`);
+else if (ctx.cleanNote(house.main, house.ask)) console.log(ctx.cleanNote(house.main, house.ask));
 for (const sec of ['색', '글자', '여백·모양']) {
   console.log(`\n[${sec}]`);
   for (const f of house.main.filter(x => x.sec === sec)) console.log(`- ${LABEL[f.level]}${f.fail ? ` · ${ctx.FAILS[f.fail]}` : ''}: ${f.text}`);

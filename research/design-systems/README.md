@@ -48,4 +48,4 @@
 - 코드: SEED Apache-2.0, Montage MIT, Fluent·Ant MIT, Carbon Apache-2.0
 - 글: GOV.UK는 OGL v3.0. 나머지는 문서 글의 조건을 따로 확인하지 못했다. 그래서 글은 우리 말로 요약하고 링크만 단다
 - 토스 TDS Figma UI Kit은 앱인토스 밖 사용·복제·재배포 금지. 근거 링크 말고는 쓰지 않는다
-- AI 연결: SEED는 llms.txt와 MCP(`@seed-design/mcp`), Ant는 llms.txt, 토스(앱인토스)는 llms.txt, Carbon은 MCP가 있다
+- AI 연결: SEED는 llms.txt와 MCP(`@seed-design/mcp`), Ant는 llms.txt·MCP·에이전트 안내, 토스(앱인토스)는 llms.txt·MCP·Claude 플러그인, Carbon은 MCP, Primer는 MCP(`@primer/mcp`), Atlassian은 llms.txt·MCP(얼리 액세스), Polaris는 Shopify Dev MCP로 읽힌다(2026-11-06 다시 확인). Montage는 비공개 MCP뿐이다

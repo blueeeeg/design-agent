@@ -12,7 +12,7 @@ function visualAudit(doc, win, depth = 0) {
     if (fixed.has(el)) return fixed.get(el);
     const s = raw(el), parent = el.parentElement;
     const out = Object.create(null);
-    for (const k of ['color', 'opacity', 'textDecorationLine', 'textDecoration', 'textDecorationColor', 'outlineStyle', 'outlineColor', 'outlineWidth', 'backgroundColor', 'backgroundImage', 'fontSize', 'fontWeight', 'fontFamily', 'display', 'visibility', 'borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderTopLeftRadius', 'borderRadius', 'boxShadow', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'marginTop', 'marginBottom', 'rowGap', 'columnGap', 'lineHeight', 'textAlign', 'fontStyle', 'letterSpacing', 'textTransform', 'backdropFilter', 'webkitBackdropFilter', 'height', 'overflow', 'overflowX', 'textOverflow', 'position']) out[k] = s[k];
+    for (const k of ['color', 'opacity', 'textDecorationLine', 'textDecoration', 'textDecorationColor', 'outlineStyle', 'outlineColor', 'outlineWidth', 'backgroundColor', 'backgroundImage', 'fontSize', 'fontWeight', 'fontFamily', 'display', 'visibility', 'borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderTopLeftRadius', 'borderRadius', 'boxShadow', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'marginTop', 'marginBottom', 'rowGap', 'columnGap', 'lineHeight', 'textAlign', 'fontStyle', 'letterSpacing', 'textTransform', 'backdropFilter', 'webkitBackdropFilter', 'height', 'width', 'overflow', 'overflowX', 'textOverflow', 'position', 'backgroundClip', 'webkitBackgroundClip', 'webkitTextFillColor']) out[k] = s[k];
     // jsdom은 text-align을 물려주지 않는다(빈 값). 부모 값을 쓴다
     if (!out.textAlign && parent) out.textAlign = cs(parent).textAlign;
     const control = /^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(el.tagName);
@@ -33,7 +33,17 @@ function visualAudit(doc, win, depth = 0) {
     fixed.set(el, out);
     return out;
   };
-  const visible = el => !el.closest('[hidden], [aria-hidden="true"], template, script, style, noscript') && cs(el).display !== 'none' && cs(el).visibility !== 'hidden';
+  // display:none은 물려받지 않는다. 자기만 보면 닫힌 메뉴(조상이 display:none) 안 글자도 재게 된다(2026-11-06 발견)
+  // 브라우저는 checkVisibility()가 조상까지 본다. jsdom은 조상을 따라 올라가며 한 번 본 값을 둔다
+  const noneMemo = new WeakMap();
+  const displayNone = el => {
+    if (!el || el.nodeType !== 1) return false;
+    if (noneMemo.has(el)) return noneMemo.get(el);
+    const v = cs(el).display === 'none' || displayNone(el.parentElement);
+    noneMemo.set(el, v);
+    return v;
+  };
+  const visible = el => !el.closest('[hidden], [aria-hidden="true"], template, script, style, noscript') && cs(el).visibility !== 'hidden' && (!win.__jsdom && typeof el.checkVisibility === 'function' ? el.checkVisibility() : !displayNone(el));
 
   // ---- 색 계산 ----
   const parse = str => {
@@ -124,9 +134,54 @@ function visualAudit(doc, win, depth = 0) {
     for (let i = layers.length - 1; i >= 0; i--) base = blend(layers[i], base);
     return base;
   };
+  // 그라데이션만 있는 바탕(그림 url은 없음)이면 색 단계를 모두 꺼낸다. 글자가 어느 단계 위에 놓일지 모르니 가장 낮은 대비로 판정한다
+  // ko-design-md(MIT)가 그라데이션 위 글자를 그라데이션 색 전부로 판정하는 데서 생각을 얻었다(2026-11-06)
+  const GRAD_COLOR = /(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^()]*\)|#[0-9a-f]{3,8}\b|\b(?:white|black|transparent|red|blue|green|gray|grey)\b/gi;
+  const gradStops = img => {
+    if (!img || !/gradient\(/i.test(img) || /url\(/i.test(img)) return null;
+    const stops = (img.match(GRAD_COLOR) || []).map(c => (/^transparent$/i.test(c) ? { r: 0, g: 0, b: 0, a: 0 } : parse(c)));
+    return stops.length >= 2 && stops.every(Boolean) ? stops : null;
+  };
+  // 글자 뒤 그라데이션 색 단계마다 실제 바탕(아래 바탕과 사이의 반투명 층까지 겹친 것). 못 풀면 null
+  const gradBgOf = el => {
+    const layers = [];
+    for (let e = el; e && e.nodeType === 1; e = e.parentElement) {
+      const s = cs(e);
+      if (s.backgroundImage && s.backgroundImage !== 'none') {
+        const stops = gradStops(s.backgroundImage);
+        if (!stops) return null;
+        let under = e.parentElement ? backgroundOf(e.parentElement) : { r: 255, g: 255, b: 255, a: 1 };
+        if (under.unknown) return null;
+        const own = parse(s.backgroundColor);
+        if (own && own.a > 0) under = blend(own, under);
+        return stops.map(c => { let b = blend(c, under); for (let i = layers.length - 1; i >= 0; i--) b = blend(layers[i], b); return b; });
+      }
+      const c = parse(s.backgroundColor);
+      if (c && c.a > 0) layers.push(c);
+    }
+    return null;
+  };
+  // 그라데이션 글자(background-clip: text): 글자 색이 그라데이션이다. 글자 자신이나 세 겹 위 조상까지 본다
+  const gradTextOf = el => {
+    for (let e = el, i = 0; e && e.nodeType === 1 && i < 3; e = e.parentElement, i++) {
+      const s = cs(e);
+      // jsdom은 background-clip을 못 읽는다. 글자색이 투명한데 자기 바탕이 그라데이션이면 그라데이션 글자다
+      const isClear = v => { const t = String(v || '').trim(); if (!t) return false; const c = parse(t); return c ? c.a === 0 : /^transparent$/i.test(t); };
+      const clear = isClear(s.webkitTextFillColor) || isClear(s.color);
+      if (!/text/.test(`${s.backgroundClip || ''} ${s.webkitBackgroundClip || ''}`) && !(i === 0 && clear)) continue;
+      const stops = gradStops(s.backgroundImage);
+      if (!stops) return null;
+      // 그라데이션 글자를 그라데이션 바탕 위에 올린 경우도 있다. 아래 바탕도 색 단계마다 본다
+      const u = e.parentElement ? backgroundOf(e.parentElement) : { r: 255, g: 255, b: 255, a: 1 };
+      const unders = u.unknown ? (e.parentElement && gradBgOf(e.parentElement)) : [u];
+      return unders ? { stops, unders } : null;
+    }
+    return null;
+  };
   const px = (v, el) => {
     if (!v) return null;
-    const m = String(v).match(/^(-?[\d.]+)(px|rem|em|pt)?$/);
+    // Tailwind 4 rounded-full은 3.35544e+07px처럼 지수로 나온다
+    const m = String(v).match(/^(-?[\d.]+(?:e[+-]?\d+)?)(px|rem|em|pt)?$/i);
     if (!m) return null;
     const n = +m[1];
     if (m[2] === 'rem') return n * 16;
@@ -147,7 +202,20 @@ function visualAudit(doc, win, depth = 0) {
     const bg = backgroundOf(el);
     const size = px(s.fontSize, el) || 16;
     const weight = /bold/.test(s.fontWeight) ? 700 : Number(s.fontWeight) || 400;
-    const ratio = bg.unknown || !fg ? null : contrast(blend(fg, bg), bg);
+    let ratio = bg.unknown || !fg ? null : contrast(blend(fg, bg), bg);
+    // 그라데이션 글자이거나 그라데이션 바탕 위 글자면 색 단계마다 재서 가장 낮은 값을 쓴다
+    let grad = null;
+    const gt = gradTextOf(el);
+    if (gt) {
+      const worst = gt.stops.flatMap(c => gt.unders.map(u => { const f = blend({ ...c, a: c.a * opacityOf(el) }, u); return { f, u, r: contrast(f, u) }; })).sort((a, b) => a.r - b.r)[0];
+      ratio = worst.r; grad = { fg: hex(worst.f), bg: hex(worst.u), kind: '글자' };
+    } else if (bg.unknown && fg) {
+      const stops = gradBgOf(el);
+      if (stops) {
+        const worst = stops.map(b => ({ b, r: contrast(blend(fg, b), b) })).sort((a, b) => a.r - b.r)[0];
+        ratio = worst.r; grad = { fg: hex(blend(fg, worst.b)), bg: hex(worst.b), kind: '바탕' };
+      }
+    }
     const large = size >= 24 || (size >= 18.66 && weight >= 700);
     const full = [...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join(' ');
     const sample = full.slice(0, 24);
@@ -159,7 +227,7 @@ function visualAudit(doc, win, depth = 0) {
     const hangul = (full.match(/[가-힣]/g) || []).length;
     const nearHangul = hangul > 0 || /[가-힣]/.test(el.parentElement?.textContent || '');
     // 글자 수는 자르지 않은 전체 길이로 센다(본문 크기·주 글자색을 글자 수로 정한다)
-    return { el, disabled, hangul, nearHangul, lh: lh && Math.round(lh * 100) / 100, align: s.textAlign || '', italic: /italic|oblique/.test(s.fontStyle || ''), ls: Math.round(ls * 1000) / 1000, upper: s.textTransform === 'uppercase' || (/^[A-Z0-9\s&·/-]{4,}$/.test(full) && /[A-Z]{3}/.test(full)), chars: full.replace(/\s+/g, '').length || 1, fg: fg ? hex(blend(fg, bg.unknown ? { r: 255, g: 255, b: 255, a: 1 } : bg)) : '?', bg: bg.unknown ? null : hex(bg), size: Math.round(size * 10) / 10, weight, ratio: ratio && Math.round(ratio * 100) / 100, need: large ? 3 : 4.5, sample, tag: el.tagName.toLowerCase(), family: (s.fontFamily || '').split(',')[0].replace(/["']/g, '').trim() };
+    return { el, grad, disabled, hangul, nearHangul, lh: lh && Math.round(lh * 100) / 100, align: s.textAlign || '', italic: /italic|oblique/.test(s.fontStyle || ''), ls: Math.round(ls * 1000) / 1000, upper: s.textTransform === 'uppercase' || (/^[A-Z0-9\s&·/-]{4,}$/.test(full) && /[A-Z]{3}/.test(full)), chars: full.replace(/\s+/g, '').length || 1, fg: fg ? hex(blend(fg, bg.unknown ? { r: 255, g: 255, b: 255, a: 1 } : bg)) : '?', bg: bg.unknown ? null : hex(bg), size: Math.round(size * 10) / 10, weight, ratio: ratio && Math.round(ratio * 100) / 100, need: large ? 3 : 4.5, sample, tag: el.tagName.toLowerCase(), family: (s.fontFamily || '').split(',')[0].replace(/["']/g, '').trim(), ...(grad && { fg: grad.fg, bg: grad.bg }) };
   });
 
   // ---- 쓰인 색 모으기(글자·바탕·테두리) ----
@@ -344,6 +412,140 @@ function visualAudit(doc, win, depth = 0) {
   // 모바일·태블릿 입력칸 글자: iOS Safari는 16px 미만 입력칸을 누르면 화면을 확대한다(조건이 있을 때만 판단)
   const smallInputs = [...doc.body.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=submit]):not([type=button]), select, textarea')].filter(visible).map(el => ({ sample: el.getAttribute('aria-label') || el.getAttribute('placeholder') || el.name || el.tagName.toLowerCase(), size: Math.round((px(cs(el).fontSize, el) || 16) * 10) / 10 })).filter(x => x.size < 16);
 
+  // ---- Anthropic frontend-design 스킬(Apache 2.0)이 꼽은 AI 기본값 중 잴 수 있는 것(생각만 가져왔다, 2026-11-06) ----
+  // 카드 세트: 위계와 상관없이 카드마다 같은 모서리·같은 옅은 회색 그림자
+  const softShadow = v => { if (!v || v === 'none' || /inset/.test(v)) return false; const m = v.match(/(?:rgba?|oklch|oklab|lab|lch)\([^)]*\)|#[0-9a-f]{3,8}/i); const c = m && parse(m[0]); return !!c && c.a <= 0.2 && hsl(c).s < 0.15 && hsl(c).l < 0.3; };
+  let cardKit = null;
+  const kitCards = cards.filter(el => !control(el) && !floating(el));
+  if (kitCards.length >= 4) {
+    const shapes = {};
+    kitCards.forEach(el => { const k = `${Math.round(radiusOf(el))}|${cs(el).boxShadow || 'none'}`; shapes[k] = (shapes[k] || 0) + 1; });
+    const [k, n] = Object.entries(shapes).sort((a, b) => b[1] - a[1])[0];
+    const [rad, shadow] = [k.slice(0, k.indexOf('|')), k.slice(k.indexOf('|') + 1)];
+    if (n >= kitCards.length * 0.8 && softShadow(shadow)) cardKit = { n, of: kitCards.length, radius: +rad };
+  }
+  // 작은 라벨에만 고정폭 서체(코드·키 입력 안은 뺀다). 숫자만 있는 칸(개수·가격)은 자리를 맞추려는 흔한 선택이라 글자가 있는 라벨만 센다
+  const MONO = /mono|courier|consolas|menlo|monaco|fira code|source code/i;
+  const monoLabels = live.filter(t => MONO.test(t.family) && t.size <= 13 && t.chars <= 24 && /[A-Za-z가-힣]{2}/.test(t.sample) && !t.el.closest('pre, code, kbd, samp, var, textarea, [role="code"], [class*="code" i], [class*="syntax" i], [class*="terminal" i]')).map(t => ({ sample: t.sample }));
+  // 링크·버튼 글 끝에 붙인 화살표(→). 글자로 붙인 것만 본다
+  const ownText = el => [...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
+  const arrowEnds = textEls.filter(el => el.closest('a[href], button, [role="button"]') && /[→⟶➔➜]$/.test(ownText(el))).map(el => ({ sample: sampleOf(el.closest('a[href], button, [role="button"]')) }));
+  // 제목에서 한 단어만 색·기울임·굵기·서체를 바꿈. 숫자 배지·바탕 있는 칩·링크는 뺀다
+  const weightOf = s => (/bold/.test(s.fontWeight) ? 700 : Number(s.fontWeight) || 400);
+  const accentWords = allVisible.filter(e => /^H[1-3]$/.test(e.tagName)).map(h => {
+    const full = (h.textContent || '').trim().replace(/\s+/g, ' ');
+    if (full.length < 6) return null;
+    const hs = cs(h), c0 = parse(hs.color);
+    const kid = [...h.querySelectorAll('em, i, strong, b, mark, span')].find(k => {
+      const t = (k.textContent || '').trim();
+      if (!t || !/[A-Za-z가-힣]/.test(t) || t.length > full.length * 0.5 || k.closest('a') || k.querySelector('svg, img')) return false;
+      const s = cs(k), c1 = parse(s.color), bgc = parse(s.backgroundColor);
+      if ((bgc && bgc.a > 0.05 && !/mark/i.test(k.tagName)) || parseFloat(s.borderTopWidth) > 0) return false;
+      const colorDiff = !!(c1 && c0 && (contrast(c1, c0) > 1.5 || Math.abs(hsl(c1).s - hsl(c0).s) > 0.3));
+      const italic = /italic|oblique/.test(s.fontStyle || '') && !/italic|oblique/.test(hs.fontStyle || '');
+      const heavier = Math.abs(weightOf(s) - weightOf(hs)) >= 200;
+      const clip = /text/.test(s.backgroundClip || s.webkitBackgroundClip || '');
+      const fam = (s.fontFamily || '') !== (hs.fontFamily || '');
+      // 한글 제목 안 영문만 기울인 것은 「한글 옆 영문 이탤릭」이 이미 센다
+      if (italic && !colorDiff && !heavier && !clip && !/[가-힣]/.test(t) && /[가-힣]/.test(full)) return false;
+      return colorDiff || italic || heavier || clip || fam || /mark/i.test(k.tagName);
+    });
+    return kid ? { sample: full.slice(0, 24), word: kid.textContent.trim().slice(0, 12) } : null;
+  }).filter(Boolean);
+  // 01 / 02 / 03 번호 표시. 순서 목록·표·달력·고르는 칸 안은 뺀다(내용이 정말 순서인지는 눈으로)
+  const numMarks = live.filter(t => /^0[1-9][.)]?$/.test(ownText(t.el)) && !t.el.closest('ol, table, time, button, select, option, [role="grid"], [role="option"], [role="listbox"]')).map(t => ({ sample: t.sample }));
+  // 움직임: 섹션마다 들어오는 효과(fade-up 등), 카드마다 hover로 뜨는 효과, 움직임 줄이기 설정 대응
+  const rules = [];
+  let reducedMotion = false, unreadableCss = 0;
+  // 선택자 목록을 쉼표로 나눈다. :is(a, b)·[x="a,b"] 안의 쉼표는 나누지 않는다
+  const splitSel = sel => { const out = []; let cur = '', d = 0; for (const ch of sel) { if (ch === '(' || ch === '[') d++; else if (ch === ')' || ch === ']') d--; else if (ch === ',' && d === 0) { out.push(cur); cur = ''; continue; } cur += ch; } out.push(cur); return out.map(x => x.trim()).filter(Boolean); };
+  const walk = (list, parent) => {
+    for (const r of list) {
+      if (rules.length > 5000) return;
+      // @keyframes 안 단계(from·to)는 선택자가 아니다. 중첩 안에 있으면 부모 선택자의 규칙으로 잘못 잡힌다
+      if (r.type === 7 || r.type === 8 || /Keyframe/.test(r.constructor?.name || '')) continue;
+      const cond = r.conditionText || r.media?.mediaText || '';
+      if (/prefers-reduced-motion/.test(cond)) reducedMotion = true;
+      if (r.selectorText) {
+        // 부모가 목록(.a, .b)이면 부모마다 잇는다(.a:hover, .b:hover)
+        const sel = parent ? splitSel(r.selectorText).flatMap(x => splitSel(parent).map(pp => (x.includes('&') ? x.replace(/&/g, pp) : `${pp} ${x}`))).join(', ') : r.selectorText;
+        rules.push({ sel, css: r.style?.cssText || '' });
+        if (r.cssRules?.length) walk(r.cssRules, sel);
+      } else if (r.cssRules) walk(r.cssRules, parent);
+      else if (parent && r.style) rules.push({ sel: parent, css: r.style.cssText || '' }); // 중첩 @media 안 선언(Tailwind 4)
+    }
+  };
+  for (const sh of [...(doc.styleSheets || [])]) { try { walk(sh.cssRules || [], ''); } catch (e) { unreadableCss++; } }
+  const REVEAL = /\b(fade-?(in-?)?up|fadeInUp|fade-?in-?(left|right)|reveal|aos-(init|animate)|animate__\w+|wow|scroll-?reveal|slide-?(in-?)?up)\b/i;
+  const entering0 = allVisible.filter(el => BLOCK.test(el.tagName) && (el.hasAttribute('data-aos') || el.hasAttribute('data-sal') || el.hasAttribute('data-animate') || REVEAL.test(el.getAttribute('class') || '') || (/fade|reveal|slide|rise/i.test(cs(el).animationName || '') && cs(el).animationIterationCount !== 'infinite') || (el.style && parseFloat(el.style.opacity) === 0 && /translate/.test(el.style.transform || ''))));
+  // 움직이는 덩어리 안의 움직이는 덩어리는 한 번만 센다(섹션과 그 안 카드가 같이 떠오르는 경우)
+  const enterSet = new Set(entering0);
+  const entering = entering0.filter(el => { for (let p = el.parentElement; p && p !== doc.body; p = p.parentElement) if (enterSet.has(p)) return false; return true; }).map(el => ({ sample: sampleOf(el) || `<${el.tagName.toLowerCase()}>` }));
+  // 큰 사이트는 hover 규칙이 수백 개라 같은 것은 한 번만, 300개까지만 맞춰 본다
+  const hoverBases = [...new Set(rules.filter(r => /:hover/.test(r.sel) && /transform|translate|scale|box-shadow/.test(r.css)).flatMap(r => splitSel(r.sel).filter(x => /:hover/.test(x)).map(x => x.replace(/:hover/g, '').trim())).filter(Boolean))].slice(0, 300);
+  const hoverCards = hoverBases.length ? kitCards.filter(el => hoverBases.some(sel => { try { return el.matches(sel); } catch (e) { return false; } })) : [];
+  const hoverAll = kitCards.length >= 4 && hoverCards.length >= kitCards.length * 0.8 ? { n: hoverCards.length, clickable: hoverCards.filter(el => el.matches('a[href], button, [role="button"], [onclick]') || el.querySelector('a[href], button')).length } : null;
+  const motionUsed = entering.length > 0 || rules.some(r => /animation(-name)?\s*:\s*(?!none)[\w-]/.test(r.css) && !/spin|pulse|shimmer|skeleton/i.test(r.css + r.sel));
+  const noReducedMotion = motionUsed && !reducedMotion && !unreadableCss;
+
+  // ---- 제목 위 여백이 아래 여백보다 커야 제목이 아래 내용에 붙어 보인다(Impeccable(Apache 2.0)의 바닥 기준에서 생각을 얻었다, 2026-11-06) ----
+  // 브라우저는 실제 간격을, jsdom은 margin을 견준다(위아래로 쌓이면 겹치는 margin은 큰 쪽, grid 안이면 더한다)
+  const sibOf = (el, dir) => { for (let x = el && el[dir]; x; x = x[dir]) if (visible(x)) return x; return null; };
+  const marginPx = (el, k) => { const v = String(cs(el)[k] || ''); return Math.max(0, /\dem$/.test(v) ? parseFloat(v) * (px(cs(el).fontSize, el) || 16) : px(v, el) || 0); };
+  const headingGaps = [], headingSeen = {};
+  allVisible.filter(e => /^H[2-4]$/.test(e.tagName) && !e.closest('hgroup, header, nav, dialog, [role="dialog"], table, button, a')).slice(0, 300).forEach(h => {
+    const prev = sibOf(h, 'previousElementSibling'), next = sibOf(h, 'nextElementSibling');
+    if (!prev || !next || /^H[1-6]$/.test(prev.tagName) || /^H[1-6]$/.test(next.tagName)) return;
+    // 제목 바로 위 짧은 라벨(소제목 위 작은 글, 배지)은 제목과 한 묶음이라 견주지 않는다
+    if ((prev.textContent || '').trim().length <= 30 && !prev.querySelector('img, svg, video, canvas')) return;
+    let above, below;
+    if (layout) {
+      const a = prev.getBoundingClientRect(), b = h.getBoundingClientRect(), c = next.getBoundingClientRect();
+      if (!b.height || a.bottom > b.top + 1 || c.top < b.bottom - 1) return; // 옆으로 놓였다
+      above = b.top - a.bottom; below = c.top - b.bottom;
+    } else {
+      const ps = h.parentElement && cs(h.parentElement);
+      if (ps && /flex/.test(ps.display)) return; // jsdom은 flex 방향을 몰라 견주지 않는다
+      const grid = ps && /grid/.test(ps.display);
+      above = grid ? marginPx(prev, 'marginBottom') + marginPx(h, 'marginTop') : Math.max(marginPx(prev, 'marginBottom'), marginPx(h, 'marginTop'));
+      below = grid ? marginPx(h, 'marginBottom') + marginPx(next, 'marginTop') : Math.max(marginPx(h, 'marginBottom'), marginPx(next, 'marginTop'));
+    }
+    const tag = h.tagName.toLowerCase();
+    headingSeen[tag] = (headingSeen[tag] || 0) + 1;
+    if (below >= 8 && above <= below) headingGaps.push({ tag, sample: sampleOf(h), above: Math.round(above), below: Math.round(below) });
+  });
+
+  // ---- ai-design-check(MIT)·Hallmark(MIT)가 AI 기본값으로 꼽은 모양(생각만 가져왔다, 2026-11-06) ----
+  // 크기는 브라우저면 실제 상자, jsdom이면 CSS에 적힌 px만 안다
+  const boxSize = el => { if (layout) { const r = el.getBoundingClientRect(); return { w: r.width, h: r.height }; } const s = cs(el); return { w: px(s.width, el) || 0, h: px(s.height, el) || 0 }; };
+  const isPill = el => { const r = radiusOf(el), { h } = boxSize(el); return h > 0 ? r >= h / 2 - 1 : r >= 100; };
+  // 제목마다 앞에 붙인 색 네모(동그라미) 아이콘 상자: 28~72px 정사각형, 옅은 색 바탕, 안에 아이콘만
+  // svg 안 <title>·<desc>(접근성 이름)는 화면 글자가 아니라 뺀다
+  const visText = el => [...el.childNodes].map(n => (n.nodeType === 3 ? n.textContent : n.nodeType === 1 && n.tagName.toLowerCase() !== 'svg' ? visText(n) : '')).join('');
+  const iconBox = el => {
+    if (!el || /[A-Za-z0-9가-힣]/.test(visText(el))) return false;
+    if (!el.querySelector('svg, img, i, [class*="icon" i]') && !EMOJI.test(el.textContent || '')) return false;
+    const { w, h } = boxSize(el);
+    return w >= 28 && w <= 72 && Math.abs(w - h) <= 2 && filledOwn(el);
+  };
+  const iconHeads = allVisible.filter(e => /^H[2-4]$/.test(e.tagName)).filter(h => {
+    const p = sibOf(h, 'previousElementSibling');
+    return iconBox(p || (h.parentElement && sibOf(h.parentElement, 'previousElementSibling')));
+  }).map(h => ({ sample: sampleOf(h) }));
+  // 큰 제목 바로 위 알약 배지(「✨ 새 기능」 같은 것)
+  const pillBadges = allVisible.filter(e => /^H[12]$/.test(e.tagName)).map(h => {
+    const p = sibOf(h, 'previousElementSibling');
+    if (!p) return null;
+    const t = (p.textContent || '').trim().replace(/\s+/g, ' ');
+    if (!t || t.length > 40 || p.querySelector('h1, h2, h3, p, ul, ol, img, input')) return null;
+    const s = cs(p), bordered = parseFloat(s.borderTopWidth) > 0 && s.borderTopStyle !== 'none';
+    return (filledOwn(p) || bordered) && isPill(p) ? { sample: t.slice(0, 24) } : null;
+  }).filter(Boolean);
+  // 채운 주 버튼이 모두 알약 모양(끝이 완전히 둥근 것). 동그란 아이콘 버튼은 글자가 없어 뺀다
+  const filledBtns = allVisible.filter(e => e.matches('button, [role="button"], input[type="submit"], a[class*="btn" i], a[class*="button" i]') && !e.closest('[disabled], [aria-disabled="true"]') && /[A-Za-z가-힣]/.test(e.textContent || e.value || '')).filter(e => { const c = parse(cs(e).backgroundColor); return c && c.a > 0.5 && hsl(c).s >= 0.3; });
+  const pillN = filledBtns.filter(isPill).length;
+  const pillButtons = filledBtns.length >= 2 && pillN >= filledBtns.length * 0.8 ? { n: pillN, of: filledBtns.length } : null;
+
   // ---- 넘침·잘림: 레이아웃을 계산하는 브라우저에서만(jsdom은 크기가 0) ----
   let overflowX = 0;
   const wide = [], clipped = [], targets = [], tightInset = [], nearAligned = [], fatRows = [], inventedMarks = [];
@@ -494,7 +696,10 @@ function visualAudit(doc, win, depth = 0) {
   return {
     textCount: texts.length,
     // 꺼진 컨트롤은 대비 기준에서 빠진다(WCAG 2.2 1.4.3 예외)
-    lowContrast: texts.filter(t => !t.disabled && t.ratio != null && t.ratio < t.need).map(({ el, ...t }) => t),
+    lowContrast: texts.filter(t => !t.disabled && !t.grad && t.ratio != null && t.ratio < t.need).map(({ el, ...t }) => t),
+    // 그라데이션은 글자가 실제로 놓인 자리보다 넓을 수 있어(가장 낮은 단계로 쟀다) 따로 둔다
+    gradLow: texts.filter(t => !t.disabled && t.grad && t.ratio != null && t.ratio < t.need).map(({ el, ...t }) => t),
+    gradCount: texts.filter(t => t.grad).length,
     unknownBg: texts.filter(t => t.ratio == null).length,
     colors: colors.map(c => ({ ...c, chroma: isChroma(c) })),
     hueGroups: Object.values(hueGroups).sort((a, b) => b.uses - a.uses),
@@ -538,6 +743,19 @@ function visualAudit(doc, win, depth = 0) {
     emojiIcons,
     sparkles,
     smallInputs,
+    cardKit,
+    monoLabels,
+    arrowEnds,
+    accentWords,
+    numMarks,
+    entering,
+    hoverAll,
+    noReducedMotion,
+    headingGaps,
+    headingSeen,
+    iconHeads,
+    pillBadges,
+    pillButtons,
     aiDefaults,
     aiFonts,
     sig,
@@ -562,9 +780,10 @@ function visualJudge(r, cond) {
   if (r.lowContrast.length) {
     const worst = r.lowContrast.slice().sort((a, b) => a.ratio - b.ratio).slice(0, 3).map(t => `「${t.sample}」 ${t.fg}/${t.bg} ${t.ratio}:1`).join(', ');
     say('색', '꼭', `글자 대비가 모자란 곳 ${r.lowContrast.length}군데(본문 4.5:1, 큰 글자 3:1 · WCAG 2.2 1.4.3). 낮은 곳: ${worst}. 글자를 진하게 하거나 바탕을 바꾼다`, 'hard');
-  } else say('색', '좋음', `잴 수 있는 글자 ${r.textCount - r.unknownBg}개 모두 대비 기준을 넘는다`);
+  } else if (!(r.gradLow || []).length) say('색', '좋음', `잴 수 있는 글자 ${r.textCount - r.unknownBg}개 모두 대비 기준을 넘는다${r.gradCount ? `(그라데이션 위 ${r.gradCount}개는 가장 옅은 색 단계로 쟀다)` : ''}`);
   (r.frames || []).forEach(f => { if (f.lowContrast.length) say('색', '꼭', `iframe(${f.src}) 안 글자 대비가 모자란 곳 ${f.lowContrast.length}군데. 낮은 곳: ${f.lowContrast.slice(0, 2).map(t => `「${t.sample}」 ${t.ratio}:1`).join(', ')}`, 'hard'); });
   if ((r.skippedFrames || []).length) say('색', '확인', `안을 재지 못한 iframe ${r.skippedFrames.length}개(다른 출처나 sandbox). 그 주소를 직접 연다: ${r.skippedFrames.slice(0, 3).join(', ')}${r.skippedFrames.length > 3 ? ' …' : ''}`);
+  if ((r.gradLow || []).length) say('색', '권장', `그라데이션${r.gradLow.some(t => t.grad.kind === '글자') ? ' 글자나 그라데이션' : ''} 위 글자 중 가장 옅은 색 단계에서 대비가 모자란 곳 ${r.gradLow.length}군데: ${r.gradLow.slice(0, 3).map(t => `「${t.sample}」 ${t.fg}/${t.bg} ${t.ratio}:1`).join(', ')}. 글자가 실제로 놓인 자리를 스크린샷으로 보고, 모자라면 그라데이션 폭을 줄이거나 글자를 단색으로(WCAG 2.2 1.4.3)`, 'hard');
   if (r.unknownBg) say('색', '확인', `그라데이션·그림 위 글자 ${r.unknownBg}개는 대비를 재지 못했다. 스크린샷으로 본다`);
   if ((r.weakSelected || []).length) say('색', '꼭', `고른 것과 안 고른 것의 차이가 약하다 ${r.weakSelected.length}군데(3:1 미만 · WCAG 2.2 1.4.11): ${r.weakSelected.slice(0, 3).map(w => `「${w.sample}」 ${w.ratio}:1`).join(', ')}. 고른 것은 바탕을 진하게 하거나 굵은 테두리·표시를 더한다`, 'confusing');
   if ((r.weakInputs || []).length) say('색', '꼭', `입력칸 테두리가 주변과 잘 안 갈린다 ${r.weakInputs.length}군데(3:1 미만 · WCAG 2.2 1.4.11): ${r.weakInputs.slice(0, 3).map(w => `「${w.sample}」 ${w.ratio}:1`).join(', ')}. 테두리 색을 진하게(흰 바탕이면 #8a8f98 안팎)`, 'confusing');
@@ -631,8 +850,25 @@ function visualJudge(r, cond) {
   if ((r.emojiIcons || []).length) say('글자', '확인', `아이콘 자리에 이모지 ${r.emojiIcons.length}개: ${list(r.emojiIcons)}. 이모지는 메시지·반응 같은 내용에만, 아이콘은 한 세트로`, 'generic', 'decor');
   if ((r.sparkles || []).length) say('여백·모양', '확인', `AI 기능에 반짝이·마술봉 표시 ${r.sparkles.length}개: ${list(r.sparkles)}. 흔한 AI 기본값이다. 그 기능이 무엇을 하는지 보여 주는 말이나 아이콘으로`, 'generic', 'decor');
   if ((r.inventedMarks || []).length) say('여백·모양', '확인', `색 네모 안 글자 한두 개로 만든 로고 ${r.inventedMarks.length}개: ${list(r.inventedMarks)}. AI가 지어내는 로고 모양이다. 실제 로고나 글자 로고로`, 'generic', 'decor');
+  // frontend-design(Anthropic)이 꼽은 기본값(2026-11-06)
+  if (r.cardKit) say('여백·모양', '확인', `카드 ${r.cardKit.of}개 중 ${r.cardKit.n}개가 같은 모서리 ${r.cardKit.radius}px에 같은 옅은 그림자다. 흔한 SaaS 카드 세트 모양이다. 중요한 덩어리만 크기·바탕으로 다르게 하고, 나머지는 선이나 여백으로 나눈다`, 'generic', 'shadow');
+  if ((r.accentWords || []).length) say('글자', '확인', `제목에서 한 단어만 색·기울임·굵기를 바꾼 곳 ${r.accentWords.length}개: ${r.accentWords.slice(0, 3).map(a => `「${a.sample}」(${a.word})`).join(', ')}. AI가 만든 첫 화면에 흔한 모양이다. 브랜드에서 정한 강조 방식이면 그대로 두고, 아니면 제목은 한 모양으로 두고 강조할 말을 문장 앞에 둔다`, 'generic', 'decor');
+  if ((r.numMarks || []).length >= 3) say('글자', '확인', `01·02·03 같은 번호 ${r.numMarks.length}개: ${list(r.numMarks)}. 단계·연표처럼 순서가 있는 내용이 아니면 번호를 뺀다`, 'generic', 'decor');
+  if ((r.monoLabels || []).length >= 3) say('글자', '확인', `작은 라벨에만 고정폭 서체 ${r.monoLabels.length}개: ${list(r.monoLabels)}. 흔한 AI 기본값이다. 숫자 자리를 맞추려면 본문 서체에 tabular-nums`, 'generic', 'font');
+  if ((r.arrowEnds || []).length >= 2) say('글자', '확인', `링크·버튼 글 끝에 붙인 화살표 ${r.arrowEnds.length}개: ${list(r.arrowEnds)}. 버튼은 무엇이 일어나는지 말로 충분하다. 다른 사이트로 나가는 링크에만 표시한다`, 'generic', 'copy');
+  if ((r.entering || []).length >= 3) say('여백·모양', '확인', `들어올 때 움직이는 덩어리 ${r.entering.length}개(fade-up 같은 등장 효과): ${list(r.entering)}. 섹션마다 움직이면 AI 기본값으로 읽힌다. 움직임은 첫 화면 한 번이나 사용자가 누른 뒤 바뀐 곳에만`, 'generic', 'decor');
+  if (r.hoverAll) say('여백·모양', '확인', `카드 ${r.hoverAll.n}개 모두 마우스를 올리면 뜨거나 그림자가 커진다${r.hoverAll.clickable < r.hoverAll.n ? `(그중 ${r.hoverAll.n - r.hoverAll.clickable}개는 누를 곳이 없다)` : ''}. 눌리는 카드에만 준다`, r.hoverAll.clickable < r.hoverAll.n ? 'confusing' : 'generic', 'decor');
+  if (r.noReducedMotion) say('여백·모양', '확인', '움직임이 있는데 움직임 줄이기 설정(prefers-reduced-motion)을 따르는 CSS가 없다. 그 설정을 켠 사람에게는 등장·반복 움직임을 끈다(WCAG 2.2 2.3.3)', 'hard');
+  // 제목 여백(Impeccable), AI 기본값 모양(ai-design-check·Hallmark) — 2026-11-06
+  // 같은 단계 제목(h2끼리)은 한 스타일이라 단계마다 센다. 그 단계의 절반 넘게, 두 곳 이상이면 알린다
+  const seen = r.headingSeen || {};
+  const hg = (r.headingGaps || []).filter(t => { const n = (r.headingGaps || []).filter(x => x.tag === t.tag).length; return n >= 2 && n * 2 >= (seen[t.tag] || 0); });
+  if (hg.length) say('여백·모양', '권장', `제목 위 여백이 아래 여백보다 크지 않은 곳 ${hg.length}군데(${[...new Set(hg.map(t => t.tag))].map(tag => `${tag} ${seen[tag]}개 중 ${hg.filter(t => t.tag === tag).length}개`).join(', ')}): ${hg.slice(0, 3).map(t => `「${t.sample}」 위 ${t.above}/아래 ${t.below}px`).join(', ')}. 제목이 앞 내용과 뒤 내용 사이에 떠서 어느 쪽 제목인지 흐려진다. 위 여백을 아래의 1.5~2배로(예: 위 32, 아래 12)`, 'flat', 'spacing');
+  if ((r.iconHeads || []).length >= 3) say('여백·모양', '확인', `제목마다 앞에 색 네모(동그라미) 아이콘 상자 ${r.iconHeads.length}개: ${list(r.iconHeads)}. AI가 기능 소개 카드에 습관처럼 붙이는 모양이다. 아이콘이 항목을 구별해 주지 않으면 빼고 제목만으로`, 'generic', 'decor');
+  if ((r.pillBadges || []).length) say('여백·모양', '확인', `큰 제목 바로 위 알약 배지 ${r.pillBadges.length}개: ${list(r.pillBadges)}. AI가 만든 첫 화면에 흔한 모양이다. 정말 알릴 새 소식이면 제목 아래 문장이나 배너로`, 'generic', 'decor');
+  if (r.pillButtons) say('여백·모양', '확인', `색을 채운 버튼 ${r.pillButtons.of}개 중 ${r.pillButtons.n}개가 알약 모양(끝이 완전히 둥금)이다. AI 기본값으로 꼽히는 모양이다. 브랜드에서 정한 모양이면 그대로 두고, 아니면 입력칸·카드 모서리와 맞춘다`, 'generic', 'radius');
   if (r.layout === false) say('여백·모양', '정보', '넘침·잘림, 누를 곳 크기, 상자 끝에 붙은 글자, 어긋난 시작선, 높은 행, 글자 로고는 브라우저에서 잴 때만 본다');
-  if ((r.aiDefaults || []).length) say('색', '확인', `${r.aiDefaults.join(', ')}. 보라 그라데이션을 막으면 AI가 다음으로 고르는 조합이다(2026-11-03 조사). 브랜드에서 정한 색이면 그대로 둔다`, 'generic', 'palette');
+  if ((r.aiDefaults || []).length) say('색', '확인', `${r.aiDefaults.join(', ')}. 보라 그라데이션을 막으면 AI가 다음으로 고르는 조합이다(2026-11-03 조사)${r.aiDefaults.some(x => /크림/.test(x)) ? '. 크림 바탕은 AI 페이지에서 훨씬 자주 나온다(ai-design-check 2026-10-28 측정: AI 40%, 사람 3%)' : ''}. 브랜드에서 정한 색이면 그대로 둔다`, 'generic', 'palette');
   return out;
 }
 
@@ -645,6 +881,10 @@ function failSummary(findings) {
   for (const f of findings) if (f.fail) n[f.fail] = (n[f.fail] || 0) + 1;
   const keys = Object.keys(FAILS).filter(k => n[k]);
   return keys.length ? `해당하는 실패: ${keys.map(k => `${FAILS[k]} ${n[k]}`).join(' · ')}` : '';
+}
+// 고칠 것이 없으면 그렇다고 말한다. 빈 결과를 채우려고 사소한 것을 지어내지 않게 한다(unslop(CC BY 4.0)의 「괜찮으면 괜찮다고 말한다」에서 생각을 얻었다, 2026-11-06)
+function cleanNote(main, ask = []) {
+  return main.some(f => ['꼭', '권장', '확인'].includes(f.level)) || ask.length ? '' : '검사로 잡힌 고칠 것 없음. 억지로 고칠 곳을 찾지 않는다. 검사가 못 보는 것(가져갈 것이 맨 앞인가, 390px 폭, 눌렀을 때)만 스크린샷과 눌러 보기로 확인한다';
 }
 
 // ---------- 서비스에서 정한 것 ----------
@@ -719,7 +959,7 @@ function visualReport(doc, win, page = 1, max = 900) {
   const r = visualAudit(doc || document, w);
   const order = ['꼭', '권장', '확인', '좋음', '정보'];
   const h = visualHouse(visualJudge(r, w.__designCond), w.__designRules);
-  const lines = (failSummary(h.main) ? [failSummary(h.main)] : []).concat(h.main.sort((a, b) => order.indexOf(a.level) - order.indexOf(b.level)).map(f => `[${f.level === '정보' ? '값' : f.level}·${f.fail ? FAILS[f.fail] : f.sec}] ${f.text}`))
+  const lines = (failSummary(h.main) ? [failSummary(h.main)] : cleanNote(h.main, h.ask) ? [cleanNote(h.main, h.ask)] : []).concat(h.main.sort((a, b) => order.indexOf(a.level) - order.indexOf(b.level)).map(f => `[${f.level === '정보' ? '값' : f.level}·${f.fail ? FAILS[f.fail] : f.sec}] ${f.text}`))
     .concat(h.ask.map(f => `[정한 건지 확인·${houseName(f.topic)}${f.fail ? `·${FAILS[f.fail]}` : ''}] ${f.text}`))
     .concat(h.skipped.length ? [`[정해 둬서 뺌] ${h.skipped.join(', ')}. 정한 값과 맞는지는 아직 재지 않는다`] : []);
   const pages = [[]];
@@ -728,4 +968,4 @@ function visualReport(doc, win, page = 1, max = 900) {
   const n = Math.min(Math.max(1, page), pages.length);
   return pages[n - 1].join('\n') + (pages.length > 1 ? `\n(${n}/${pages.length}쪽${n < pages.length ? `, 다음: visualReport(document, window, ${n + 1})` : ''})` : '');
 }
-if (typeof module !== 'undefined') module.exports = { visualAudit, visualJudge, visualHouse, visualReport, visualCompare, visualCollect, visualForget, houseName, failSummary, HOUSE_TOPICS, FAILS };
+if (typeof module !== 'undefined') module.exports = { visualAudit, visualJudge, visualHouse, visualReport, visualCompare, visualCollect, visualForget, houseName, failSummary, cleanNote, HOUSE_TOPICS, FAILS };

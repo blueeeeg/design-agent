@@ -23,14 +23,14 @@
 - 만든 곳: Wanted Lab. 주소: https://montage.wanted.co.kr/docs/getting-started
 - 구조: Getting started / Foundations / Components(54개, 7분류: Actions 5, Contents 11, Feedback 6, Loading 2, Navigations 9, Presentation 6, Selection and input 15) / Utilities. 「패턴」 문서 없음. 컴포넌트 문서 경로는 `/docs/components/{분류}/{이름}/design` 꼴. 플랫폼별 코드는 GitHub(montage-web, montage-ios, montage-android).
 - 이용 조건: MIT(상업 이용 가능, 저작권 표시 유지). 원티드 로고·브랜드 자산은 별도 가이드, 사칭 금지. 문서 인용·링크 허용 여부는 명시 없음(사용 시 출처 표기 권장). 출처: .../docs/getting-started/terms-of-use
-- AI 연결: llms.txt 404. MCP 못 찾음. Figma 커뮤니티 파일 「Wanted Figma UI Kit」 있음.
+- AI 연결: llms.txt 404. 공개 MCP 없음(2026-11-06에 비공개 MCP가 있다는 것만 확인, 밖에서 쓸 수 없어 데이터에는 넣지 않음). Figma 커뮤니티 파일 「Wanted Figma UI Kit」 있음.
 - 특징: 컴포넌트마다 「사용 기준」이 있으나 컴포넌트 간 비교는 적다. 대신 숫자(높이, 너비, 시간, 여백)가 구체적이다.
 
 ### 4. 토스 TDS (앱인토스 공개분) — 쓸 수 있는 것이 적고 조건이 엄격
 - 주소: https://developers-apps-in-toss.toss.im/design/components , 컴포넌트 문서 https://tossmini-docs.toss.im/tds-mobile/
 - 구조: 앱인토스에서 자주 쓰는 11개(Badge, Border, BottomCTA, Button, Asset, ListRow, ListHeader, Navigation, Paragraph, Tab, Top)만 공개. UX 가이드(https://developers-apps-in-toss.toss.im/design/consumer-ux-guide.md)는 다크패턴 방지·UX 라이팅·그래픽·해상도 중심이고 로딩·빈 화면·토스트·입력 검증 기준은 없다고 확인.
 - 이용 조건: Figma UI Kit은 앱인토스 앱 개발·디자인·프로토타입에만 허용. 다른 서비스 사용, 상업적 활용, 복사·수정, 재배포 금지. 권리는 Viva Republica. 우리 카탈로그 용도로는 이미지·자료를 가져올 수 없다. (출처: .../design/prepare/figma-ui-license)
-- AI 연결: llms.txt 있음(https://developers-apps-in-toss.toss.im/llms.txt, 마크다운 문서 제공).
+- AI 연결: llms.txt 있음(https://developers-apps-in-toss.toss.im/llms.txt, 마크다운 문서 제공). MCP와 Claude 플러그인도 있다(2026-11-06 확인).
 - 특징: 컴포넌트 세부 기준은 tossmini-docs 쪽에 있으나 이번에 읽지 않았다(미확인).
 
 ### 5. 공개 문서 없음 / 확인 못 함

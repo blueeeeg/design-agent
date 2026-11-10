@@ -45,7 +45,10 @@ function visualAudit(doc, win, depth = 0) {
     noneMemo.set(el, v);
     return v;
   };
-  const visible = el => !el.closest('[hidden], [aria-hidden="true"], template, script, style, noscript') && cs(el).visibility !== 'hidden' && (!win.__jsdom && typeof el.checkVisibility === 'function' ? el.checkVisibility() : !displayNone(el));
+  // 눈에 보이나만 본다. aria-hidden은 화면 읽기 프로그램에만 숨기는 표시라 보이는 모양과 상관없다(2026-11-10, aria-hidden 이모지를 통째로 놓쳤다).
+  // 화면 읽기 프로그램이 읽는 것을 보는 검사(버튼 이름, 고른 표시)는 forAT로 aria-hidden을 따로 뺀다
+  const forAT = el => !el.closest('[aria-hidden="true"]');
+  const visible = el => !el.closest('[hidden], template, script, style, noscript') && cs(el).visibility !== 'hidden' && (!win.__jsdom && typeof el.checkVisibility === 'function' ? el.checkVisibility() : !displayNone(el));
 
   // ---- 색 계산 ----
   const parse = str => {
@@ -197,11 +200,13 @@ function visualAudit(doc, win, depth = 0) {
   // 겹친 opacity는 글자 색을 옅게 만든다. 조상까지 곱한다
   const opacityOf = el => { let o = 1; for (let e = el; e && e.nodeType === 1; e = e.parentElement) { const v = parseFloat(cs(e).opacity); if (!isNaN(v)) o *= v; } return o; };
   // 로고 글자인가: 자기나 위 세 단계 안에 로고를 뜻하는 클래스 이름(통째로)이나 aria-label이 있다. text-brand·bg-brand-500 같은 색 클래스는 로고가 아니다. 버튼 안 글자는 로고로 치지 않는다
-  const LOGO_CLASS = /^(logo|logotype|wordmark|brand|brand[-_]?(mark|logo|name|lockup)|navbar-brand|site[-_](logo|title|name)|[a-z0-9]+[-_]logo)$/i;
+  // topbar-brand, brand-mark, site-logo처럼 끝이 logo·brand(·mark·name·lockup)인 이름. text-brand·bg-brand-500 같은 색 유틸리티는 뺀다
+  const LOGO_CLASS = /^(logotype|wordmark|site[-_](title|name)|([a-z0-9]+[-_]+)*(logo|brand)([-_]+(mark|logo|name|lockup|text))?)$/i;
+  const COLOR_UTIL = /^(text|bg|border|ring|fill|stroke|from|to|via|decoration|outline|shadow|accent|caret|divide|placeholder)-/i;
   const isLogo = el => {
     if (el.closest('button, [role="button"]')) return false;
     for (let e = el, i = 0; e && e.nodeType === 1 && i < 4; e = e.parentElement, i++) {
-      if ([...(e.classList || [])].some(c => LOGO_CLASS.test(c))) return true;
+      if ([...(e.classList || [])].some(c => LOGO_CLASS.test(c) && !COLOR_UTIL.test(c))) return true;
       if (/logo|로고/i.test(e.getAttribute('aria-label') || '')) return true;
     }
     return false;
@@ -249,6 +254,8 @@ function visualAudit(doc, win, depth = 0) {
   const uses = {};
   const note = (c, kind) => { if (!c || c.a === 0) return; const k = hex(c); (uses[k] ||= { hex: k, text: 0, bg: 0, border: 0 })[kind]++; };
   const allVisible = [...doc.body.querySelectorAll('*')].filter(visible);
+  const allShown = allVisible;
+  const shownTextEls = textEls;
   const textSet = new Set(textEls);
   allVisible.forEach(el => {
     const s = cs(el);
@@ -291,11 +298,19 @@ function visualAudit(doc, win, depth = 0) {
   const textColors = Object.entries(textChars).map(([hex, chars]) => ({ hex, chars, share: Math.round(chars / allChars * 100) })).sort((a, b) => b.chars - a.chars);
 
   // ---- 선택 상태가 보이나: 고른 것과 옆의 안 고른 것의 바탕·테두리 차이(WCAG 2.2 1.4.11 3:1) ----
-  const SEL = '[aria-pressed="true"], [aria-selected="true"], [aria-checked="true"], [aria-current]:not([aria-current="false"]), [data-state="active"], [data-state="checked"], [data-state="on"]';
+  const SEL_ARIA = '[aria-pressed="true"], [aria-selected="true"], [aria-checked="true"], [aria-current]:not([aria-current="false"]), [data-state="active"], [data-state="checked"], [data-state="on"]';
+  // 클래스 이름으로만 고른 것을 표시하는 화면도 많다(on, active, selected 등). 겉모습 차이는 같이 재고, 화면 읽기 프로그램용 표시가 없는 것은 따로 센다
+  const SEL = SEL_ARIA;
+  const SEL_CLASS = /^(on|active|selected|checked|current|is-(on|active|selected|checked|current))$/i;
+  const selByClass = el => [...(el.classList || [])].some(c => SEL_CLASS.test(c));
+  const isSel = el => el.matches(SEL_ARIA) || selByClass(el);
   const weakSelected = [];
-  [...doc.body.querySelectorAll(SEL)].filter(visible).forEach(el => {
-    const sib = [...(el.parentElement?.children || [])].find(x => x !== el && x.tagName === el.tagName && !x.matches(SEL) && visible(x));
-    if (!sib) return;
+  const classOnlySel = [];
+  [...doc.body.querySelectorAll('*')].filter(el => isSel(el) && visible(el)).forEach(el => {
+    const sib = [...(el.parentElement?.children || [])].find(x => x !== el && x.tagName === el.tagName && !isSel(x) && visible(x));
+    if (sib && forAT(el) && !el.matches(SEL_ARIA) && el.matches('button, [role="button"], [role="tab"], [role="radio"], [role="option"], a[href], li') && !el.querySelector('[aria-pressed], [aria-checked], [aria-selected], input:checked')) classOnlySel.push({ sample: (el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 20) });
+    // 안에 체크된 체크박스·라디오가 있으면 그것이 고른 표시다(바탕 칠은 덤). 바탕 차이로 따지지 않는다
+    if (!sib || el.querySelector('input:checked, [aria-checked="true"]')) return;
     const a = backgroundOf(el), b = backgroundOf(sib);
     if (a.unknown || b.unknown) return;
     // 고른 표시를 안쪽 요소(알약 span, 날짜 동그라미)에 칠하는 경우가 많다. 안쪽 세 겹까지 처음 나오는 바탕을 본다
@@ -377,7 +392,7 @@ function visualAudit(doc, win, depth = 0) {
     return false;
   }).map(el => ({ sample: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 20) }));
   const sideStripes = allVisible.filter(el => {
-    if (el.matches(SEL) || el.tagName === 'BLOCKQUOTE' || radiusOf(el) < 4) return false;
+    if (isSel(el) || el.tagName === 'BLOCKQUOTE' || radiusOf(el) < 4) return false;
     const s = cs(el), w = side => (s[`border${side}Style`] !== 'none' && parseFloat(s[`border${side}Width`])) || 0;
     const side = w('Left') >= w('Right') ? 'Left' : 'Right', thick = w(side);
     const inset = (s.boxShadow || '').match(/inset\s+(-?\d+)px\s+0(?:px)?\s+0/);
@@ -409,7 +424,7 @@ function visualAudit(doc, win, depth = 0) {
     return prop === 'fill' ? 'black' : 'none';
   };
   const iconKinds = {};
-  allVisible.filter(e => e.tagName.toLowerCase() === 'svg').forEach(svg => {
+  allShown.filter(e => e.tagName.toLowerCase() === 'svg').forEach(svg => {
     const w = layout0(svg) || px(svg.getAttribute('width'), svg) || px(cs(svg).width, svg);
     if (!w || w > 32) return;
     const shapes = [...svg.querySelectorAll(SHAPES)];
@@ -423,9 +438,9 @@ function visualAudit(doc, win, depth = 0) {
   const mixedIcons = Object.values(iconKinds).filter(g => g.outline >= 2 && g.filled >= 2);
   // 이모지는 메시지·반응 같은 내용이지 아이콘이 아니다. 버튼·링크·목록·탭·라벨 글이 이모지로 시작하면 아이콘 자리로 본다(제목은 check-screen.mjs가 본다)
   const EMOJI = /^\s*(?:(?![©®™])\p{Extended_Pictographic})/u;
-  const emojiIcons = textEls.filter(el => !/^H[1-6]$/.test(el.tagName) && el.closest('button, a, li, label, nav, [role="tab"], [role="button"], th, dt') && EMOJI.test([...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(''))).map(el => ({ sample: sampleOf(el) }));
+  const emojiIcons = shownTextEls.filter(el => !/^H[1-6]$/.test(el.tagName) && el.closest('button, a, li, label, nav, [role="tab"], [role="button"], th, dt') && EMOJI.test([...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(''))).map(el => ({ sample: sampleOf(el) }));
   // AI 기능을 반짝이·마술봉으로 표시하는 것(흔한 AI 기본값. 제품이 원래 쓰는 아이콘이면 그대로 둔다)
-  const sparkles = allVisible.filter(e => (e.tagName.toLowerCase() === 'svg' && /\bsparkles?\b|\bwand\b|auto-?awesome/i.test(`${e.getAttribute('class') || ''} ${e.getAttribute('data-lucide') || ''} ${e.getAttribute('data-icon') || ''}`)) || (textSet.has(e) && /✨|🪄/.test(e.textContent || ''))).map(e => ({ sample: sampleOf(e.closest('button, a, h1, h2, h3, span, div') || e) || '(아이콘)' }));
+  const sparkles = allShown.filter(e => (e.tagName.toLowerCase() === 'svg' && /\bsparkles?\b|\bwand\b|auto-?awesome/i.test(`${e.getAttribute('class') || ''} ${e.getAttribute('data-lucide') || ''} ${e.getAttribute('data-icon') || ''}`)) || (textSet.has(e) && /✨|🪄/.test(e.textContent || ''))).map(e => ({ sample: sampleOf(e.closest('button, a, h1, h2, h3, span, div') || e) || '(아이콘)' }));
   // 모바일·태블릿 입력칸 글자: iOS Safari는 16px 미만 입력칸을 누르면 화면을 확대한다(조건이 있을 때만 판단)
   const smallInputs = [...doc.body.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=submit]):not([type=button]), select, textarea')].filter(visible).map(el => ({ sample: el.getAttribute('aria-label') || el.getAttribute('placeholder') || el.name || el.tagName.toLowerCase(), size: Math.round((px(cs(el).fontSize, el) || 16) * 10) / 10 })).filter(x => x.size < 16);
 
@@ -446,7 +461,16 @@ function visualAudit(doc, win, depth = 0) {
   const monoLabels = live.filter(t => MONO.test(t.family) && t.size <= 13 && t.chars <= 24 && /[A-Za-z가-힣]{2}/.test(t.sample) && !t.el.closest('pre, code, kbd, samp, var, textarea, [role="code"], [class*="code" i], [class*="syntax" i], [class*="terminal" i]')).map(t => ({ sample: t.sample }));
   // 링크·버튼 글 끝에 붙인 화살표(→). 글자로 붙인 것만 본다
   const ownText = el => [...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
-  const arrowEnds = textEls.filter(el => el.closest('a[href], button, [role="button"]') && /[→⟶➔➜]$/.test(ownText(el))).map(el => ({ sample: sampleOf(el.closest('a[href], button, [role="button"]')) }));
+  // 화살표를 <span>→</span>처럼 따로 붙여도 버튼 글 전체의 끝으로 본다(2026-11-10 실제 서비스에서 놓침)
+  const arrowEnds = allVisible.filter(el => el.matches('a[href], button, [role="button"]') && !el.querySelector('a[href], button, [role="button"]') && /[→⟶➔➜]\s*$/.test(el.textContent || '')).map(el => ({ sample: sampleOf(el) }));
+  // 기호 하나만 있는 버튼(✕, ‹, ⋯, +). 화면 읽기 프로그램은 「곱하기」「작다」처럼 기호 이름을 읽는다. aria-label·title이 있으면 괜찮다
+  const SYMBOL_ONLY = /^[✕✖×xX+＋\-−–‹›<>«»⋯…☰≡⌄⌃^∨∧↑↓←→⟵⟶·•?!*]$/;
+  const symbolButtons = allVisible.filter(el => forAT(el) && el.matches('button, [role="button"], a[href]') && SYMBOL_ONLY.test((el.textContent || '').trim()) && !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby') && !el.getAttribute('title')).map(el => ({ sample: (el.textContent || '').trim() }));
+  // 시간 제한: 「10초 안에 못 고르면 넘어가요」처럼 정해진 시간이 지나면 저절로 바뀌는데 끄거나 늘리는 버튼이 없다(WCAG 2.2 2.2.1)
+  const TIMED = /(\d+)\s*초\s*(안에|안으로|내에|뒤에|뒤|후에|후|가 지나면|동안)/;
+  const AUTO = /넘어가|넘어갑|자동|랜덤|무작위|만료|끝나|끝납|사라|닫혀|닫힙|취소돼|취소됩|로그아웃/;
+  const timeControl = allVisible.some(el => el.matches('button, [role="button"], [role="switch"], a[href], label') && /끄기|멈춤|멈추|일시\s*정지|연장|시간\s*(늘|더)|타이머|pause|stop|extend/i.test(el.textContent || ''));
+  const timeLimits = timeControl ? [] : texts.filter(t => { const f = (t.el.textContent || '').replace(/\s+/g, ' '); return f.length < 120 && TIMED.test(f) && AUTO.test(f); }).map(t => ({ sample: (t.el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 30) })).filter((x, i, a) => a.findIndex(y => y.sample === x.sample) === i);
   // 제목에서 한 단어만 색·기울임·굵기·서체를 바꿈. 숫자 배지·바탕 있는 칩·링크는 뺀다
   const weightOf = s => (/bold/.test(s.fontWeight) ? 700 : Number(s.fontWeight) || 400);
   const accentWords = allVisible.filter(e => /^H[1-3]$/.test(e.tagName)).map(h => {
@@ -850,6 +874,9 @@ function visualAudit(doc, win, depth = 0) {
     cardKit,
     monoLabels,
     arrowEnds,
+    classOnlySel,
+    symbolButtons,
+    timeLimits,
     accentWords,
     numMarks,
     entering,
@@ -900,7 +927,11 @@ function visualJudge(r, cond) {
   if ((r.weakInputs || []).length) say('색', '꼭', `입력칸 테두리가 주변과 잘 안 갈린다 ${r.weakInputs.length}군데(3:1 미만 · WCAG 2.2 1.4.11): ${r.weakInputs.slice(0, 3).map(w => `「${w.sample}」 ${w.ratio}:1`).join(', ')}. 테두리 색을 진하게(흰 바탕이면 #8a8f98 안팎)`, 'confusing');
   if ((r.hiddenLinks || []).length) say('색', '권장', `문장 안 링크가 링크로 안 보인다 ${r.hiddenLinks.length}군데(밑줄 없고 주변 글자와 3:1 미만): ${r.hiddenLinks.slice(0, 3).map(l => `「${l.sample}」`).join(', ')}. 밑줄을 단다`, 'confusing');
   const loud = accents.filter(g => g.uses >= 3);
-  if (loud.length > 3) say('색', '권장', `눈에 띄게 쓴 색 기운이 ${loud.length}가지다(${loud.map(g => HUE(g.hue)).join('·')}). 브랜드 강조 1가지 + 상태색(빨강·초록·노랑)만 남기고 나머지는 회색 단계로`, 'flat', 'accent');
+  // 문구대로 센다: 상태색(빨강·주황·노랑·연두·초록)은 빼고, 그 밖의 기운이 둘 이상이거나 모두 합쳐 다섯 이상이면 많다.
+  // 예전에는 넷 이상이면 걸어서 「브랜드 + 상태색 셋」을 제 문구와 어긋나게 잡았다(2026-11-10 관리자 표 예시의 상태 점)
+  const STATE_HUE = /^(빨강|주황|노랑|연두|초록)$/;
+  const nonState = loud.filter(g => !STATE_HUE.test(HUE(g.hue)));
+  if (nonState.length >= 2 || loud.length > 4) say('색', '권장', `눈에 띄게 쓴 색 기운이 ${loud.length}가지다(${loud.map(g => HUE(g.hue)).join('·')}). 브랜드 강조 1가지 + 상태색(빨강·초록·노랑)만 남기고 나머지는 회색 단계로`, 'flat', 'accent');
   const accentChars = (r.textColors || []).filter(t => { const c = r.colors.find(x => x.hex === t.hex); return c && c.chroma; }).reduce((n, t) => n + t.chars, 0);
   const allChars = (r.textColors || []).reduce((n, t) => n + t.chars, 0);
   if (pct(accentChars, allChars) > 20) say('색', '권장', `글자의 ${pct(accentChars, allChars)}%가 색 글자다. 강조색은 누를 곳과 꼭 볼 숫자에만, 보조 글은 회색으로`, 'flat', 'accent');
@@ -915,7 +946,7 @@ function visualJudge(r, cond) {
   // 조건이 있으면 그 조건의 본문 기준(여럿이 쓰는 기기 18px, 매일 쓰는 데스크톱 14px 등), 없으면 흔한 하한 14px
   const bodyMin = cond?.bodyMin || 14;
   if (cond) say('글자', '정보', `조건 기준: 본문 ${bodyMin}px 이상${cond.bodySrc ? `(${cond.bodySrc})` : ''}, 누를 곳 ${cond.targetMin}px 이상${cond.src?.targetMin ? `(${cond.src.targetMin})` : ''}`);
-  if (r.bodySize < bodyMin) say('글자', '권장', `본문이 ${r.bodySize}px로 작다. ${cond ? `이 조건의 본문은 ${bodyMin}px 이상${cond.bodySrc ? `(${cond.bodySrc})` : ''}` : '화면 본문은 보통 14~16px'}`, 'hard', 'typescale');
+  if (r.bodySize < bodyMin) say('글자', '권장', `본문이 ${r.bodySize}px로 작다. ${cond ? `이 조건의 본문은 ${bodyMin}px 이상${cond.bodySrc ? `(${cond.bodySrc})` : ''}` : '화면 본문은 보통 14~16px'}`, 'hard');
   const smallMin = bodyMin >= 18 ? 14 : 12, smallN = (r.sizes || []).filter(s => s.size < smallMin).reduce((n, s) => n + s.n, 0);
   if (smallN) say('글자', '확인', `${smallMin}px보다 작은 글자 ${smallN}개. 꼭 필요한 정보면 키운다`, 'hard');
   if (cond && cond.inputMin && (r.smallInputs || []).length) say('글자', '권장', `입력칸 글자가 ${cond.inputMin}px보다 작다 ${r.smallInputs.length}곳: ${r.smallInputs.slice(0, 3).map(x => `「${x.sample}」 ${x.size}px`).join(', ')}. iOS Safari는 16px 미만 입력칸을 누르면 화면을 확대한다`, 'hard');
@@ -959,7 +990,7 @@ function visualJudge(r, cond) {
   if ((r.unevenPads || []).length) say('여백·모양', '확인', `안쪽 여백이 쪽마다 다른 카드 ${r.unevenPads.length}개: ${r.unevenPads.slice(0, 3).map(t => `「${t.sample}」 위/오른/아래/왼 ${t.pad}px`).join(', ')}. 카드는 네 쪽을 같게(위아래만 조금 줄이는 정도)`, 'uneven', 'spacing');
   // 아이콘
   if ((r.mixedIcons || []).length) say('여백·모양', '확인', `같은 크기 아이콘에 채운 것과 선만 있는 것이 섞였다: ${r.mixedIcons.map(g => `${g.size}px 채움 ${g.filled}·선 ${g.outline}`).join(', ')}. 한 세트·한 굵기로`, 'uneven', 'decor');
-  if ((r.emojiIcons || []).length) say('글자', '확인', `아이콘 자리에 이모지 ${r.emojiIcons.length}개: ${list(r.emojiIcons)}. 이모지는 메시지·반응 같은 내용에만, 아이콘은 한 세트로`, 'generic', 'decor');
+  if ((r.emojiIcons || []).length) say('글자', r.emojiIcons.length >= 3 ? '권장' : '확인', `아이콘 자리에 이모지 ${r.emojiIcons.length}개: ${list(r.emojiIcons)}. ${r.emojiIcons.length >= 3 ? '버튼·칸마다 이모지를 아이콘으로 붙이는 것은 AI가 만든 화면으로 자주 꼽히는 모양이다(2026-11-03 공개 글 조사: 아이콘 타일, 내비게이션의 이모지). 기기마다 그림이 달라지고, 글자(「점심」)와 같은 뜻을 한 번 더 말할 뿐이다. 빼거나(가장 싸다), 한 세트의 선 아이콘으로, 캐릭터가 있으면 그 그림체로 맞춘다' : '이모지는 메시지·반응 같은 내용에만, 아이콘은 한 세트로'}`, 'generic', 'decor');
   if ((r.sparkles || []).length) say('여백·모양', '확인', `AI 기능에 반짝이·마술봉 표시 ${r.sparkles.length}개: ${list(r.sparkles)}. 흔한 AI 기본값이다. 그 기능이 무엇을 하는지 보여 주는 말이나 아이콘으로`, 'generic', 'decor');
   if ((r.inventedMarks || []).length) say('여백·모양', '확인', `색 네모 안 글자 한두 개로 만든 로고 ${r.inventedMarks.length}개: ${list(r.inventedMarks)}. AI가 지어내는 로고 모양이다. 실제 로고나 글자 로고로`, 'generic', 'decor');
   // frontend-design(Anthropic)이 꼽은 기본값(2026-11-06)
@@ -967,6 +998,9 @@ function visualJudge(r, cond) {
   if ((r.accentWords || []).length) say('글자', '확인', `제목에서 한 단어만 색·기울임·굵기를 바꾼 곳 ${r.accentWords.length}개: ${r.accentWords.slice(0, 3).map(a => `「${a.sample}」(${a.word})`).join(', ')}. AI가 만든 첫 화면에 흔한 모양이다. 브랜드에서 정한 강조 방식이면 그대로 두고, 아니면 제목은 한 모양으로 두고 강조할 말을 문장 앞에 둔다`, 'generic', 'decor');
   if ((r.numMarks || []).length >= 3) say('글자', '확인', `01·02·03 같은 번호 ${r.numMarks.length}개: ${list(r.numMarks)}. 단계·연표처럼 순서가 있는 내용이 아니면 번호를 뺀다`, 'generic', 'decor');
   if ((r.monoLabels || []).length >= 3) say('글자', '확인', `작은 라벨에만 고정폭 서체 ${r.monoLabels.length}개: ${list(r.monoLabels)}. 흔한 AI 기본값이다. 숫자 자리를 맞추려면 본문 서체에 tabular-nums`, 'generic', 'font');
+  if ((r.timeLimits || []).length) say('글자', '권장', `시간이 지나면 저절로 바뀌는데 끄거나 늘릴 방법이 없다 ${r.timeLimits.length}곳: ${list(r.timeLimits)}. 천천히 읽는 사람은 고르기 전에 넘어간다(WCAG 2.2 2.2.1). 놀이로 넣은 시간이면 「타이머 끄기」나 「시간 늘리기」를 둔다`, 'hard');
+  if ((r.symbolButtons || []).length) say('글자', '권장', `기호 하나만 있는 버튼 ${r.symbolButtons.length}개: ${list(r.symbolButtons)}. 화면 읽기 프로그램은 「곱하기」「작다」처럼 기호 이름을 읽는다. aria-label="돼지국밥 빼기"처럼 하는 일을 붙인다(WCAG 2.2 2.4.6)`, 'confusing');
+  if ((r.classOnlySel || []).length) say('색', '확인', `고른 것을 클래스(on, active 등)로만 표시한 곳 ${r.classOnlySel.length}개: ${list(r.classOnlySel)}. 눈으로는 보여도 화면 읽기 프로그램은 무엇을 골랐는지 모른다. 버튼이면 aria-pressed="true", 하나만 고르면 role="radio"와 aria-checked, 지금 페이지면 aria-current를 같이 바꾼다(WCAG 2.2 4.1.2)`, 'confusing');
   if ((r.arrowEnds || []).length >= 2) say('글자', '확인', `링크·버튼 글 끝에 붙인 화살표 ${r.arrowEnds.length}개: ${list(r.arrowEnds)}. 버튼은 무엇이 일어나는지 말로 충분하다. 다른 사이트로 나가는 링크에만 표시한다`, 'generic', 'copy');
   if ((r.entering || []).length >= 3) say('여백·모양', '확인', `들어올 때 움직이는 덩어리 ${r.entering.length}개(fade-up 같은 등장 효과): ${list(r.entering)}. 섹션마다 움직이면 AI 기본값으로 읽힌다. 움직임은 첫 화면 한 번이나 사용자가 누른 뒤 바뀐 곳에만`, 'generic', 'decor');
   if (r.hoverAll) say('여백·모양', '확인', `카드 ${r.hoverAll.n}개 모두 마우스를 올리면 뜨거나 그림자가 커진다${r.hoverAll.clickable < r.hoverAll.n ? `(그중 ${r.hoverAll.n - r.hoverAll.clickable}개는 누를 곳이 없다)` : ''}. 눌리는 카드에만 준다`, r.hoverAll.clickable < r.hoverAll.n ? 'confusing' : 'generic', 'decor');
@@ -1041,7 +1075,7 @@ function visualCompare(list) {
   same('문장 안 링크 색', s => s.link);
   ['h1', 'h2', 'h3'].forEach(tag => { if (list.some(x => x.sig.headings && x.sig.headings[tag])) same(`${tag} 크기/굵기`, s => (s.headings && s.headings[tag]) || null, v => v.join(', ')); });
   // 채운 버튼: 화면마다 가장 많이 쓴 채운 버튼(색|모서리|높이|글자)
-  const primary = s => Object.entries(s.buttons || {}).filter(([k]) => !/^(none|gray)\|/.test(k)).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  const primary = s => Object.entries(s.buttons || {}).filter(([k]) => !/^(none|gray)\|/.test(k) && !(parseFloat(k.split('|')[2]) > 72)).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
   same('주 버튼(색|모서리|높이|글자)', primary);
   // 모서리: 어느 화면에만 있는 값
   const allR = [...new Set(list.flatMap(x => x.sig.radii || []))];

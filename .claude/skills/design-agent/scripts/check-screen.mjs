@@ -71,7 +71,7 @@ const found = [];
 // 서비스가 일부러 정했을 수 있는 항목(visual-audit.js HOUSE_TOPICS와 같은 주제 이름)
 const TOPIC = { '사진 목록에 스피너': 'pattern.loading', '굵은 글자가 너무 많음': 'weight', '보라·파랑 그라데이션': 'palette', 'Inter 한 가지 서체': 'font', '이모지 제목 표시': 'decor', '과장 문구': 'copy', '「A가 아니라 B」 문장': 'copy', '대시(—) 남발': 'copy' };
 // 실패 이름(references/failures.md, visual-audit.js FAILS)
-const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard', '번호가 두 번 붙음': 'confusing', '브라우저 기본 확인창': 'confusing', '대화상자 버튼이 「확인·예」': 'confusing', '「정말 ~하시겠어요?」 제목': 'confusing', '입력이 맞을 때까지 제출 잠금': 'confusing', '저절로 움직이는데 멈춤 없음': 'hard', '끌기로만 하는 동작': 'hard' };
+const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '기호만 있는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard', '번호가 두 번 붙음': 'confusing', '브라우저 기본 확인창': 'confusing', '대화상자 버튼이 「확인·예」': 'confusing', '「정말 ~하시겠어요?」 제목': 'confusing', '입력이 맞을 때까지 제출 잠금': 'confusing', '저절로 움직이는데 멈춤 없음': 'hard', '끌기로만 하는 동작': 'hard' };
 const add = (level, rule, why, els = []) => found.push({ level, rule, why, at: els.slice(0, 3).map(where), fail: FAIL[rule], ...(TOPIC[rule] && { topic: TOPIC[rule] }) });
 
 if (badViewport) add('꼭', '확대 막기', `viewport에 「${viewport.trim()}」. user-scalable=no와 maximum-scale=1을 지운다(WCAG 2.2 1.4.4)`, [doc.querySelector('meta[name="viewport"]')]);
@@ -81,6 +81,8 @@ if (badViewport) add('꼭', '확대 막기', `viewport에 「${viewport.trim()}�
 const buttons = [...doc.querySelectorAll('button, [role="button"], a[href]')].filter(visible);
 const nameless = buttons.filter(b => !text(b) && !b.getAttribute('aria-label') && !b.getAttribute('title') && !b.querySelector('img[alt]:not([alt=""])'));
 if (nameless.length) add('꼭', '이름 없는 버튼', '글자·aria-label이 없어 무엇을 하는 버튼인지 알 수 없다 (WCAG 2.2 · 4.1.2)', nameless);
+const symbolOnly = buttons.filter(b => /^[✕✖×xX+＋\-−–‹›<>«»⋯…☰≡⌄⌃^∨∧↑↓←→⟵⟶·•?!*]$/.test(text(b)) && !b.getAttribute('aria-label') && !b.getAttribute('aria-labelledby') && !b.getAttribute('title'));
+if (symbolOnly.length) add('권장', '기호만 있는 버튼', '「✕」「‹」「⋯」는 화면 읽기 프로그램이 기호 이름(곱하기, 작다)으로 읽는다. aria-label에 하는 일을 적는다(예: 「돼지국밥 빼기」) (WCAG 2.2 · 2.4.6)', symbolOnly);
 const iconOnly = buttons.filter(b => !text(b) && (b.getAttribute('aria-label') || b.getAttribute('title')));
 if (iconOnly.length && sel.skill === 'first') add('권장', '처음 쓰는 사람에게 아이콘만 있는 버튼', '아이콘만으로는 뜻을 모른다. 글자 라벨을 같이 둔다', iconOnly);
 
@@ -93,7 +95,9 @@ if (money.length && !guarded && action !== 'light') add('꼭', '두 번 눌림 �
 // 3. 오류를 사라지는 토스트로만 알림
 const toasts = [...doc.querySelectorAll('[class*="toast" i], [class*="snackbar" i]')];
 const errToasts = toasts.filter(t => /실패|오류|에러|error|fail/i.test(text(t)));
-if (errToasts.length) add(sel.device === 'shared' || action === 'once' || action === 'irreversible' ? '꼭' : '권장', '오류를 토스트로만 알림', '금방 사라져 놓친다. 입력 오류는 그 칸 아래에, 결제 실패는 남는 문구나 대화상자로', errToasts);
+// 결제·주문처럼 무거운 작업이나 공용 기기에서 놓치면 사고(사고 위험), 가벼운 입력 오류면 무엇이 틀렸는지 모르는 것(헷갈림)
+const heavyErr = sel.device === 'shared' || action === 'once' || action === 'irreversible';
+if (errToasts.length) { add(heavyErr ? '꼭' : '권장', '오류를 토스트로만 알림', '금방 사라져 놓친다. 입력 오류는 그 칸 아래에, 결제 실패는 남는 문구나 대화상자로', errToasts); if (!heavyErr) found[found.length - 1].fail = 'confusing'; }
 
 // 4. 사진 목록에 스피너
 const imgs = doc.querySelectorAll('img, [class*="thumb" i], [class*="photo" i]').length;

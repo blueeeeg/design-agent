@@ -1,0 +1,8 @@
+$ check-screen.mjs scripts/fixtures/review-gaps.html
+[exit 0]
+검사: .claude/skills/design-agent/scripts/fixtures/review-gaps.html
+해당하는 실패: 헷갈림 1 · 빠진 상태 1 (이름 뜻과 고치는 순서: references/failures.md)
+- [고치기 권함 · 헷갈림] 기호만 있는 버튼: 「✕」「‹」「⋯」는 화면 읽기 프로그램이 기호 이름(곱하기, 작다)으로 읽는다. aria-label에 하는 일을 적는다(예: 「돼지국밥 빼기」) (WCAG 2.2 · 2.4.6)
+    위치: <button>
+- [확인 · 빠진 상태] 빈 화면 없음: 목록이 비었을 때 보일 문구·다음 행동이 페이지에 없다. 처음·검색 결과 없음·오류를 나눠 쓴다
+    위치: <ul>

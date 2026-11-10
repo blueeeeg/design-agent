@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>화면 구조 규칙 시험</title>
+<!-- 시험용. 2026-11-10 기준 세기에서 거는 시험 화면이 없던 화면 구조 규칙: 확대 막기, 처음 쓰는 사람에게 아이콘만 있는 버튼, hover로만 보이는 것 -->
+<style>
+  body { margin: 0; padding: 16px; font-family: Pretendard, sans-serif; font-size: 16px; line-height: 1.6; color: #111111; background: #ffffff; }
+  .row .actions { display: none; }
+  .row:hover .actions { display: flex; }
+  button { min-width: 44px; min-height: 44px; }
+</style>
+</head>
+<body>
+  <h1>내 메뉴</h1>
+  <p class="row">돼지국밥 <span class="actions"><button>고치기</button></span></p>
+  <button aria-label="설정 열기"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor"/></svg></button>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>리뷰 빈틈 시험</title>
+<!-- 시험용. 2026-11-10 실제 서비스 리뷰에서 검사가 놓친 것: 따로 붙인 화살표, 기호만 있는 버튼, 클래스로만 고른 표시, 시간 제한, aria-hidden으로 둔 이모지 아이콘.
+     잡으면 안 되는 것도 둔다: aria-label 있는 ✕, aria-pressed 칩 -->
+<style>
+  body { margin: 0; padding: 16px; font-family: Pretendard, sans-serif; background: #ffffff; color: #111111; font-size: 16px; line-height: 1.6; }
+  h1 { font-size: 32px; margin: 0 0 16px; }
+  button { min-height: 44px; padding: 0 16px; border: 1px solid #8a8f98; border-radius: 8px; background: #ffffff; color: #111111; font-size: 16px; }
+  .chip.on { background: #111111; color: #ffffff; }
+  .pill[aria-pressed="true"], .meal [aria-pressed="true"] { background: #111111; color: #ffffff; }
+  .go { background: #1d5fd1; color: #ffffff; border-color: #1d5fd1; }
+</style>
+</head>
+<body>
+  <h1>메뉴 고르기</h1>
+  <div class="chips">
+    <button class="chip on">점심</button>
+    <button class="chip">저녁</button>
+  </div>
+  <div class="pills">
+    <button class="pill" aria-pressed="true">한식</button>
+    <button class="pill" aria-pressed="false">양식</button>
+  </div>
+  <div class="meal">
+    <button aria-pressed="true"><span aria-hidden="true">☀️</span> <span>점심</span></button>
+    <button aria-pressed="false"><span aria-hidden="true">🌆</span> <span>저녁</span></button>
+    <button aria-pressed="false"><span aria-hidden="true">🌙</span> <span>야식</span></button>
+  </div>
+  <ul>
+    <li>돼지국밥 <button>✕</button></li>
+    <li>냉면 <button aria-label="냉면 빼기">✕</button></li>
+  </ul>
+  <p>10초 안에 못 고르면 랜덤으로 넘어가요</p>
+  <button class="go">바로 고르기 <span>→</span></button>
+  <a href="#more">더 보기 <span>→</span></a>
+</body>
+</html>

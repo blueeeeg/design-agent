@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>값 흩어짐 시험</title>
+<!-- 시험용. 2026-11-10 「모든 기준이 한 번 이상 걸리나」를 세어 보니 아무 시험 화면도 걸지 않던 기준을 모았다:
+     글자 크기 단계 많음, 작은 본문, 12px보다 작은 글자, 서체 셋 이상, 여백 4배수 아님·흩어짐, 모서리·그림자 종류 많음,
+     기울인 한글, 문장 안 링크가 안 보임, 색 기운 많음, 순수 회색, 색 값 많음, 그림 위 글자. iframe 안 대비는 jsdom이 iframe 안을 불러오지 않아 브라우저에서만 본다 -->
+<style>
+  body { margin: 0; padding: 5px 7px; font-family: Pretendard, sans-serif; font-size: 13px; line-height: 1.6; background: #ffffff; color: #222222; }
+  h1 { font-size: 40px; margin: 9px 0; font-family: Georgia, serif; color: #7c3aed; }
+  h2 { font-size: 30px; margin: 11px 0; color: #2563eb; }
+  h3 { font-size: 24px; margin: 13px 0; color: #db2777; }
+  .s20 { font-size: 20px; margin: 15px 0; color: #0d9488; }
+  .s18 { font-size: 18px; margin: 17px 0; color: #ea580c; }
+  .s16 { font-size: 16px; margin: 19px 0; font-family: "Comic Sans MS", cursive; }
+  .s11 { font-size: 11px; padding: 21px 0; color: #555555; }
+  .s10 { font-size: 10px; padding: 23px 0; color: #444444; }
+  .box { padding: 25px; margin: 27px 0; border: 1px solid #888888; }
+  .r2 { border-radius: 2px; box-shadow: 0 1px 2px #00000022; padding: 29px; }
+  .r3 { border-radius: 3px; box-shadow: 0 2px 4px #00000022; padding: 31px; }
+  .r5 { border-radius: 5px; box-shadow: 0 3px 6px #00000022; padding: 33px; }
+  .r7 { border-radius: 7px; box-shadow: 0 4px 8px #00000022; padding: 35px; }
+  .r9 { border-radius: 9px; box-shadow: 0 5px 10px #00000022; padding: 37px; }
+  .r11 { border-radius: 11px; box-shadow: 0 6px 12px #00000022; padding: 39px; }
+  .purple { color: #7c3aed; border-left: 3px solid #7c3aed; background: #f5f3ff; }
+  .blue { color: #2563eb; border-left: 3px solid #2563eb; background: #eff6ff; }
+  .pink { color: #db2777; border-left: 3px solid #db2777; background: #fdf2f8; }
+  .teal { color: #0d9488; border-left: 3px solid #0d9488; background: #f0fdfa; }
+  .orange { color: #ea580c; border-left: 3px solid #ea580c; background: #fff7ed; }
+  .g1 { color: #111111; } .g2 { color: #333333; } .g3 { color: #3a3a3a; } .g4 { color: #4a4a4a; } .g5 { color: #5a5a5a; } .g6 { color: #666666; }
+  .g7 { background: #eeeeee; } .g8 { background: #e5e5e5; } .g9 { background: #dddddd; } .g10 { background: #f2f2f2; } .g11 { background: #fafafa; }
+  .g12 { color: #2b2b2b; } .g13 { color: #7a7a7a; }
+  .pic { background-image: url("missing.png"); color: #ffffff; padding: 41px; }
+  .quiet { color: #333333; text-decoration: none; }
+  em.ko { font-style: italic; }
+</style>
+</head>
+<body>
+  <h1>값이 흩어진 화면</h1>
+  <h2>두 번째 제목</h2>
+  <h3>세 번째 제목</h3>
+  <p class="s20">스무 픽셀 글</p>
+  <p class="s18">열여덟 픽셀 글</p>
+  <p class="s16">열여섯 픽셀 글, 다른 서체</p>
+  <p>본문은 열세 픽셀이다. 주문 내역을 확인하고 필요하면 <a class="quiet" href="#help">도움말</a>을 연다. 오늘 들어온 주문은 모두 열두 건이고, 그중 세 건은 아직 확인하지 않았다. <em class="ko">꼭 오늘 안에</em> 처리한다.</p>
+  <p>두 번째 문단도 열세 픽셀이다. 배송을 시작한 주문은 화면 위쪽에 따로 모아 보여 준다. 취소한 주문은 아래쪽 목록으로 옮긴다.</p>
+  <p class="s11">열한 픽셀 안내</p>
+  <p class="s10">열 픽셀 안내</p>
+  <div class="box">
+    <div class="r2 purple">보라 칸</div>
+    <div class="r3 blue">파랑 칸</div>
+    <div class="r5 pink">분홍 칸</div>
+    <div class="r7 teal">청록 칸</div>
+    <div class="r9 orange">주황 칸</div>
+    <div class="r11 g7"><span class="g1">회색 하나</span> <span class="g2">회색 둘</span> <span class="g3">회색 셋</span></div>
+    <div class="g8"><span class="g4">회색 넷</span> <span class="g5">회색 다섯</span> <span class="g6">회색 여섯</span></div>
+    <div class="g9 g10 g11">바탕 회색</div>
+    <p><span class="purple">보라 글</span> <span class="blue">파랑 글</span> <span class="pink">분홍 글</span> <span class="teal">청록 글</span> <span class="orange">주황 글</span> <span class="g12">회색 일곱</span> <span class="g13">회색 여덟</span></p>
+  </div>
+  <div class="pic">그림 위 글자</div>
+</body>
+</html>

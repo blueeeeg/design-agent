@@ -27,14 +27,22 @@ if (!existsSync(join(ROOT, 'data'))) { console.error('저장소 맨 위에서 �
 
 // 스킬 폴더 기준 경로를 저장소 기준으로 바꾼다. 출력에 경로가 찍혀 기준과 같아야 하므로 늘 같은 모양으로 넘긴다
 const fix = a => (/^(scripts|examples|references)\//.test(a) ? relative(ROOT, join(SKILL, a)) : a);
+mkdirSync(join(HERE, 'out'), { recursive: true });
 
-const runOne = c => new Promise(res => {
-  const [script, ...rest] = c.run;
+const exec1 = run => new Promise(res => {
+  const [script, ...rest] = run;
   execFile(process.execPath, [join(SCRIPTS, script), ...rest.map(fix)], { cwd: ROOT, encoding: 'utf8', timeout: 60000 }, (err, stdout, stderr) => {
     const code = err ? (typeof err.code === 'number' ? err.code : -1) : 0;
-    res({ c, code, out: (stdout + (stderr ? `\n[stderr]\n${stderr}` : '')).trimEnd() + '\n' });
+    res({ code, out: (stdout + (stderr ? `\n[stderr]\n${stderr}` : '')).trimEnd() + '\n' });
   });
 });
+// then: 앞 단계가 만든 파일을 다음 단계가 잰다(리뷰 페이지를 만들고 우리 검사기로 재기). exit는 앞 단계, has·not은 둘을 합친 출력에 건다
+const runOne = async c => {
+  const a = await exec1(c.run);
+  if (!c.then) return { c, ...a };
+  const b = await exec1(c.then);
+  return { c, code: a.code, out: `${a.out}[then: ${c.then.join(' ')} · exit ${b.code}]\n${b.out}` };
+};
 
 // 한 번에 몇 개씩 돌린다(jsdom이 무겁다)
 async function pool(items, n, fn) {

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@layer 시험</title>
+<!-- 시험용. 2026-11-10 jsdom은 @layer·@supports 안의 규칙을 걸지 않아 Tailwind 4 같은 페이지에서 재는 것이 비었다.
+     @layer 안에서 정한 변수·규칙으로 재야 한다: 바탕 #ffffff, 본문 16px, 옅은 회색 글 #9ca3af는 대비 부족 -->
+<style>
+  @layer theme, base, components;
+  @layer theme { :root { --bg: #ffffff; --text: #111827; --faint: #9ca3af; } }
+  @layer base { body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font-family: Pretendard, sans-serif; font-size: 16px; line-height: 1.6; } h1 { font-size: 32px; margin: 0 0 16px; } }
+  @supports (display: grid) { @layer components { .hint { color: var(--faint); } } }
+  @media (prefers-color-scheme: dark) { :root { --bg: #030712; --text: #f9fafb; } }
+</style>
+</head>
+<body>
+  <h1>층으로 나눈 화면</h1>
+  <p>본문은 열여섯 픽셀이다.</p>
+  <p class="hint">옅은 안내 글</p>
+</body>
+</html>

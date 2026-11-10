@@ -14,6 +14,8 @@ function visualAudit(doc, win, depth = 0) {
     const out = Object.create(null);
     for (const k of ['color', 'opacity', 'textDecorationLine', 'textDecoration', 'textDecorationColor', 'outlineStyle', 'outlineColor', 'outlineWidth', 'backgroundColor', 'backgroundImage', 'fontSize', 'fontWeight', 'fontFamily', 'display', 'visibility', 'borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderTopLeftRadius', 'borderRadius', 'boxShadow', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'marginTop', 'marginBottom', 'rowGap', 'columnGap', 'lineHeight', 'textAlign', 'fontStyle', 'letterSpacing', 'textTransform', 'backdropFilter', 'webkitBackdropFilter', 'height', 'width', 'overflow', 'overflowX', 'textOverflow', 'position', 'backgroundClip', 'webkitBackgroundClip', 'webkitTextFillColor', 'gap', 'flexDirection', 'gridTemplateColumns', 'fontVariantNumeric', 'fontFeatureSettings']) out[k] = s[k];
     // jsdom은 gap 줄임말을 rowGap·columnGap으로 풀지 않는다(normal로 둔다)
+    // jsdom은 text-decoration 줄임 표기를 textDecorationLine으로 풀지 않는다(「none」으로 남는다). 줄임 표기에서 줄 종류를 옮긴다(2026-11-10)
+    if ((!out.textDecorationLine || out.textDecorationLine === 'none') && /underline|overline|line-through/.test(out.textDecoration || '')) out.textDecorationLine = (out.textDecoration.match(/underline|overline|line-through/g) || []).join(' ');
     if (out.gap && (!out.rowGap || out.rowGap === 'normal')) { const [a, b] = String(out.gap).split(/\s+/); out.rowGap = a; if (!out.columnGap || out.columnGap === 'normal') out.columnGap = b || a; }
     // jsdom은 text-align을 물려주지 않는다(빈 값). 부모 값을 쓴다
     if (!out.textAlign && parent) out.textAlign = cs(parent).textAlign;
@@ -438,7 +440,13 @@ function visualAudit(doc, win, depth = 0) {
   const mixedIcons = Object.values(iconKinds).filter(g => g.outline >= 2 && g.filled >= 2);
   // 이모지는 메시지·반응 같은 내용이지 아이콘이 아니다. 버튼·링크·목록·탭·라벨 글이 이모지로 시작하면 아이콘 자리로 본다(제목은 check-screen.mjs가 본다)
   const EMOJI = /^\s*(?:(?![©®™])\p{Extended_Pictographic})/u;
-  const emojiIcons = shownTextEls.filter(el => !/^H[1-6]$/.test(el.tagName) && el.closest('button, a, li, label, nav, [role="tab"], [role="button"], th, dt') && EMOJI.test([...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(''))).map(el => ({ sample: sampleOf(el) }));
+  const emojiIcons = shownTextEls.filter(el => !/^H[1-6]$/.test(el.tagName) && el.closest('button, a, li, label, nav, [role="tab"], [role="button"], th, dt') && EMOJI.test([...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(''))).map(el => {
+    // 그 버튼·칸에 이모지 말고 글자가 있나. 있으면 빼도 뜻이 남는다. 「☀️ 점심」처럼 칸 글자와 같이 보여 준다
+    const box = el.closest('button, a, li, label, [role="tab"], [role="button"], th, dt') || el;
+    const label = (box.textContent || '').replace(/\s+/g, ' ').trim();
+    const withLabel = /[\p{L}\p{N}]/u.test(label.replace(/\p{Extended_Pictographic}/gu, ''));
+    return { sample: (withLabel ? label : sampleOf(el)).slice(0, 16), withLabel };
+  });
   // AI 기능을 반짝이·마술봉으로 표시하는 것(흔한 AI 기본값. 제품이 원래 쓰는 아이콘이면 그대로 둔다)
   const sparkles = allShown.filter(e => (e.tagName.toLowerCase() === 'svg' && /\bsparkles?\b|\bwand\b|auto-?awesome/i.test(`${e.getAttribute('class') || ''} ${e.getAttribute('data-lucide') || ''} ${e.getAttribute('data-icon') || ''}`)) || (textSet.has(e) && /✨|🪄/.test(e.textContent || ''))).map(e => ({ sample: sampleOf(e.closest('button, a, h1, h2, h3, span, div') || e) || '(아이콘)' }));
   // 모바일·태블릿 입력칸 글자: iOS Safari는 16px 미만 입력칸을 누르면 화면을 확대한다(조건이 있을 때만 판단)
@@ -990,7 +998,11 @@ function visualJudge(r, cond) {
   if ((r.unevenPads || []).length) say('여백·모양', '확인', `안쪽 여백이 쪽마다 다른 카드 ${r.unevenPads.length}개: ${r.unevenPads.slice(0, 3).map(t => `「${t.sample}」 위/오른/아래/왼 ${t.pad}px`).join(', ')}. 카드는 네 쪽을 같게(위아래만 조금 줄이는 정도)`, 'uneven', 'spacing');
   // 아이콘
   if ((r.mixedIcons || []).length) say('여백·모양', '확인', `같은 크기 아이콘에 채운 것과 선만 있는 것이 섞였다: ${r.mixedIcons.map(g => `${g.size}px 채움 ${g.filled}·선 ${g.outline}`).join(', ')}. 한 세트·한 굵기로`, 'uneven', 'decor');
-  if ((r.emojiIcons || []).length) say('글자', r.emojiIcons.length >= 3 ? '권장' : '확인', `아이콘 자리에 이모지 ${r.emojiIcons.length}개: ${list(r.emojiIcons)}. ${r.emojiIcons.length >= 3 ? '버튼·칸마다 이모지를 아이콘으로 붙이는 것은 AI가 만든 화면으로 자주 꼽히는 모양이다(2026-11-03 공개 글 조사: 아이콘 타일, 내비게이션의 이모지). 기기마다 그림이 달라지고, 글자(「점심」)와 같은 뜻을 한 번 더 말할 뿐이다. 빼거나(가장 싸다), 한 세트의 선 아이콘으로, 캐릭터가 있으면 그 그림체로 맞춘다' : '이모지는 메시지·반응 같은 내용에만, 아이콘은 한 세트로'}`, 'generic', 'decor');
+  if ((r.emojiIcons || []).length) {
+    const lab = r.emojiIcons.filter(x => x.withLabel !== false), bare = r.emojiIcons.filter(x => x.withLabel === false), many = r.emojiIcons.length >= 3;
+    const where = [lab.length ? `글자 옆 ${lab.length}개(${list(lab)})는 빼도 뜻이 남는다` : '', bare.length ? `이모지만 있는 ${bare.length}개(${list(bare)})는 뜻을 이모지가 다 진다. 빼려면 글자 이름을 붙인다` : ''].filter(Boolean).join('. ');
+    say('글자', many ? '권장' : '확인', `아이콘 자리에 이모지 ${r.emojiIcons.length}개. ${where}. ${many ? '버튼·칸마다 이모지를 아이콘으로 붙이는 것은 AI가 만든 화면으로 자주 꼽히는 모양이다(2026-11-03 공개 글 조사: 아이콘 타일, 내비게이션의 이모지). 기기마다 그림이 달라진다. 자리마다 정한다: 글자로 뜻이 통하면 뺀다(가장 싸다). 여러 개를 한눈에 갈라야 하면(방식·메뉴 카드) 한 세트의 선 아이콘으로. 서비스 얼굴이 필요한 한두 곳만 캐릭터·일러스트로(visual-basics.md 「이모지」)' : '이모지는 메시지·반응 같은 내용에만, 아이콘은 한 세트로'}`, 'generic', 'decor');
+  }
   if ((r.sparkles || []).length) say('여백·모양', '확인', `AI 기능에 반짝이·마술봉 표시 ${r.sparkles.length}개: ${list(r.sparkles)}. 흔한 AI 기본값이다. 그 기능이 무엇을 하는지 보여 주는 말이나 아이콘으로`, 'generic', 'decor');
   if ((r.inventedMarks || []).length) say('여백·모양', '확인', `색 네모 안 글자 한두 개로 만든 로고 ${r.inventedMarks.length}개: ${list(r.inventedMarks)}. AI가 지어내는 로고 모양이다. 실제 로고나 글자 로고로`, 'generic', 'decor');
   // frontend-design(Anthropic)이 꼽은 기본값(2026-11-06)
@@ -1054,6 +1066,9 @@ function visualHouse(findings, rules) {
   for (const f of findings) {
     if (!f.topic) main.push(f);
     else if (keys.some(k => f.topic === k || f.topic.startsWith(k + '.'))) skipped.add(HOUSE_TOPICS[f.topic.split('.')[0]] || f.topic);
+    // 규칙 파일 없이 「정해 둔 게 있겠지」 하고 켠 것이면(decided 없음), 「고치기 권함」인 흔한 기본값(이모지 아이콘 3개 이상 등)은
+    // 고칠 곳에 남긴다. 맨 끝 「정한 건지 확인」에 묻혀 AI 티가 그대로 남았다(2026-11-10 리뷰 2회차)
+    else if (!keys.length && f.fail === 'generic' && f.level === '권장') main.push({ ...f, text: `${f.text}. 일부러 정한 모양이면 그대로 둔다` });
     else ask.push(f);
   }
   return { main, ask, skipped: [...skipped] };

@@ -45,9 +45,32 @@ if (val('--from-json')) {
     const p = tries.find(existsSync);
     return p ? `<style>${readFileSync(p, 'utf8')}</style>` : tag;
   });
-  // jsdom은 CSS 변수(var())를 풀지 못한다. 선언을 모아 값으로 바꿔 넣는다(가장 나중 선언, 기본값 지원)
-  const vars = {};
-  for (const m of html.matchAll(/(--[\w-]+)\s*:\s*([^;{}]+)[;}]/g)) vars[m[1]] = m[2].trim();
+  // jsdom은 @layer·@supports 안의 규칙을 읽기만 하고 걸지 않는다. Tailwind 4·shadcn은 거의 모든 규칙이 @layer 안이라 재는 것이 비었다.
+  // 겉을 벗겨 보통 규칙으로 둔다(층 순서는 무시한다. 브라우저에서 재는 쪽이 정확하다). @layer a, b; 같은 순서 선언은 지운다. @media는 그대로 둔다(2026-11-10)
+  const unwrap = css => {
+    let out = '', i = 0;
+    const re = /@(layer|supports)\b[^{;]*([{;])/g; let m;
+    while ((m = re.exec(css))) {
+      out += css.slice(i, m.index);
+      if (m[2] === ';') { i = re.lastIndex; continue; }
+      let d = 1, j = re.lastIndex;
+      for (; j < css.length && d; j++) { if (css[j] === '{') d++; else if (css[j] === '}') d--; }
+      out += unwrap(css.slice(re.lastIndex, j - 1)); i = j; re.lastIndex = j;
+    }
+    return out + css.slice(i);
+  };
+  html = html.replace(/<style([^>]*)>([\s\S]*?)<\/style>/gi, (_, a, css) => `<style${a}>${unwrap(css)}</style>`);
+  // jsdom은 CSS 변수(var())를 풀지 못한다. 선언을 모아 값으로 바꿔 넣는다(기본값 지원).
+  // 이 페이지에 실제로 걸리는 선언만 모은다: @media 안(다크 모드, 좁은 폭, 인쇄)은 jsdom이 규칙을 걸지 않으니 변수도 빼고,
+  // 맨 위 요소(:root, html, body)에 맞는 규칙의 값이 이긴다. 예전에는 「가장 나중 선언」이라 다크 모드 값이 이겨서
+  // 다크 모드가 있는 페이지를 어두운 색으로 쟀다(2026-11-10 리뷰 페이지에서 찾음). 다른 요소에만 거는 변수는 맨 위에 없는 이름만 쓴다
+  const vars = {}, scoped = {};
+  { const pre = new JSDOM(html).window.document;
+    for (const sh of pre.styleSheets) { let rules = []; try { rules = [...sh.cssRules]; } catch (e) {}
+      for (const r of rules) { if (r.type !== 1 || !r.style) continue;
+        let top = false; try { top = [pre.documentElement, pre.body].some(e => e && e.matches(r.selectorText)); } catch (e) {}
+        for (let i = 0; i < r.style.length; i++) { const k = r.style[i]; if (k.startsWith('--')) (top ? vars : scoped)[k] = r.style.getPropertyValue(k).trim(); } } }
+    for (const [k, v] of Object.entries(scoped)) if (!(k in vars)) vars[k] = v; }
   const sub = (s, depth = 0) => (depth > 8 ? s : s.replace(/var\(\s*(--[\w-]+)\s*(?:,\s*([^()]*(?:\([^()]*\))?[^()]*))?\)/g, (_, n, fb) => sub(vars[n] ?? (fb || '').trim(), depth + 1)));
   html = html.replace(/<style([^>]*)>([\s\S]*?)<\/style>/gi, (_, a, css) => `<style${a}>${sub(css)}</style>`).replace(/style="([^"]*)"/g, (_, s) => `style="${sub(s)}"`);
   // --run-scripts에서도 페이지가 밖으로 요청을 보내지 못하게 막는다(XHR·fetch·WebSocket)

@@ -1,0 +1,5 @@
+$ review-page.mjs
+[exit 1]
+
+[stderr]
+리뷰 파일을 넣어 주세요. 예: node review-page.mjs review.json

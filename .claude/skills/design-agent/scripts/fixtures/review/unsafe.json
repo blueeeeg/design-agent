@@ -1,0 +1,7 @@
+{
+  "_about": "시험용. 남의 사이트에서 옮긴 글에 javascript: 주소와 태그가 섞인 경우",
+  "title": "<script>alert(1)</script> 리뷰",
+  "url": "javascript:alert(1)",
+  "top": [{ "title": "제목에 <img src=x onerror=alert(1)>", "body": "\" onmouseover=\"alert(1)" }],
+  "fixes": [{ "level": "꼭", "fail": "헷갈림", "text": "<a href=\"javascript:alert(1)\">링크</a>" }]
+}

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>다크 모드 변수 시험</title>
+<!-- 시험용. 2026-11-10 파일 검사가 CSS 변수를 「가장 나중 선언」으로 풀어 다크 모드 값(@media, [data-theme=dark])이 이겼다.
+     밝은 모드 값(바탕 #ffffff, 글자 #1b1f24)으로 재야 한다. 카드에만 거는 변수(.card --bg)도 맨 위 값을 덮으면 안 된다 -->
+<style>
+  :root { --bg: #ffffff; --text: #1b1f24; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0e1116; --text: #e6edf3; } }
+  :root[data-theme="dark"] { --bg: #000000; --text: #ffffff; }
+  .card { --bg: #f6f7f9; background: var(--bg); padding: 16px; border-radius: 8px; }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font-family: Pretendard, sans-serif; font-size: 16px; line-height: 1.6; }
+  h1 { font-size: 32px; margin: 0 0 16px; }
+</style>
+</head>
+<body>
+  <h1>밝은 모드 화면</h1>
+  <p>다크 모드 규칙이 있어도 기본은 밝은 모드다.</p>
+  <div class="card">카드 안 글</div>
+</body>
+</html>

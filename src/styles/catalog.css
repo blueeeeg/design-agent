@@ -58,7 +58,7 @@ aside.panel { position: sticky; top: env(safe-area-inset-top, 0px); }
   font: inherit; font-size: 12px; padding: 8px 12px; border-radius: 6px; cursor: pointer;
   border: 1px solid var(--line); background: transparent; color: var(--ink);
 }
-.chipbtn:hover { border-color: var(--accent); color: var(--accent); }
+@media (hover: hover) { .chipbtn:hover { border-color: var(--accent); color: var(--accent); } }
 .chipbtn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
 .chipbtn:focus-visible, .copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .presets { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -237,7 +237,7 @@ pre {
 .pane { display: grid; gap: 20px; min-width: 0; }
 .comp-index { display: flex; flex-wrap: wrap; gap: 8px; }
 .comp-index a { font-size: 13px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink); text-decoration: none; background: var(--surface); }
-.comp-index a:hover { border-color: var(--accent); color: var(--accent); }
+@media (hover: hover) { .comp-index a:hover { border-color: var(--accent); color: var(--accent); } }
 .comp { gap: 16px; scroll-margin-top: 12px; }
 .comp-head { display: grid; gap: 4px; }
 .comp-head h3 { font-size: 19px; }
@@ -255,7 +255,7 @@ pre {
 .axis-block h4 { margin: 0; font-size: 12px; color: var(--muted); letter-spacing: .05em; font-weight: 600; }
 .vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 12px; }
 .vcard { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 12px; align-content: start; cursor: pointer; background: var(--surface); min-width: 0; }
-.vcard:hover { border-color: var(--accent); }
+@media (hover: hover) { .vcard:hover { border-color: var(--accent); } }
 .vcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .vcard.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .vh { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-weight: 600; font-size: 14px; }
@@ -328,7 +328,7 @@ a.chipbtn { text-decoration: none; display: inline-flex; align-items: center; }
 /* 조건 고르기: 선택지를 모두 펼친 세그먼트. 고른 칸만 바탕을 띄운다 */
 .seg { display: flex; flex-wrap: wrap; gap: 2px; padding: 2px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
 .seg button { font: inherit; font-size: 14px; padding: 4px 12px; border: 0; border-radius: 4px; background: none; color: var(--muted); cursor: pointer; white-space: nowrap; }
-.seg button:hover { color: var(--ink); }
+@media (hover: hover) { .seg button:hover { color: var(--ink); } }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
 .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .preset-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -391,7 +391,7 @@ a.chipbtn { text-decoration: none; display: inline-flex; align-items: center; }
 .en { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: .01em; }
 .ocard-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 4px; }
 .giting { font-size: 12.5px; color: var(--accent); text-decoration: none; }
-.giting:hover { text-decoration: underline; }
+@media (hover: hover) { .giting:hover { text-decoration: underline; } }
 .others-title { font-size: 13px; color: var(--muted); font-weight: 600; letter-spacing: .04em; margin-top: 4px; }
 .action-switch { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 12px 12px; border: 1px dashed var(--line); border-radius: 10px; background: var(--surface); }
 .action-switch .fl { font-size: 12px; color: var(--muted); font-weight: 600; }
@@ -403,7 +403,7 @@ a.chipbtn { text-decoration: none; display: inline-flex; align-items: center; }
 .svc-tags { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
 .svc-tags span { font-size: 12.5px; padding: 2px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
 .linkbtn { font: inherit; font-weight: 600; font-size: 14px; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
-.linkbtn:hover { text-decoration: underline; }
+@media (hover: hover) { .linkbtn:hover { text-decoration: underline; } }
 .linkbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .vh .tag.diff { color: var(--warn); }
 .opt-name { font-size: 15px; }
@@ -419,7 +419,7 @@ a.chipbtn { text-decoration: none; display: inline-flex; align-items: center; }
 .back { font-size: 12px; text-decoration: none; padding: 0 8px; }
 .side nav b { display: block; margin: 18px 8px 4px; font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--muted); }
 .side nav button { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 4px 8px; border: 0; background: none; font: inherit; text-align: left; color: var(--ink); cursor: pointer; }
-.side nav button:hover { background: var(--bg); }
+@media (hover: hover) { .side nav button:hover { background: var(--bg); } }
 .side nav button[aria-current="true"], .side nav a[aria-current="true"] { font-weight: 600; box-shadow: inset 2px 0 0 var(--accent); }
 .side nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .side nav button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -553,7 +553,7 @@ main { padding: 24px 32px 96px; min-width: 0; width: 100%; max-width: calc(1320p
 /* 컴포넌트 사전(/components/): 왼쪽 열은 카탈로그와 같고, 본문은 데모 카드 격자 */
 a.brand { display: block; color: var(--ink); text-decoration: none; }
 .side nav a { display: flex; justify-content: space-between; gap: 8px; padding: 4px 8px; color: var(--ink); text-decoration: none; }
-.side nav a:hover { background: var(--bg); }
+@media (hover: hover) { .side nav a:hover { background: var(--bg); } }
 .side nav a small { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
 .dict-title { font-size: 20px; font-weight: 700; letter-spacing: -0.015em; }
 .dict-title .en { font-weight: 400; }
@@ -591,7 +591,7 @@ a.brand { display: block; color: var(--ink); text-decoration: none; }
 .topnav .brand { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; padding: 0; white-space: nowrap; }
 .topnav nav { display: flex; gap: 20px; height: 100%; overflow-x: auto; scrollbar-width: none; }
 .topnav nav a { display: flex; align-items: center; gap: 4px; color: var(--muted); text-decoration: none; font-size: 14px; white-space: nowrap; box-shadow: inset 0 -2px 0 transparent; }
-.topnav nav a:hover { color: var(--ink); }
+@media (hover: hover) { .topnav nav a:hover { color: var(--ink); } }
 .topnav nav a[aria-current="page"] { color: var(--ink); font-weight: 600; box-shadow: inset 0 -2px 0 var(--ink); }
 .topnav nav a small { font-size: 12px; color: var(--muted); font-weight: 400; }
 .topnav nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -631,7 +631,7 @@ a.brand { display: block; color: var(--ink); text-decoration: none; }
 .plan-list { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1px solid var(--line); }
 .plan-row { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
 .plan-pat { font-size: 14px; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; min-height: 24px; }
-.plan-pat:hover { color: var(--accent); }
+@media (hover: hover) { .plan-pat:hover { color: var(--accent); } }
 .plan-pick { display: grid; gap: 2px; }
 .plan-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
 .plan-pick b { font-size: 16px; }
@@ -664,11 +664,11 @@ a.brand { display: block; color: var(--ink); text-decoration: none; }
 .prompt.open .prompt-text { display: block; -webkit-line-clamp: unset; line-clamp: none; }
 .prompt-acts { display: flex; align-items: center; gap: 8px; }
 .prompt-more { font: inherit; font-size: 12px; min-height: 24px; padding: 0 4px; border: 0; background: none; color: var(--accent); cursor: pointer; }
-.prompt-more:hover { text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .prompt-more:hover { text-decoration: underline; text-underline-offset: 3px; } }
 .prompt-more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
 .prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .copy-mini { font: inherit; font-size: 12px; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
-.copy-mini:hover { border-color: var(--accent); color: var(--accent); }
+@media (hover: hover) { .copy-mini:hover { border-color: var(--accent); color: var(--accent); } }
 .copy-mini:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 /* 이전·다음 패턴: 버튼이 아니라 안내 링크. 색으로 이동할 곳임을 알린다 */
 .detail-nav { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
@@ -676,7 +676,7 @@ a.brand { display: block; color: var(--ink); text-decoration: none; }
 .pnav.next { text-align: right; }
 .pnav-k { font-size: 12px; color: var(--muted); }
 .pnav-n { font-size: 16px; font-weight: 600; color: var(--accent); }
-.pnav:hover .pnav-n { text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .pnav:hover .pnav-n { text-decoration: underline; text-underline-offset: 3px; } }
 .pnav:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
 /* 시킬 문장 상자는 같은 줄 카드끼리 높이를 맞춘다. 카드 안 링크는 강조색 하나로 */
 .ocard .slot-prompt { display: grid; }
@@ -722,7 +722,7 @@ main { justify-self: start; max-width: 1640px; }
 .ds-common li { padding-left: 16px; position: relative; }
 .ds-common li::before { content: ""; position: absolute; left: 2px; top: .7em; width: 5px; height: 5px; border-radius: 50%; background: var(--line); }
 .ds-common .by a, .ds-line .by a, .sys-rules .by a { color: var(--muted); }
-.ds-common .by a:hover, .ds-line .by a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .ds-common .by a:hover, .ds-line .by a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; } }
 
 /* 방식 카드: 테두리 하나. 그림 무대는 카드 위쪽을 꽉 채우고, 글은 안쪽 여백 16 */
 .ogrid.ogrid-cat { grid-template-columns: repeat(auto-fill, minmax(min(100%, 480px), 1fr)); gap: 20px; row-gap: 20px; }
@@ -755,7 +755,7 @@ main { justify-self: start; max-width: 1640px; }
 .kv a, .refs-n, .to-refs, .giting, .dict-foot a, .prompt-more, .matrix tbody th a {
   color: var(--ink); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent); text-decoration-thickness: 1px; text-underline-offset: 3px;
 }
-.kv a:hover, .refs-n:hover, .to-refs:hover, .giting:hover, .dict-foot a:hover, .prompt-more:hover, .matrix tbody th a:hover { text-decoration-color: currentColor; }
+@media (hover: hover) { .kv a:hover, .refs-n:hover, .to-refs:hover, .giting:hover, .dict-foot a:hover, .prompt-more:hover, .matrix tbody th a:hover { text-decoration-color: currentColor; } }
 .side nav button[aria-current="true"], .side nav a[aria-current="true"] { box-shadow: inset 3px 0 0 var(--ink); }
 
 /* 맞추기 조건 고르기: 한 줄에 질문(왼쪽)과 선택지(오른쪽). 선택지는 이름 + 예시 두 줄 */
@@ -799,7 +799,8 @@ main { justify-self: start; max-width: 1640px; }
 .matrix thead a { text-decoration: none; }
 /* 왼쪽 목록 스크롤 막대: 평소에는 숨기고(자리는 남겨 흔들리지 않게) 마우스를 올리면 얇게 보인다 */
 .side { scrollbar-width: thin; scrollbar-color: transparent transparent; scrollbar-gutter: stable; }
-.side:hover, .side:focus-within { scrollbar-color: var(--line) transparent; }
+@media (hover: hover) { .side:hover { scrollbar-color: var(--line) transparent; } }
+.side:focus-within { scrollbar-color: var(--line) transparent; }
 /* 한 패턴 안의 상황 제목: 카드 줄을 끊고 한 줄을 다 쓴다 */
 .ogrid-cat .case-head { grid-column: 1 / -1; display: grid; gap: 2px; padding-top: 12px; }
 .ogrid-cat .case-head:first-child { padding-top: 0; }
@@ -827,7 +828,7 @@ pre { font-size: 12px; }
 }
 /* 맞추기: 「이름을 누르면」이라고 했으니 패턴 이름이 링크로 보이게 */
 .plan-pat { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent); text-underline-offset: 3px; }
-.plan-pat:hover { text-decoration-color: currentColor; }
+@media (hover: hover) { .plan-pat:hover { text-decoration-color: currentColor; } }
 
 /* 올리기 칸(2026-11-02) */
 .dropzone { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 24px 16px; border: 1.5px dashed var(--line); border-radius: 12px; text-align: center; }

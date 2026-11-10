@@ -1,0 +1,92 @@
+$ palette.mjs --brand #e03131
+[exit 0]
+브랜드 색 #e03131 · OKLCH 밝기 0.59, 채도 0.211, 색상 27도
+
+[브랜드 단계] 화면의 브랜드 쪽 색은 모두 이 안에서 고른다. 비슷한 색을 즉석에서 만들지 않는다. 흰색과 대비는 흰 바탕 위 글자로 쓸 때도, 이 색 위에 흰 글자를 올릴 때도 같은 값이다
+- brand-50: #fff4f2 · 흰색과 대비 1.08:1
+- brand-100: #ffe6e3 · 흰색과 대비 1.19:1
+- brand-200: #ffcfc9 · 흰색과 대비 1.4:1
+- brand-300: #ffada4 · 흰색과 대비 1.78:1
+- brand-400: #ff7c71 · 흰색과 대비 2.51:1
+- brand-500: #f34641 · 흰색과 대비 3.64:1
+- brand-600: #e03131 ← 브랜드 · 흰색과 대비 4.51:1
+- brand-700: #ad0013 · 흰색과 대비 7.54:1
+- brand-800: #86000c · 흰색과 대비 10.4:1
+- brand-900: #610006 · 흰색과 대비 13.9:1
+
+[회색 단계] 브랜드 쪽으로 아주 조금 기운을 넣었다
+- gray-50: #fff8f7 · 흰색과 대비 1.05:1
+- gray-100: #fcf1ef · 흰색과 대비 1.11:1
+- gray-200: #eee3e2 · 흰색과 대비 1.26:1
+- gray-300: #dcd1d0 · 흰색과 대비 1.49:1
+- gray-400: #aca2a1 · 흰색과 대비 2.49:1
+- gray-500: #877e7c · 흰색과 대비 3.96:1
+- gray-600: #6a6160 · 흰색과 대비 6.01:1
+- gray-700: #514847 · 흰색과 대비 8.87:1
+- gray-800: #393130 · 흰색과 대비 12.68:1
+- gray-900: #201918 · 흰색과 대비 17.3:1
+
+[역할마다 쓸 색] 컴포넌트는 단계 이름이 아니라 역할 이름을 쓴다(DESIGN.md brand에 이 이름으로 적는다)
+- accent: #e03131 (brand-600) · 주 버튼 바탕. 흰 글자 4.51:1
+- accentHover: #ad0013 (brand-700) · 마우스를 올렸을 때(한 단계 진하게)
+- accentPressed: #86000c (brand-800) · 누르는 동안(두 단계 진하게)
+- onAccent: #ffffff · 주 버튼 글자
+- accentText: #e03131 (brand-600) · 흰 바탕 위 링크·강조 글자 4.51:1
+- focus: #f34641 (brand-500) · 포커스 링. 흰 바탕과 3.64:1(3:1 이상)
+- selectedBg: #fff4f2 (brand-50) · 고른 항목·현재 메뉴 바탕. 바탕색만으로 구분하지 말고 글자 굵기나 표시를 같이
+- selectedLine: #f34641 (brand-500) · 고른 항목 테두리·밑줄. 흰 바탕과 3.64:1
+- text: #201918 · 본문 글자 17.3:1
+- textSub: #6a6160 · 보조 글자 6.01:1
+- bg: #ffffff · 바탕
+- surface: #fff8f7 · 구분이 필요한 면(표 머리, 옆 메뉴)
+- border: #eee3e2 · 나누는 선(장식). 대비 기준 없음
+- inputBorder: #877e7c · 입력칸 테두리 3.96:1(3:1 이상, WCAG 1.4.11)
+- danger: #b64d00 · 5.18:1, 강조색과 가까워 색상을 47도로 옮김
+- success: #0a7e3a · 5.17:1
+- warning: #a16500 · 4.8:1. 글자로 쓰면 진한 쪽, 바탕으로 쓰면 옅게 하고 글자는 본문색
+- 다크 모드 링크·강조 글자: #ff7c71 (brand-400) · 어두운 바탕(#201918) 위 4.5:1 이상. 다크 모드는 같은 단계에서 밝은 쪽을 쓴다
+
+강조색과 색상이 15도 안이라 헷갈리는 상태색: 위험(빨강). 색상을 옮겼다. 그래도 색만으로 뜻을 전하지 않는다(글자·아이콘을 같이, WCAG 2.2 1.4.1)
+
+[CSS 변수] 단계는 색 이름으로, 컴포넌트가 쓰는 변수는 역할 이름으로
+:root {
+  --brand-50: #fff4f2;
+  --brand-100: #ffe6e3;
+  --brand-200: #ffcfc9;
+  --brand-300: #ffada4;
+  --brand-400: #ff7c71;
+  --brand-500: #f34641;
+  --brand-600: #e03131;
+  --brand-700: #ad0013;
+  --brand-800: #86000c;
+  --brand-900: #610006;
+  --gray-50: #fff8f7;
+  --gray-100: #fcf1ef;
+  --gray-200: #eee3e2;
+  --gray-300: #dcd1d0;
+  --gray-400: #aca2a1;
+  --gray-500: #877e7c;
+  --gray-600: #6a6160;
+  --gray-700: #514847;
+  --gray-800: #393130;
+  --gray-900: #201918;
+  --color-accent: var(--brand-600);
+  --color-accent-hover: var(--brand-700);
+  --color-accent-pressed: var(--brand-800);
+  --color-on-accent: #ffffff;
+  --color-accent-text: var(--brand-600);
+  --color-focus: var(--brand-500);
+  --color-selected-bg: var(--brand-50);
+  --color-selected-line: var(--brand-500);
+  --color-text: #201918;
+  --color-text-sub: #6a6160;
+  --color-bg: #ffffff;
+  --color-surface: #fff8f7;
+  --color-border: #eee3e2;
+  --color-input-border: #877e7c;
+  --color-danger: #b64d00;
+  --color-success: #0a7e3a;
+  --color-warning: #a16500;
+}
+
+값은 출발점이다. 화면에 넣은 뒤 check-visual.mjs로 대비를 다시 재고 스크린샷으로 본다

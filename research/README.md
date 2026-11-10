@@ -59,6 +59,11 @@
   - 가져온 것: 컴포넌트 사전 235개(`/components/`), 패턴 방식마다 데모 링크. 고지는 `NOTICE.md`
   - 바뀐 것: flow-menu(2026-10-30, 결제·가입·예약 등을 화면 다섯 장 흐름으로), hangul-wrap 0.2.0(글자 200%·확대 200%에서 버튼이 잘리나), motion-menu(2026-11-04)
   - 다시 볼 곳: 커밋 기록 · 2026-11-06
+- **jakub.kr** (Jakub Krehel) — https://jakub.kr, 스킬 https://github.com/jakubkrehel/skills (MIT) · 2026-11-10 · 서브에이전트가 글 8편과 SKILL.md 9개를 읽음
+  - 정리: `jakub-kr.md`
+  - 가져온 것(2026-11-10): 검사 11개(겹친 모서리, 묶음 사이 여백, 숫자 자리, 얇은 굵기, hover 미디어 쿼리, transition all, 매일 쓰는 화면의 움직임 길이, 브라우저 확인창·대화상자 버튼 문구·「정말」 제목, 제출 잠금, 멈춤 없는 자동 넘김, 끌기로만), `palette.mjs`(브랜드 색 단계·역할별 색), `references/try-pages.md`(상태 바꿔 보기·방식 끼워 보기·극단 상황 나란히·틀렸다고 증명해 보기), 리뷰 쓰는 법(싼 고치기부터, 원인 하나는 한 줄, 잰 것·계산한 것·짐작한 것), 리뷰 전에 그 서비스 문서 읽기
+  - 넣지 않은 것: 영문 조판(자간 음수, 한 줄 60~75자, 곡선 따옴표), 취향 값(세 겹 그림자, 사진 외곽선), 서로 어긋나는 값(등장 움직임 길이, 아이콘 선 굵기), `disable-model-invocation`(말로 부르는 스킬이 안 돈다)
+  - 다시 볼 곳: 저장소 커밋 기록, https://jakub.kr/writing/notes · 2026-11-10
 - **DESIGN.md 규격** — https://github.com/google-labs-code/design.md (Apache 2.0) · 2026-11-06: main은 2026-10-16 뒤로 그대로, 움직임·말투 섹션 PR이 열려 있다(합쳐지면 우리 DESIGN.md 출력을 맞춘다)
   - 다시 볼 곳: 릴리스, PR · 2026-11-06
 - **바뀐 게 없는 곳**(2026-11-06): Vercel Web Interface Guidelines(https://github.com/vercel-labs/web-interface-guidelines, 마지막 2026-10-05), uxpatterns.dev(https://github.com/thedaviddias/ux-patterns-for-developers, MCP와 llms.txt가 있다. 라이선스 파일 종류 확인 필요), oh-my-design(사이트 작업뿐), supanova(https://github.com/uxjoseph/supanova-design-skill, 라이선스 표시 없음, 2026-03 뒤로 그대로)

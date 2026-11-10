@@ -1,0 +1,5 @@
+$ palette.mjs --brand 파란색
+[exit 1]
+
+[stderr]
+「파란색」을 읽지 못했다. #1d5fd1, rgb(29 95 209), oklch(0.52 0.18 260) 꼴로 넣는다

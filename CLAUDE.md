@@ -20,6 +20,7 @@
 - **안드로이드 에뮬레이터** — `Catalog_Pixel7_Play` (Pixel 7, Android 14, Play 스토어 포함). 실행: `~/Library/Android/sdk/emulator/emulator -avd Catalog_Pixel7_Play`. 촬영: `adb -s emulator-5554 exec-out screencap -p > 파일.png`. 무선으로 붙어 있는 다른 기기(QA 태블릿)는 회사 장비라 쓰지 않는다
 - **Chrome 확장(Claude in Chrome)** — 웹 화면 촬영. 허용 도메인만 열린다(cart.coupang.com은 막혀 있다. youtube.com은 2026-10-28에 열리는 것을 확인했다). YouTube 자막은 「스크립트 표시」가 안 열릴 때가 있어, 영상 페이지에서 플레이어 자막을 켜고 플레이어가 받은 자막 파일을 같은 페이지 안에서 읽는다. 영상 파일은 내려받지 않는다. 삭제 버튼처럼 브라우저 기본 확인창을 띄울 수 있는 것은 누르지 않는다
 - **페이지 검사** — `npm run build && npm run check`. 모든 조건 조합과 패턴을 그려 오류와 「피하는 조건으로 그린 카드」를 센다. 레이아웃은 jsdom이 계산하지 않으니 `npm run dev`로 브라우저에서 한 번 본다
+- **스킬 스크립트 검사** — `npm run test:skill`. design-agent 스크립트를 고치면 돌린다. 검사를 더하면 `scripts/fixtures/`에 걸릴 화면을 두고 `scripts/tests/cases.json`에 `has`(걸려야 할 말)를, 오판을 고쳤으면 `not`을 더한다. 출력이 바뀌면 차이를 보고 의도한 것일 때만 `npm run test:skill -- --update`
 
 ## 폴더
 

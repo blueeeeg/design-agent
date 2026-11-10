@@ -1,0 +1,6 @@
+$ check-screen.mjs scripts/fixtures/compare-pay.html
+[exit 1]
+검사: .claude/skills/design-agent/scripts/fixtures/compare-pay.html
+해당하는 실패: 사고 위험 1 (이름 뜻과 고치는 순서: references/failures.md)
+- [꼭 고칠 것 · 사고 위험] 두 번 눌림 방지 없음: 결제·주문·송금 버튼을 누른 뒤 잠그는 코드(disabled, aria-busy)가 보이지 않는다. 두 번 결제될 수 있다
+    위치: <a>, <button.btn>

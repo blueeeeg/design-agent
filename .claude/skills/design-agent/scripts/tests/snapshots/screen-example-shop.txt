@@ -1,0 +1,4 @@
+$ check-screen.mjs examples/shop-list/index.html --sel platform=mobile,skill=occasional,device=personal,content=photo --action none
+[exit 0]
+검사: .claude/skills/design-agent/examples/shop-list/index.html · platform=mobile, skill=occasional, device=personal, content=photo
+걸린 것 없음. 이 검사가 못 보는 것(실제 크기, 대비, 흐름)은 스크린샷으로 확인한다

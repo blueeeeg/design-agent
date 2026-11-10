@@ -1,0 +1,4 @@
+$ check-screen.mjs examples/kiosk-booking/index.html --sel platform=tablet,skill=first,device=shared,content=text --action once
+[exit 0]
+검사: .claude/skills/design-agent/examples/kiosk-booking/index.html · platform=tablet, skill=first, device=shared, content=text · action=once
+걸린 것 없음. 이 검사가 못 보는 것(실제 크기, 대비, 흐름)은 스크린샷으로 확인한다

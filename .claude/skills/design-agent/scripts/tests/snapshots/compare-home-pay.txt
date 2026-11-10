@@ -1,0 +1,9 @@
+$ compare-pages.mjs scripts/fixtures/compare-home.html scripts/fixtures/compare-pay.html
+[exit 1]
+전·후(compare-home → compare-pay)에 달라진 값
+- 본문 크기: compare-home 16px · compare-pay 15px
+- 문장 안 링크 색: compare-home #2563eb · compare-pay #2a5fe0
+- h1 크기/굵기: compare-home 28/700 · compare-pay 26/700
+- 주 버튼(색|모서리|높이|글자): compare-home #2563eb|8|48|16 · compare-pay #2a5fe0|6|48|16
+- 모서리 값이 화면마다 다르다: 8px(compare-home) · 6px(compare-pay)
+- 비슷하지만 다른 색: #2563eb(compare-home) ↔ #2a5fe0(compare-pay). 하나로 맞춘다

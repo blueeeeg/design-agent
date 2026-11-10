@@ -1,0 +1,5 @@
+$ recommend.mjs --sel platform=watch,skill=daily,device=personal,content=photo
+[exit 1]
+
+[stderr]
+--sel 에 platform가 없거나 틀렸다. 고를 수 있는 값: desktop, tablet, mobile

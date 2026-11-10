@@ -6,7 +6,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "node tools/check-page.cjs dist/index.html"
+    "check": "node tools/check-page.cjs dist/index.html",
+    "test:skill": "node .claude/skills/design-agent/scripts/tests/run.mjs"
   },
   "dependencies": {
     "astro": "^7.3.8"

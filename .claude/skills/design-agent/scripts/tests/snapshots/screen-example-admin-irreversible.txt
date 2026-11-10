@@ -1,0 +1,4 @@
+$ check-screen.mjs examples/admin-table/index.html --sel platform=desktop,skill=daily,device=personal,content=numbers --action irreversible
+[exit 0]
+검사: .claude/skills/design-agent/examples/admin-table/index.html · platform=desktop, skill=daily, device=personal, content=numbers · action=irreversible
+걸린 것 없음. 이 검사가 못 보는 것(실제 크기, 대비, 흐름)은 스크린샷으로 확인한다

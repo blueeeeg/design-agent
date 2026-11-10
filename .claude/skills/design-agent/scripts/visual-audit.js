@@ -12,7 +12,9 @@ function visualAudit(doc, win, depth = 0) {
     if (fixed.has(el)) return fixed.get(el);
     const s = raw(el), parent = el.parentElement;
     const out = Object.create(null);
-    for (const k of ['color', 'opacity', 'textDecorationLine', 'textDecoration', 'textDecorationColor', 'outlineStyle', 'outlineColor', 'outlineWidth', 'backgroundColor', 'backgroundImage', 'fontSize', 'fontWeight', 'fontFamily', 'display', 'visibility', 'borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderTopLeftRadius', 'borderRadius', 'boxShadow', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'marginTop', 'marginBottom', 'rowGap', 'columnGap', 'lineHeight', 'textAlign', 'fontStyle', 'letterSpacing', 'textTransform', 'backdropFilter', 'webkitBackdropFilter', 'height', 'width', 'overflow', 'overflowX', 'textOverflow', 'position', 'backgroundClip', 'webkitBackgroundClip', 'webkitTextFillColor']) out[k] = s[k];
+    for (const k of ['color', 'opacity', 'textDecorationLine', 'textDecoration', 'textDecorationColor', 'outlineStyle', 'outlineColor', 'outlineWidth', 'backgroundColor', 'backgroundImage', 'fontSize', 'fontWeight', 'fontFamily', 'display', 'visibility', 'borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderTopLeftRadius', 'borderRadius', 'boxShadow', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'marginTop', 'marginBottom', 'rowGap', 'columnGap', 'lineHeight', 'textAlign', 'fontStyle', 'letterSpacing', 'textTransform', 'backdropFilter', 'webkitBackdropFilter', 'height', 'width', 'overflow', 'overflowX', 'textOverflow', 'position', 'backgroundClip', 'webkitBackgroundClip', 'webkitTextFillColor', 'gap', 'flexDirection', 'gridTemplateColumns', 'fontVariantNumeric', 'fontFeatureSettings']) out[k] = s[k];
+    // jsdom은 gap 줄임말을 rowGap·columnGap으로 풀지 않는다(normal로 둔다)
+    if (out.gap && (!out.rowGap || out.rowGap === 'normal')) { const [a, b] = String(out.gap).split(/\s+/); out.rowGap = a; if (!out.columnGap || out.columnGap === 'normal') out.columnGap = b || a; }
     // jsdom은 text-align을 물려주지 않는다(빈 값). 부모 값을 쓴다
     if (!out.textAlign && parent) out.textAlign = cs(parent).textAlign;
     const control = /^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(el.tagName);
@@ -461,7 +463,8 @@ function visualAudit(doc, win, depth = 0) {
   let reducedMotion = false, unreadableCss = 0;
   // 선택자 목록을 쉼표로 나눈다. :is(a, b)·[x="a,b"] 안의 쉼표는 나누지 않는다
   const splitSel = sel => { const out = []; let cur = '', d = 0; for (const ch of sel) { if (ch === '(' || ch === '[') d++; else if (ch === ')' || ch === ']') d--; else if (ch === ',' && d === 0) { out.push(cur); cur = ''; continue; } cur += ch; } out.push(cur); return out.map(x => x.trim()).filter(Boolean); };
-  const walk = (list, parent) => {
+  // media: 그 규칙을 감싼 @media 조건들(hover 규칙이 「(hover: hover)」 안에 있는지 본다)
+  const walk = (list, parent, media = '') => {
     for (const r of list) {
       if (rules.length > 5000) return;
       // @keyframes 안 단계(from·to)는 선택자가 아니다. 중첩 안에 있으면 부모 선택자의 규칙으로 잘못 잡힌다
@@ -471,10 +474,10 @@ function visualAudit(doc, win, depth = 0) {
       if (r.selectorText) {
         // 부모가 목록(.a, .b)이면 부모마다 잇는다(.a:hover, .b:hover)
         const sel = parent ? splitSel(r.selectorText).flatMap(x => splitSel(parent).map(pp => (x.includes('&') ? x.replace(/&/g, pp) : `${pp} ${x}`))).join(', ') : r.selectorText;
-        rules.push({ sel, css: r.style?.cssText || '' });
-        if (r.cssRules?.length) walk(r.cssRules, sel);
-      } else if (r.cssRules) walk(r.cssRules, parent);
-      else if (parent && r.style) rules.push({ sel: parent, css: r.style.cssText || '' }); // 중첩 @media 안 선언(Tailwind 4)
+        rules.push({ sel, css: r.style?.cssText || '', media });
+        if (r.cssRules?.length) walk(r.cssRules, sel, media);
+      } else if (r.cssRules) walk(r.cssRules, parent, cond ? `${media} ${cond}` : media);
+      else if (parent && r.style) rules.push({ sel: parent, css: r.style.cssText || '', media }); // 중첩 @media 안 선언(Tailwind 4)
     }
   };
   for (const sh of [...(doc.styleSheets || [])]) { try { walk(sh.cssRules || [], ''); } catch (e) { unreadableCss++; } }
@@ -547,6 +550,92 @@ function visualAudit(doc, win, depth = 0) {
   const filledBtns = allVisible.filter(e => e.matches('button, [role="button"], input[type="submit"], a[class*="btn" i], a[class*="button" i]') && !e.closest('[disabled], [aria-disabled="true"]') && /[A-Za-z가-힣]/.test(e.textContent || e.value || '')).filter(e => { const c = parse(cs(e).backgroundColor); return c && c.a > 0.5 && hsl(c).s >= 0.3; });
   const pillN = filledBtns.filter(isPill).length;
   const pillButtons = filledBtns.length >= 2 && pillN >= filledBtns.length * 0.8 ? { n: pillN, of: filledBtns.length } : null;
+
+  // ---- jakub.kr의 스킬 모음(github.com/jakubkrehel/skills, MIT)에서 생각을 얻은 것(2026-11-10) ----
+  // hover 모양을 바꾸는 규칙이 @media (hover: hover) 밖에 있으면 터치 기기에서 누른 뒤 그 모양이 남는다
+  const HOVER_MEDIA = /\(\s*(any-)?hover\s*:\s*hover\s*\)|\(\s*(any-)?pointer\s*:\s*fine\s*\)/;
+  const hoverBare = [...new Set(rules.filter(r => /:hover/.test(r.sel) && !HOVER_MEDIA.test(r.media || '') && /color|background|border|shadow|transform|opacity|text-decoration|outline|filter/.test(r.css)).flatMap(r => splitSel(r.sel).filter(x => /:hover/.test(x))))];
+  // transition의 속성을 적지 않았거나 all이면 바뀌는 모든 속성(크기·위치 포함)이 움직인다. 브라우저는 「all 0.2s」를 「0.2s」로 적어 돌려준다
+  const EASE = /^(ease(-in)?(-out)?|linear|step-start|step-end|steps\(.*|cubic-bezier\(.*|linear\(.*|normal|allow-discrete|initial|inherit|unset|-?[\d.]+m?s)$/i;
+  const transItems = css => { const m = String(css).match(/(?:^|;\s*)transition\s*:\s*([^;]+)/i); return m ? splitSel(m[1]) : []; };
+  const toksOf = it => it.replace(/\([^()]*\)/g, '()').trim().split(/\s+/);
+  const transAll = [...new Set(rules.filter(r => /transition-property\s*:\s*all\b/i.test(r.css) || transItems(r.css).some(it => {
+    if (/var\(/.test(it) || /^(none|initial|inherit|unset|revert(-layer)?)$/i.test(it.trim())) return false;
+    const props = toksOf(it).filter(t => !EASE.test(t));
+    return !props.length || props.includes('all');
+  })).flatMap(r => splitSel(r.sel)))];
+  // 자주 누르는 것(버튼, 탭, 메뉴, 행, 링크)의 움직임 길이. 매일 쓰는 화면에서는 짧거나 없어야 한다(조건에 따라 판단은 visualJudge)
+  const msOf = t => (/ms$/i.test(t) ? parseFloat(t) : parseFloat(t) * 1000);
+  const FREQ = /button|btn|\btab|menu|dropdown|popover|tooltip|\brow\b|\btr\b|\bli\b|item|option|link|nav|:hover|:focus|:active|aria-selected|aria-expanded|data-state|\.active|\.selected|\.open/i;
+  const slowFreq0 = {};
+  rules.forEach(r => {
+    if (!FREQ.test(r.sel)) return;
+    let ms = 0;
+    transItems(r.css).forEach(it => { const t = toksOf(it).find(x => /^[\d.]+m?s$/i.test(x)); if (t) ms = Math.max(ms, msOf(t)); });
+    const td = r.css.match(/transition-duration\s*:\s*([^;]+)/i);
+    if (td) td[1].split(',').forEach(x => { if (/^\s*[\d.]+m?s\s*$/i.test(x)) ms = Math.max(ms, msOf(x.trim())); });
+    if (!/infinite|spin|pulse|shimmer|skeleton/i.test(r.css)) {
+      const an = r.css.match(/(?:^|;\s*)animation\s*:\s*([^;]+)/i);
+      const t = an && toksOf(an[1]).find(x => /^[\d.]+m?s$/i.test(x));
+      if (t) ms = Math.max(ms, msOf(t));
+      const ad = r.css.match(/animation-duration\s*:\s*([\d.]+m?s)/i);
+      if (ad) ms = Math.max(ms, msOf(ad[1]));
+    }
+    const key = splitSel(r.sel)[0].slice(0, 40);
+    if (ms > 200 && !(slowFreq0[key] >= ms)) slowFreq0[key] = Math.round(ms);
+  });
+  const slowFreq = Object.entries(slowFreq0).map(([sel, ms]) => ({ sel, ms })).sort((a, b) => b.ms - a.ms);
+  // 위아래로 견주어 읽는 숫자(표의 숫자 칸, 오른쪽 정렬한 금액)는 자리 폭이 같아야 줄이 맞고 값이 바뀔 때 흔들리지 않는다(tabular-nums)
+  const NUMERIC = /^[\s₩$€¥£+\-−]*\d[\d,.:/\s]*\s*(원|%|개|건|명|점|회|kg|g|ml|시간|분|초)?$/;
+  const tabOn = el => { for (let e = el; e && e.nodeType === 1; e = e.parentElement) { const s = cs(e); if (/tabular/.test(s.fontVariantNumeric || '') || /tnum/.test(s.fontFeatureSettings || '') || monoFam(s.fontFamily)) return true; if (!win.__jsdom) return false; } return false; };
+  const numCells = live.filter(t => {
+    const own = ownText(t.el);
+    if ((own.match(/\d/g) || []).length < 2 || !NUMERIC.test(own)) return false;
+    // 표 칸과 오른쪽 정렬한 숫자만 본다(위아래로 견주어 읽는 숫자). 카드마다 하나씩 놓인 가격까지 세면 상품 목록이 모두 걸린다
+    return !!t.el.closest('td, [role="cell"], [role="gridcell"]') || /right|end/.test(t.align);
+  });
+  const propNums = numCells.filter(t => !tabOn(t.el));
+  const proportionalNums = numCells.length >= 4 && propNums.length > numCells.length / 2 ? { n: propNums.length, of: numCells.length, samples: propNums.slice(0, 3).map(t => ownText(t.el).slice(0, 12)) } : null;
+  // 얇은 굵기(300 이하)는 큰 제목에서만 읽힌다. 한글은 획이 많아 작은 크기에서 더 흐리다
+  const thinText = live.filter(t => t.weight <= 300 && t.size < 28 && t.chars >= 2).map(t => ({ sample: t.sample, size: t.size, weight: t.weight }));
+  // 겹친 모서리: 면 안에 면이 붙어 있으면 바깥 모서리 = 안쪽 모서리 + 사이 간격이어야 둘레가 나란하다
+  // 사이가 넓으면(12px 넘게) 따로 떨어진 면으로 보여 견주지 않는다. 브라우저는 실제 위치, jsdom은 부모 안쪽 여백으로 사이를 잰다
+  const surface = el => { const s = cs(el); return filledOwn(el) || (parseFloat(s.borderTopWidth) > 0 && s.borderTopStyle !== 'none') || (!!s.boxShadow && s.boxShadow !== 'none'); };
+  const nestedRadius = [];
+  for (const el of allVisible) {
+    if (nestedRadius.length >= 20) break;
+    const rIn = radiusOf(el), p = el.parentElement;
+    if (!rIn || rIn >= 999 || !p || p === doc.body) continue;
+    const rOut = radiusOf(p);
+    if (!rOut || rOut >= 999 || /absolute|fixed/.test(cs(el).position || '') || isPill(el) || isPill(p) || !surface(el) || !surface(p)) continue;
+    let d;
+    if (layout) {
+      const a = p.getBoundingClientRect(), b = el.getBoundingClientRect(), dx = b.left - a.left, dy = b.top - a.top;
+      if (dx < 0 || dy < 0 || Math.abs(dx - dy) > 4) continue;
+      d = Math.min(dx, dy);
+    } else {
+      if (sibOf(el, 'previousElementSibling')) continue;
+      const ps = cs(p), pt = px(ps.paddingTop, p) || 0, pl = px(ps.paddingLeft, p) || 0;
+      if (Math.abs(pt - pl) > 4) continue;
+      d = Math.min(pt, pl) + (parseFloat(ps.borderTopWidth) || 0);
+    }
+    if (d < 2 || d > 12) continue;
+    const want = rIn + d;
+    if (rOut <= rIn || (d <= 8 && (rOut < want - 4 || rOut > want + 8))) nestedRadius.push({ sample: sampleOf(p) || `<${p.tagName.toLowerCase()}>`, out: Math.round(rOut), in: Math.round(rIn), d: Math.round(d), want: Math.round(want) });
+  }
+  // 묶음 사이 여백: 세로로 쌓인 묶음들 사이 간격이 묶음 안 간격보다 넉넉해야(2배쯤) 무엇끼리 한 덩어리인지 보인다
+  // 테두리·바탕이 있는 카드 묶음은 경계로 나뉘니 뺀다. gap으로 띄운 것만 본다. 여러 칸 grid(이름 | 값)는 옆으로 놓인 것이라 세로 쌓기로 보지 않는다
+  const gapOf = el => { const s = cs(el); if (!/flex|grid/.test(s.display || '')) return null; const tracks = String(s.gridTemplateColumns || 'none').replace(/repeat\(\s*(\d+)\s*,\s*([^()]*(?:\([^()]*\)[^()]*)*)\)/g, (_, n, t) => `${t.trim()} `.repeat(Math.min(+n, 24)).trim()).replace(/\([^()]*(\([^()]*\))?[^()]*\)/g, '()').trim().split(/\s+/).filter(t => t && t !== 'none').length; const col = /grid/.test(s.display) ? tracks <= 1 : /column/.test(s.flexDirection || ''); const v = px(col ? s.rowGap : s.columnGap, el); return v && v > 0 ? { v, col } : null; };
+  const groupGaps = [];
+  for (const el of allVisible) {
+    if (groupGaps.length >= 10) break;
+    const outer = gapOf(el);
+    if (!outer || !outer.col) continue;
+    const inner = [...el.children].filter(visible).map(k => ({ k, g: gapOf(k) })).filter(x => x.g && x.g.col && !surface(x.k) && [...x.k.children].filter(visible).length >= 2);
+    if (inner.length < 2) continue;
+    const gin = Math.max(...inner.map(x => x.g.v));
+    if (outer.v < gin * 1.5) groupGaps.push({ sample: sampleOf(inner[0].k).slice(0, 12) || `<${el.tagName.toLowerCase()}>`, out: Math.round(outer.v), in: Math.round(gin) });
+  }
 
   // ---- 넘침·잘림: 레이아웃을 계산하는 브라우저에서만(jsdom은 크기가 0) ----
   let overflowX = 0;
@@ -758,6 +847,13 @@ function visualAudit(doc, win, depth = 0) {
     iconHeads,
     pillBadges,
     pillButtons,
+    hoverBare,
+    transAll,
+    slowFreq,
+    proportionalNums,
+    thinText,
+    nestedRadius,
+    groupGaps,
     aiDefaults,
     aiFonts,
     sig,
@@ -870,6 +966,15 @@ function visualJudge(r, cond) {
   if ((r.iconHeads || []).length >= 3) say('여백·모양', '확인', `제목마다 앞에 색 네모(동그라미) 아이콘 상자 ${r.iconHeads.length}개: ${list(r.iconHeads)}. AI가 기능 소개 카드에 습관처럼 붙이는 모양이다. 아이콘이 항목을 구별해 주지 않으면 빼고 제목만으로`, 'generic', 'decor');
   if ((r.pillBadges || []).length) say('여백·모양', '확인', `큰 제목 바로 위 알약 배지 ${r.pillBadges.length}개: ${list(r.pillBadges)}. AI가 만든 첫 화면에 흔한 모양이다. 정말 알릴 새 소식이면 제목 아래 문장이나 배너로`, 'generic', 'decor');
   if (r.pillButtons) say('여백·모양', '확인', `색을 채운 버튼 ${r.pillButtons.of}개 중 ${r.pillButtons.n}개가 알약 모양(끝이 완전히 둥금)이다. AI 기본값으로 꼽히는 모양이다. 브랜드에서 정한 모양이면 그대로 두고, 아니면 입력칸·카드 모서리와 맞춘다`, 'generic', 'radius');
+  // jakub.kr 스킬 모음(MIT)에서 생각을 얻은 것 — 2026-11-10
+  if (r.proportionalNums) say('글자', '권장', `위아래로 견주어 읽는 숫자(표의 숫자 칸, 오른쪽 정렬한 금액) ${r.proportionalNums.of}개 중 ${r.proportionalNums.n}개가 자리 폭이 제각각인 숫자다(예: ${r.proportionalNums.samples.map(s => `「${s}」`).join(', ')}). 줄이 안 맞고 값이 바뀌면 흔들린다. font-variant-numeric: tabular-nums. 서체가 원래 같은 폭 숫자면 그대로 둔다`, 'uneven');
+  if ((r.thinText || []).length) say('글자', '권장', `28px보다 작은데 굵기가 300 이하인 글자 ${r.thinText.length}곳: ${r.thinText.slice(0, 3).map(t => `「${t.sample}」 ${t.size}px·${t.weight}`).join(', ')}. 얇은 굵기는 큰 제목에서만 읽힌다. 18px 아래는 400 이상으로`, 'hard', 'weight');
+  if ((r.nestedRadius || []).length) say('여백·모양', '권장', `면 안에 붙은 면의 모서리가 나란하지 않은 곳 ${r.nestedRadius.length}군데: ${r.nestedRadius.slice(0, 3).map(t => `「${t.sample}」 바깥 ${t.out}·안 ${t.in}·사이 ${t.d}px`).join(', ')}. 바깥 모서리 = 안 모서리 + 사이 간격으로 맞춘다(예: 바깥 ${r.nestedRadius[0].want}px). 바깥이 안과 같거나 더 작으면 모서리에서 사이가 좁아 보인다`, 'uneven', 'radius');
+  if ((r.groupGaps || []).length) say('여백·모양', '권장', `묶음 사이 간격이 묶음 안 간격과 비슷한 곳 ${r.groupGaps.length}군데: ${r.groupGaps.slice(0, 3).map(t => `「${t.sample}」 등 묶음 사이 ${t.out}·안 ${t.in}px`).join(', ')}. 무엇끼리 한 덩어리인지 안 보인다. 사이를 안의 2배쯤으로(예: 안 8, 사이 16 이상)`, 'flat', 'spacing');
+  const touch = cond && ['mobile', 'tablet'].includes(cond.platform);
+  if ((r.hoverBare || []).length && (!cond || touch)) say('여백·모양', touch ? '권장' : '확인', `hover 규칙 ${r.hoverBare.length}개가 @media (hover: hover) 밖에 있다(예: ${r.hoverBare.slice(0, 3).join(', ')}). 터치 화면에서는 누른 뒤 그 모양이 남아 눌린 상태로 보인다. hover 규칙을 @media (hover: hover) 안에 둔다${cond ? '' : '. 데스크톱만 쓰면 그대로 둔다'}`, 'confusing');
+  if ((r.transAll || []).length) say('여백·모양', '확인', `움직일 속성을 정하지 않은 transition(all) ${r.transAll.length}곳: ${r.transAll.slice(0, 3).join(', ')}. 크기·위치·색까지 바뀌는 것은 모두 움직여 뜻하지 않은 움직임과 버벅임이 생긴다. transition: background-color 150ms처럼 속성을 적는다`);
+  if (cond?.skill === 'daily' && (r.slowFreq || []).length) say('여백·모양', '권장', `매일 쓰는 화면인데 자주 누르는 것의 움직임이 200ms를 넘는다 ${r.slowFreq.length}곳: ${r.slowFreq.slice(0, 3).map(t => `${t.sel} ${t.ms}ms`).join(', ')}. 하루 수백 번 누르면 기다림이 쌓인다(하루 200번 × 300ms = 1분). 버튼·탭·메뉴·행은 바로 바뀌거나 150ms 이하로, 자주 여는 메뉴는 움직임을 뺀다`, 'mismatch', 'motion');
   if (r.layout === false) say('여백·모양', '정보', '넘침·잘림, 누를 곳 크기, 상자 끝에 붙은 글자, 어긋난 시작선, 높은 행, 글자 로고는 브라우저에서 잴 때만 본다');
   if ((r.aiDefaults || []).length) say('색', '확인', `${r.aiDefaults.join(', ')}. 보라 그라데이션을 막으면 AI가 다음으로 고르는 조합이다(2026-11-03 조사)${r.aiDefaults.some(x => /크림/.test(x)) ? '. 크림 바탕은 AI 페이지에서 훨씬 자주 나온다(ai-design-check 2026-10-28 측정: AI 40%, 사람 3%)' : ''}. 브랜드에서 정한 색이면 그대로 둔다`, 'generic', 'palette');
   return out;
@@ -892,7 +997,7 @@ function cleanNote(main, ask = []) {
 
 // ---------- 서비스에서 정한 것 ----------
 // 브랜드·사내 시스템이 일부러 정했을 수 있는 주제. 규칙이 있는 서비스에서 이것을 「고칠 것」으로 말하면 브랜드를 흔한 관례로 깎는다
-const HOUSE_TOPICS = { accent: '강조색 쓰는 범위', palette: '색 팔레트', font: '서체', typescale: '글자 크기 단계', weight: '굵기', spacing: '여백 단계', radius: '모서리', shadow: '그림자', decor: '장식(카드 띠·글래스·대문자 소제목·카드 안 카드·이모지 제목)', copy: '글투', pattern: '패턴 방식' };
+const HOUSE_TOPICS = { accent: '강조색 쓰는 범위', palette: '색 팔레트', font: '서체', typescale: '글자 크기 단계', weight: '굵기', spacing: '여백 단계', radius: '모서리', shadow: '그림자', decor: '장식(카드 띠·글래스·대문자 소제목·카드 안 카드·이모지 제목)', copy: '글투', motion: '움직임', pattern: '패턴 방식' };
 // rules: design-rules.json 내용({ decided: { font: '…', 'pattern.loading': '…' } }) 또는 { house: true }. 없으면 그대로 돌려준다
 // 돌려주는 것: { main: 그대로 말할 것, ask: 정한 건지 물을 것, skipped: 정해 둬서 뺀 주제 이름 }
 function visualHouse(findings, rules) {

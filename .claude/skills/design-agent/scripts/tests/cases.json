@@ -1,0 +1,207 @@
+{
+  "_about": [
+    "design-agent 스크립트 검사 목록. 저장소 맨 위에서 npm run test:skill 로 돌린다",
+    "run: scripts/ 안 스크립트 이름과 인자. 파일 경로는 스킬 폴더(.claude/skills/design-agent) 기준으로 쓴다",
+    "has: 출력에 꼭 있어야 하는 글. 그 검사가 걸려야 한다는 뜻이다. 검사 이름처럼 짧고 안 바뀔 말로 적는다",
+    "not: 출력에 없어야 하는 글. 예전에 잘못 잡았던 것을 다시 잡지 않는지 본다",
+    "exit: 끝날 때 코드. check-screen·check-visual은 「꼭 고칠 것」이 있으면 1",
+    "why: 이 검사가 무엇을 지키는지. 실패했을 때 고칠지 기대를 바꿀지 정하는 근거",
+    "출력 전체는 tests/snapshots/에 둔다. 글이 바뀌면 차이를 보여 주고 실패한다. 의도한 변경이면 npm run test:skill -- --update"
+  ],
+  "cases": [
+    {
+      "name": "screen-bad",
+      "why": "나쁜 예 화면. 화면 구조 검사가 하나씩 다 걸려야 한다",
+      "run": ["check-screen.mjs", "scripts/fixtures/bad.html"],
+      "exit": 1,
+      "has": ["이름 없는 버튼", "두 번 눌림 방지 없음", "상태를 색만으로 표시", "누를 곳이 작음", "오류를 토스트로만", "사진 목록에 스피너", "경계가 없는 띄운 층", "굵은 글자가 너무 많음", "이모지 제목", "빈 화면 없음", "항목 구조가 다름", "보라·파랑 그라데이션", "Inter 한 가지 서체"]
+    },
+    {
+      "name": "screen-details",
+      "why": "2026-11-10에 더한 확인창·제출 잠금·자동 넘김·끌기 검사",
+      "run": ["check-screen.mjs", "scripts/fixtures/details.html"],
+      "exit": 0,
+      "has": ["브라우저 기본 확인창", "대화상자 버튼이 「확인·예」", "입력이 맞을 때까지 제출 잠금", "저절로 움직이는데 멈춤 없음", "끌기로만 하는 동작", "「정말 ~하시겠어요?」 제목"]
+    },
+    {
+      "name": "screen-ai-defaults",
+      "why": "AI 글투 검사",
+      "run": ["check-screen.mjs", "scripts/fixtures/ai-defaults.html"],
+      "has": ["과장 문구", "「A가 아니라 B」 문장", "근거를 밝히지 않은 큰 숫자", "대시(—) 남발"]
+    },
+    {
+      "name": "screen-double-number",
+      "run": ["check-screen.mjs", "scripts/fixtures/double-number.html"],
+      "has": ["번호가 두 번 붙음"]
+    },
+    {
+      "name": "screen-compare-pay",
+      "why": "<a>로 만든 결제 버튼도 두 번 눌림 검사에 들어가야 한다",
+      "run": ["check-screen.mjs", "scripts/fixtures/compare-pay.html"],
+      "exit": 1,
+      "has": ["두 번 눌림 방지 없음", "<a>"]
+    },
+    { "name": "screen-good", "why": "좋은 예. 아무것도 걸리면 안 된다", "run": ["check-screen.mjs", "scripts/fixtures/good.html"], "exit": 0, "has": ["걸린 것 없음"] },
+    { "name": "screen-compare-home", "run": ["check-screen.mjs", "scripts/fixtures/compare-home.html"], "exit": 0, "has": ["걸린 것 없음"] },
+    { "name": "screen-overflow", "run": ["check-screen.mjs", "scripts/fixtures/overflow.html"], "exit": 0, "has": ["걸린 것 없음"] },
+    { "name": "screen-studio-defaults", "run": ["check-screen.mjs", "scripts/fixtures/studio-defaults.html"], "exit": 0, "has": ["걸린 것 없음"] },
+    { "name": "screen-box-relations", "run": ["check-screen.mjs", "scripts/fixtures/box-relations.html"], "exit": 0 },
+    { "name": "screen-landing-kit", "run": ["check-screen.mjs", "scripts/fixtures/landing-kit.html"], "exit": 0 },
+
+    {
+      "name": "screen-example-shop",
+      "why": "예시는 맞게 만든 화면이다. 쇼핑 목록 가격을 표 숫자로 잡았던 일이 있다(2026-11-10)",
+      "run": ["check-screen.mjs", "examples/shop-list/index.html", "--sel", "platform=mobile,skill=occasional,device=personal,content=photo", "--action", "none"],
+      "exit": 0,
+      "has": ["걸린 것 없음"]
+    },
+    {
+      "name": "screen-example-admin-light",
+      "run": ["check-screen.mjs", "examples/admin-table/index.html", "--sel", "platform=desktop,skill=daily,device=personal,content=numbers", "--action", "light"],
+      "exit": 0,
+      "has": ["걸린 것 없음"]
+    },
+    {
+      "name": "screen-example-admin-irreversible",
+      "run": ["check-screen.mjs", "examples/admin-table/index.html", "--sel", "platform=desktop,skill=daily,device=personal,content=numbers", "--action", "irreversible"],
+      "exit": 0,
+      "has": ["걸린 것 없음"]
+    },
+    {
+      "name": "screen-example-kiosk",
+      "why": "키오스크의 시간 제한(setTimeout)을 자동 넘김으로 잡았던 일이 있다(2026-11-10)",
+      "run": ["check-screen.mjs", "examples/kiosk-booking/index.html", "--sel", "platform=tablet,skill=first,device=shared,content=text", "--action", "once"],
+      "exit": 0,
+      "has": ["걸린 것 없음"],
+      "not": ["저절로 움직이는데"]
+    },
+
+    {
+      "name": "visual-details",
+      "why": "2026-11-10에 더한 숫자 자리·얇은 굵기·겹친 모서리·묶음 간격·hover·transition 검사",
+      "run": ["check-visual.mjs", "scripts/fixtures/details.html"],
+      "exit": 1,
+      "has": ["고른 것과 안 고른 것의 차이가 약하다", "입력칸 테두리가 주변과 잘 안 갈린다", "자리 폭이 제각각인 숫자", "굵기가 300 이하", "모서리가 나란하지 않은 곳", "묶음 사이 간격이 묶음 안 간격과 비슷한 곳", "확인 · 헷갈림: hover 규칙", "transition(all)"],
+      "not": ["200ms를 넘는다"]
+    },
+    {
+      "name": "visual-details-daily-mobile",
+      "why": "매일 쓰는 조건에서만 느린 움직임을 잡고, 터치 화면이면 hover를 「권함」으로 올린다",
+      "run": ["check-visual.mjs", "scripts/fixtures/details.html", "--sel", "platform=mobile,skill=daily,device=personal,content=numbers"],
+      "has": ["200ms를 넘는다", "고치기 권함 · 헷갈림: hover 규칙"]
+    },
+    {
+      "name": "visual-details-desktop",
+      "why": "데스크톱 조건이면 hover 줄을 내지 않는다",
+      "run": ["check-visual.mjs", "scripts/fixtures/details.html", "--sel", "platform=desktop,skill=occasional,device=personal,content=numbers"],
+      "exit": 1,
+      "has": ["색·글자·여백 진단", "transition(all)"],
+      "not": ["hover 규칙"]
+    },
+    { "name": "visual-good", "run": ["check-visual.mjs", "scripts/fixtures/good.html"], "exit": 0, "has": ["검사로 잡힌 고칠 것 없음"] },
+    {
+      "name": "visual-ai-defaults",
+      "run": ["check-visual.mjs", "scripts/fixtures/ai-defaults.html"],
+      "has": ["크림 바탕", "영문 이탤릭", "자간을 벌린 작은 대문자 소제목", "Space Grotesk", "한 단어만", "두꺼운 색 띠", "반투명 흐림", "카드 안에 또 카드", "행간 1.5 미만", "가운데 정렬"]
+    },
+    {
+      "name": "visual-ai-defaults-rules",
+      "why": "서비스 규칙에 정한 서체·장식은 빼고, 나머지 취향 항목은 「정한 건지 확인」으로 보낸다",
+      "run": ["check-visual.mjs", "scripts/fixtures/ai-defaults.html", "--rules", "scripts/fixtures/design-rules.json"],
+      "has": ["서비스 규칙 있음", "[정한 건지 확인]", "크림 바탕", "정해 둬서 뺀 것"],
+      "not": ["AI가 자주 고르는 서체", "반투명 흐림", "카드 안에 또 카드"]
+    },
+    { "name": "visual-bad", "run": ["check-visual.mjs", "scripts/fixtures/bad.html"], "has": ["굵다", "서체 Inter"] },
+    {
+      "name": "visual-box-relations",
+      "run": ["check-visual.mjs", "scripts/fixtures/box-relations.html"],
+      "has": ["본문의 1.0배", "아이콘 자리에 이모지", "안쪽 여백이 쪽마다 다른 카드", "채운 것과 선만 있는 것", "반짝이"]
+    },
+    {
+      "name": "visual-landing-kit",
+      "run": ["check-visual.mjs", "scripts/fixtures/landing-kit.html"],
+      "has": ["가장 옅은 색 단계", "제목 위 여백이 아래 여백보다 크지 않은 곳", "색 네모", "알약 배지", "알약 모양"]
+    },
+    {
+      "name": "visual-studio-defaults",
+      "run": ["check-visual.mjs", "scripts/fixtures/studio-defaults.html"],
+      "has": ["한 단어만", "01·02·03", "고정폭 서체", "화살표", "같은 모서리 12px", "들어올 때 움직이는", "마우스를 올리면", "prefers-reduced-motion", "hover 규칙"]
+    },
+    { "name": "visual-overflow", "why": "넘침은 브라우저에서만 잰다. jsdom에서는 걸리지 않아야 한다", "run": ["check-visual.mjs", "scripts/fixtures/overflow.html"], "exit": 0 },
+
+    {
+      "name": "visual-example-shop",
+      "why": "카드 가격은 위아래로 견주는 숫자가 아니다",
+      "run": ["check-visual.mjs", "examples/shop-list/index.html", "--run-scripts", "--sel", "platform=mobile,skill=occasional,device=personal,content=photo"],
+      "exit": 0,
+      "has": ["검사로 잡힌 고칠 것 없음"],
+      "not": ["자리 폭이 제각각"]
+    },
+    {
+      "name": "visual-example-admin",
+      "run": ["check-visual.mjs", "examples/admin-table/index.html", "--run-scripts", "--sel", "platform=desktop,skill=daily,device=personal,content=numbers"],
+      "exit": 0,
+      "has": ["검사로 잡힌 고칠 것 없음"]
+    },
+    {
+      "name": "visual-example-kiosk",
+      "run": ["check-visual.mjs", "examples/kiosk-booking/index.html", "--run-scripts", "--sel", "platform=tablet,skill=first,device=shared,content=text"],
+      "exit": 0,
+      "has": ["검사로 잡힌 고칠 것 없음"]
+    },
+
+    {
+      "name": "compare-home-pay",
+      "why": "화면끼리 어긋난 색·모서리를 찾는다",
+      "run": ["compare-pages.mjs", "scripts/fixtures/compare-home.html", "scripts/fixtures/compare-pay.html"],
+      "exit": 1,
+      "has": ["비슷하지만 다른 색", "모서리 값이 화면마다 다르다", "본문 크기"]
+    },
+
+    {
+      "name": "palette-blue",
+      "run": ["palette.mjs", "--brand", "#1d5fd1"],
+      "exit": 0,
+      "has": ["brand-50", "brand-900", "gray-500", "accent:", "inputBorder:", "--color-accent"]
+    },
+    {
+      "name": "palette-red",
+      "why": "강조색이 빨강이면 위험색을 옮긴다",
+      "run": ["palette.mjs", "--brand", "#e03131"],
+      "exit": 0,
+      "has": ["헷갈리는 상태색: 위험(빨강)", "색상을 47도로 옮김"]
+    },
+    {
+      "name": "palette-oklch",
+      "run": ["palette.mjs", "--brand", "oklch(0.52 0.18 260)"],
+      "exit": 0,
+      "has": ["← 브랜드"]
+    },
+    { "name": "palette-bad-input", "run": ["palette.mjs", "--brand", "파란색"], "exit": 1, "has": ["읽지 못했다"] },
+
+    {
+      "name": "recommend-kiosk",
+      "why": "카탈로그 화면과 같은 계산. 처음 쓰는 사진 화면이면 스켈레톤, 두 번 되면 안 되는 작업이면 바로 반영을 피한다",
+      "run": ["recommend.mjs", "--sel", "platform=mobile,skill=first,device=shared,content=photo", "--action", "once", "--patterns", "loading,delete"],
+      "exit": 0,
+      "has": ["추천 스켈레톤", "추천 먼저 묻는다", "확인 전에 성공처럼 보이면 안 된다", "숨은 제스처"]
+    },
+    {
+      "name": "recommend-design-md",
+      "run": ["recommend.mjs", "--sel", "platform=desktop,skill=daily,device=personal,content=numbers", "--action", "light", "--design-md", "--picks", "loading=skeleton"],
+      "exit": 0,
+      "has": ["context:", "target-min: 24px", "brand: {}", "## 꼭 지킬 것"]
+    },
+    {
+      "name": "recommend-design-md-system",
+      "run": ["recommend.mjs", "--sel", "platform=mobile,skill=occasional,device=personal,content=photo", "--action", "once", "--design-md", "--system", "seed"],
+      "exit": 0,
+      "has": ["바탕 디자인 시스템"]
+    },
+    { "name": "recommend-bad-sel", "run": ["recommend.mjs", "--sel", "platform=watch,skill=daily,device=personal,content=photo"], "exit": 1, "has": ["고를 수 있는 값"] },
+    { "name": "recommend-bad-pattern", "run": ["recommend.mjs", "--sel", "platform=mobile,skill=daily,device=personal,content=photo", "--patterns", "nothing"], "exit": 1, "has": ["없는 패턴 id"] },
+
+    { "name": "component-bottom-sheet", "run": ["component.mjs", "바텀시트"], "exit": 0, "has": ["바텀 시트", "giting.kr/menu/ui-menu/bottom-sheet"] },
+    { "name": "component-none", "run": ["component.mjs", "없는컴포넌트이름"], "exit": 0, "has": ["찾은 컴포넌트가 없습니다"] }
+  ]
+}

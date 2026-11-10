@@ -1,0 +1,17 @@
+$ check-visual.mjs examples/shop-list/index.html --run-scripts --sel platform=mobile,skill=occasional,device=personal,content=photo
+[exit 0]
+색·글자·여백 진단: .claude/skills/design-agent/examples/shop-list/index.html
+검사로 잡힌 고칠 것 없음. 억지로 고칠 곳을 찾지 않는다. 검사가 못 보는 것(가져갈 것이 맨 앞인가, 390px 폭, 눌렀을 때)만 스크린샷과 눌러 보기로 확인한다
+
+[색]
+- 재 본 값: 바탕 #ffffff · 주 글자색 #17201c(글자의 34%) · 색 기운 1가지(청록 #0e6b58)
+- 좋음: 잴 수 있는 글자 90개 모두 대비 기준을 넘는다
+
+[글자]
+- 재 본 값: 크기 5단계(30·18·16·14·12px), 본문 14px(글자 수 기준), 가장 큰 글자 30px, 서체 -apple-system
+- 좋음: 제목이 본문의 2.1배라 위계가 보인다
+- 재 본 값: 조건 기준: 본문 14px 이상(흔한 하한), 누를 곳 44px 이상(Apple HIG 44pt · Material 48dp)
+
+[여백·모양]
+- 재 본 값: 여백 값 8가지(많이 쓴 값 4·12·16·8·32·24px), 모서리 2가지(8·4px), 그림자 0가지
+- 재 본 값: 넘침·잘림, 누를 곳 크기, 상자 끝에 붙은 글자, 어긋난 시작선, 높은 행, 글자 로고는 브라우저에서 잴 때만 본다

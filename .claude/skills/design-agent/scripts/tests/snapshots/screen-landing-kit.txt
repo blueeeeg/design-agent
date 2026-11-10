@@ -1,0 +1,6 @@
+$ check-screen.mjs scripts/fixtures/landing-kit.html
+[exit 0]
+검사: .claude/skills/design-agent/scripts/fixtures/landing-kit.html
+해당하는 실패: 빠진 상태 1 (이름 뜻과 고치는 순서: references/failures.md)
+- [확인 · 빠진 상태] 빈 화면 없음: 목록이 비었을 때 보일 문구·다음 행동이 페이지에 없다. 처음·검색 결과 없음·오류를 나눠 쓴다
+    위치: <ul.menu>

@@ -1,0 +1,42 @@
+$ recommend.mjs --sel platform=mobile,skill=first,device=shared,content=photo --action once --patterns loading,delete
+[exit 0]
+조건: 모바일 · 처음·한 번만 쓴다 · 여럿이 쓰는 기기 · 사진 중심 · 작업의 무게 두 번 되면 안 되는 작업
+
+## 불러오는 동안 (loading) — 데이터가 오기 전 화면에 무엇을 두나 [작업의 무게에 따라 갈림]
+  추천 스켈레톤 (skeleton, Skeleton screen) 점수 3 — 올 내용의 모양을 회색 틀로 먼저 그린다
+         + 관례 사진 중심: 사진·카드 자리를 미리 잡아 화면이 튀지 않는다
+         디자인 시스템: 목록·카드·표처럼 틀이 정해진 곳에만. 정적인 것·버튼·모달에는 쓰지 않는다 (Carbon, 원티드, 당근)
+         데모: https://giting.kr/menu/ui-menu/skeleton-ui
+       스피너 (spinner, Spinner) 점수 -3 — 가운데에서 도는 표시 하나
+         - 관례 사진 중심: 다 오면 레이아웃이 한꺼번에 튄다
+         디자인 시스템: 짧은 대기, 좁은 영역, 저장처럼 누른 뒤의 기다림에. 스켈레톤과 같이 쓰지 않고 화면에 하나만 (당근, KRDS)
+         데모: https://giting.kr/menu/ui-menu/spinner
+       표시 안 함 (none, No loading indicator) 점수 0 — 기다릴 것이 없으면 아무것도 띄우지 않고 결과를 바로 바꾼다
+       진행 바 (progress, Progress bar) 점수 0 — 얼마나 남았는지 단계와 막대로
+         디자인 시스템: 업로드·설치처럼 시작과 끝이 있는 긴 처리에. 예상 시간을 주고, 아주 길면 뒤에서 처리한다 (당근, Primer)
+         데모: https://giting.kr/menu/ui-menu/progress-bar
+       그림과 진행 문구 (illus, Illustrated loading with status text) 점수 0 — 그림이나 캐릭터와 함께 지금 하는 일을 문구로 알린다
+       바로 반영 (optimistic, Optimistic UI) 점수 -3 — 응답을 기다리지 않고 먼저 바꾸고, 실패하면 되돌린다
+         - 관례 두 번 되면 안 되는 작업: 확인 전에 성공처럼 보이면 안 된다
+  디자인 시스템 공통: 1초 안에 끝나면 로딩 표시를 하지 않는다. 깜빡이는 것이 더 느리게 느껴진다 (당근, KRDS, Primer, Ant)
+  디자인 시스템 공통: 기다리는 시간으로 고른다. 짧으면 스피너·스켈레톤, 3~4초를 넘으면 진행 바와 안내, 아주 길면 뒤에서 처리하고 취소를 준다 (당근, Primer)
+  디자인 시스템 공통: 가능한 한 빨리 무엇이든 보인다. 빈 화면은 고장 난 것처럼 보인다 (Apple)
+  상황 「1초 안에 끝날 때」(입력하면 바로 계산되거나 응답이 아주 빠르다. 표시가 깜빡이면 더 느려 보인다): 표시 안 함
+  상황 「화면을 처음 열 때」(1~2초, 아직 아무것도 없다. 탭·메뉴는 바로 두고 내용 자리만 기다리게 한다): 스켈레톤 / 스피너
+  상황 「내가 바꾼 것이 저장되는 동안」(좋아요·저장·순서 바꾸기처럼 거의 성공하는 일): 바로 반영
+  상황 「결과를 만드는 동안」(업로드·생성·분석처럼 몇 초 넘게 걸린다. 스피너만 두지 않는다): 진행 바 / 그림과 진행 문구
+  카탈로그: /elements/loading/
+
+## 지울 때 (delete) — 삭제를 어떻게 확인하나 [작업의 무게에 따라 갈림]
+  추천 먼저 묻는다 (confirm, Delete confirmation dialog) 점수 1 — 지우기 전에 대화상자로 확인
+         + 예시 처음·한 번만 쓴다
+         디자인 시스템: 되돌릴 수 없고 드문 일에만. 버튼은 「삭제」처럼 동작 이름으로, 위험 버튼만 빨간색 (Apple, Carbon, 당근)
+         데모: https://giting.kr/menu/ui-menu/confirmation
+       지우고 되돌리기 (undo, Delete with undo) 점수 0 — 묻지 않고 지운 뒤 몇 초 동안 되돌릴 수 있다
+         디자인 시스템: 되돌릴 수 있으면 묻지 말고 되돌리기를 준다 (Apple, 당근)
+         데모: https://giting.kr/menu/ui-menu/toast
+       밀어서 지우기 (swipe, Swipe to delete) 점수 -2 — 행을 옆으로 밀면 삭제 버튼이 나온다
+         + 예시 모바일: 목록 정리가 잦은 앱
+         - 관례 처음·한 번만 쓴다: 숨은 제스처라 처음 쓰는 사람은 못 찾는다
+         데모: https://giting.kr/menu/app-menu/swipeaction
+  카탈로그: /elements/delete/

@@ -71,7 +71,7 @@ const found = [];
 // 서비스가 일부러 정했을 수 있는 항목(visual-audit.js HOUSE_TOPICS와 같은 주제 이름)
 const TOPIC = { '사진 목록에 스피너': 'pattern.loading', '굵은 글자가 너무 많음': 'weight', '보라·파랑 그라데이션': 'palette', 'Inter 한 가지 서체': 'font', '이모지 제목 표시': 'decor', '과장 문구': 'copy', '「A가 아니라 B」 문장': 'copy', '대시(—) 남발': 'copy' };
 // 실패 이름(references/failures.md, visual-audit.js FAILS)
-const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard', '번호가 두 번 붙음': 'confusing' };
+const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard', '번호가 두 번 붙음': 'confusing', '브라우저 기본 확인창': 'confusing', '대화상자 버튼이 「확인·예」': 'confusing', '「정말 ~하시겠어요?」 제목': 'confusing', '입력이 맞을 때까지 제출 잠금': 'confusing', '저절로 움직이는데 멈춤 없음': 'hard', '끌기로만 하는 동작': 'hard' };
 const add = (level, rule, why, els = []) => found.push({ level, rule, why, at: els.slice(0, 3).map(where), fail: FAIL[rule], ...(TOPIC[rule] && { topic: TOPIC[rule] }) });
 
 if (badViewport) add('꼭', '확대 막기', `viewport에 「${viewport.trim()}」. user-scalable=no와 maximum-scale=1을 지운다(WCAG 2.2 1.4.4)`, [doc.querySelector('meta[name="viewport"]')]);
@@ -157,6 +157,33 @@ const BIG = /\d{1,3}(?:,\d{3})+\s?%|\d{4,}\s?%|\d{2,}\s?배 (?:빠|늘|많)|\d{2
 if (hits(BIG)) add('확인', '근거를 밝히지 않은 큰 숫자', `${hits(BIG)}. 실제 수치가 아니면 빼고, 실제면 출처나 기준을 옆에 적는다`);
 const dashes = (copy.match(/—/g) || []).length;
 if (dashes >= 3) add('확인', '대시(—) 남발', `화면 글에 「—」가 ${dashes}번 나온다. 문장을 나누거나 쉼표로`);
+
+// 10-2. 대화상자 문구·제출·저절로 움직이는 것·끌기(jakub.kr 스킬 모음 better-writing·better-accessibility(MIT)에서 생각을 얻었다, 2026-11-10)
+// 브라우저 기본 확인창은 버튼 이름을 「확인·취소」에서 바꿀 수 없고 서비스 화면 밖 모양이다
+if (/(^|[^.\w])confirm\s*\(|window\.confirm\s*\(/.test(scripts)) add('권장', '브라우저 기본 확인창', 'confirm()은 버튼이 「확인·취소」로 고정돼 무엇을 하는지 말하지 못한다. 되돌릴 수 있으면 확인창 대신 되돌리기, 아니면 「주문 취소」처럼 하는 일을 적은 버튼의 대화상자로(recommend.mjs 「지울 때」·「확인 단계」)');
+// 버튼이 둘 넘는 대화상자에서 「확인·예」는 무엇을 하는지 말하지 않는다. 버튼 하나뿐인 알림의 「확인」은 괜찮다
+const dialogs = [...doc.querySelectorAll('dialog, [role="dialog"], [role="alertdialog"], [class*="modal" i]')].filter(d => !d.parentElement?.closest('dialog, [role="dialog"], [role="alertdialog"], [class*="modal" i]'));
+const vagueDlg = dialogs.filter(d => { const bs = [...d.querySelectorAll('button, [role="button"], input[type="submit"], input[type="button"]')]; return bs.length >= 2 && bs.some(b => /^(확인|예|네|아니(오|요)|ok|yes|no)$/i.test(text(b) || b.value || '')); });
+if (vagueDlg.length) add('권장', '대화상자 버튼이 「확인·예」', '버튼만 읽어도 무슨 일이 일어나는지 알게 「삭제」「주문 취소」처럼 하는 일을 적는다. 닫는 쪽은 「취소」「그대로 두기」', vagueDlg);
+const sureDlg = dialogs.filter(d => /정말\s?[^?.!]{0,30}(하시겠|할까|인가|이에요|입니까|나요)|are you sure/i.test(text(d)));
+if (sureDlg.length) add('확인', '「정말 ~하시겠어요?」 제목', '무엇을 하는지(무엇을 지우는지) 제목에 적는다. 예: 「‘3분기 보고서’를 지울까요?」. 되돌릴 수 없으면 그 사실을 한 줄로', sureDlg);
+// 입력이 다 맞을 때까지 제출 버튼을 잠그면 무엇이 틀렸는지 모른다. 누를 때 검사하고 첫 오류 칸으로 옮긴다
+// HTML에 처음부터 박힌 disabled(--run-scripts 전 원본)나 「disabled = !valid」 같은 코드를 본다
+const rawDoc = runScripts ? new JSDOM(raw).window.document : doc;
+const lockedSubmit = [...rawDoc.querySelectorAll('form')].filter(f => f.querySelector('input:not([type="hidden"]), textarea, select')).flatMap(f => [...f.querySelectorAll('button[type="submit"][disabled], input[type="submit"][disabled], button:not([type])[disabled]')]);
+if (lockedSubmit.length || /\.disabled\s*=\s*!\s*[\w.$]*(valid|ok|filled|complete|ready|can\w*)/i.test(scripts)) add('권장', '입력이 맞을 때까지 제출 잠금', '잠긴 버튼은 왜 못 누르는지 알려 주지 않는다. 버튼은 열어 두고, 누르면 검사해서 틀린 칸 아래에 고칠 말을 쓰고 첫 오류 칸으로 옮긴다. 결제처럼 두 번 눌림을 막는 잠금은 누른 뒤에 건다', lockedSubmit);
+// 5초 넘게 저절로 움직이는 것(자동 넘김 배너, 소리 없는 반복 영상)에는 멈춤이 있어야 한다 — WCAG 2.2 2.2.2
+const pauseBtn = buttons.some(b => /멈춤|일시\s?정지|정지|pause|stop/i.test(`${text(b)} ${b.getAttribute('aria-label') || ''} ${b.getAttribute('title') || ''}`));
+const autoVideo = [...doc.querySelectorAll('video[autoplay]')].filter(v => visible(v) && !v.hasAttribute('controls'));
+const autoSlide = [...doc.querySelectorAll('[data-autoplay], [data-bs-ride="carousel"], [data-ride="carousel"], [class*="autoplay" i]')].filter(visible);
+// 타이머 하나만으로는 판단하지 않는다(처리 중 표시 뒤 다음 단계로 넘기는 setTimeout도 많다). setInterval 가까이에 슬라이드·배너 말이 있을 때만
+const slideTimer = /setInterval\s*\([^]{0,300}(slide|carousel|banner|swiper|배너|슬라이드)/i.test(scripts) || /autoplay\s*:\s*(true|\{)/i.test(scripts);
+if ((autoVideo.length || autoSlide.length || slideTimer) && !pauseBtn) add('권장', '저절로 움직이는데 멈춤 없음', '자동 넘김 배너·반복 영상이 5초 넘게 움직이면 멈추는 버튼이 있어야 한다(WCAG 2.2 2.2.2). 읽는 도중 넘어가면 놓친다. 멈춤 버튼을 두거나 자동 넘김을 뺀다', [...autoVideo, ...autoSlide]);
+// 끌어서만 하는 동작(순서 바꾸기, 옮기기)에는 한 번 눌러서 하는 다른 길이 있어야 한다 — WCAG 2.2 2.5.7
+const dragEls = [...doc.querySelectorAll('[draggable="true"], [class*="sortable" i], [class*="draggable" i], [data-sortable]')].filter(visible);
+const dragJs = /addEventListener\(\s*['"](dragstart|drop)['"]|ondragstart|Sortable\.create|new Sortable\b|useSortable|useDrag\b|DndContext/.test(scripts);
+const moveBtn = buttons.some(b => /위로|아래로|올리기|내리기|이동|옮기기|순서|\b(move|up|down)\b/i.test(`${text(b)} ${b.getAttribute('aria-label') || ''}`));
+if ((dragEls.length || dragJs) && !moveBtn) add('권장', '끌기로만 하는 동작', '끌기가 어려운 사람(떨림, 한 손가락, 스위치 기기)은 못 한다(WCAG 2.2 2.5.7). 「위로·아래로」 버튼이나 옮길 곳을 고르는 메뉴를 같이 둔다', dragEls);
 
 // 11. 누를 곳 크기(CSS에 적힌 값만)
 // 조건의 최소 누를 곳(params.mjs, recommend.mjs DESIGN.md와 같은 값). 플랫폼을 안 주면 모바일 기준 44px

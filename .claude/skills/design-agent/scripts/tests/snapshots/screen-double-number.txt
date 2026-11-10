@@ -1,0 +1,8 @@
+$ check-screen.mjs scripts/fixtures/double-number.html
+[exit 0]
+검사: .claude/skills/design-agent/scripts/fixtures/double-number.html
+해당하는 실패: 헷갈림 1 · 빠진 상태 1 (이름 뜻과 고치는 순서: references/failures.md)
+- [고치기 권함 · 헷갈림] 번호가 두 번 붙음: <ol>이 번호를 붙이는데 글에도 번호가 있어 「1. 1 고르기」처럼 보인다. 글의 번호를 지우거나 CSS로 list-style: none
+    위치: <ol.steps>
+- [확인 · 빠진 상태] 빈 화면 없음: 목록이 비었을 때 보일 문구·다음 행동이 페이지에 없다. 처음·검색 결과 없음·오류를 나눠 쓴다
+    위치: <ol.steps>, <ol.done>, <ol.plain>

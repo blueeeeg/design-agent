@@ -1,0 +1,5 @@
+$ recommend.mjs --sel platform=mobile,skill=daily,device=personal,content=photo --patterns nothing
+[exit 1]
+
+[stderr]
+없는 패턴 id: nothing

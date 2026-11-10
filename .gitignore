@@ -13,3 +13,4 @@ dist/
 refs-private/
 # 스킬 평가 결과물(로컬)
 .claude/skills/*-workspace/
+.claude/worktrees/

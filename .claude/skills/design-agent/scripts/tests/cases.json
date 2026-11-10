@@ -127,6 +127,14 @@
       "run": ["check-visual.mjs", "scripts/fixtures/studio-defaults.html"],
       "has": ["한 단어만", "01·02·03", "고정폭 서체", "화살표", "같은 모서리 12px", "들어올 때 움직이는", "마우스를 올리면", "prefers-reduced-motion", "hover 규칙"]
     },
+    {
+      "name": "visual-exemptions",
+      "why": "2026-11-10 실제 서비스 리뷰에서 이모지(1:1)·로고 글자(4.31:1)·붙은 머리의 흐림을 잘못 잡았다. 브랜드 색 클래스 글자와 떠 있는 카드의 흐림은 그대로 잡아야 한다",
+      "run": ["check-visual.mjs", "scripts/fixtures/exemptions.html"],
+      "exit": 1,
+      "has": ["「점심 추천을 바꿨어요」 #ff7c71/#ffffff 2.51:1", "글자 대비가 모자란 곳 1군데", "반투명 흐림(글래스) 1개: 「떠 있는 안내 카드」"],
+      "not": ["「🧭」", "「MNU」", "MNU 오늘 뭐 먹지"]
+    },
     { "name": "visual-overflow", "why": "넘침은 브라우저에서만 잰다. jsdom에서는 걸리지 않아야 한다", "run": ["check-visual.mjs", "scripts/fixtures/overflow.html"], "exit": 0 },
 
     {

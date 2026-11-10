@@ -121,6 +121,8 @@ node .claude/skills/design-agent/scripts/compare-pages.mjs home.html list.html p
 - 쓰는 사람이 이 화면에서 가져갈 것(결과, 주요 버튼)이 맨 앞에 있나 (위계 없음)
 - 만든 쪽의 분류·용어·내부 표시가 화면에 드러나지 않았나. 처음 보는 사람이 설명 없이 뜻을 모를 말은 질문이나 예시로 바꾼다 (헷갈림)
 - 같은 내용이 두 곳에 나오지 않나. 눌리지 않는 것이 버튼처럼 보이지 않나 (헷갈림)
+- 첫 화면이 약속한 것(「바로」「30초」「한 번에」)을 다음 화면이 지키나. 누르니 고를 것이 더 나오면 약속을 고치거나 단계를 줄인다 (헷갈림)
+- 안 골라도 되는 항목(성별·나이 같은 선택 정보)이 미리 골라져 있지 않나. 화면끼리 같은 값을 다르게 보여 주지 않나(첫 화면 요약은 「친구」인데 다음 화면은 「직장 동료」) (헷갈림)
 - 버튼 글이 누르면 일어나는 일을 말하나(「확인」 대신 「저장」). 한 흐름 안에서 같은 일을 같은 이름으로 부르나(「게시」 버튼 → 「게시했어요」 알림) (헷갈림)
 - 오류 문구가 무엇이 잘못됐고 어떻게 고치는지 말하나. 사과만 하거나 「문제가 발생했습니다」로 뭉뚱그리지 않나. 빈 화면에 다음에 할 일이 있나 (빠진 상태)
 - 움직임은 첫 화면 한 번이나 사용자가 누른 뒤 바뀐 곳에만 있나. 섹션마다 떠오르거나 모든 카드가 hover로 뜨지 않나 (흔한 기본값). 01·02·03 번호는 내용이 정말 순서일 때만 썼나 (흔한 기본값)
@@ -149,6 +151,7 @@ node .claude/skills/design-agent/scripts/compare-pages.mjs home.html list.html p
 **재는 법** — 가장 정확한 것부터
 - 공개된 주소가 있으면 그 페이지를 브라우저에서 잰다(코드를 받거나 띄울 필요가 없다). 메뉴 링크를 눌러 페이지를 옮기면 붙인 코드가 남아 있어 다시 붙이지 않아도 된다
   - 공개 사이트(https)에서는 `serve-audit.mjs`가 안 된다. Chrome이 공개 페이지가 이 PC(127.0.0.1)로 보내는 요청을 사용자 허락 전까지 붙잡는다(2026-11-02 확인). `scripts/visual-audit.js` 내용을 그대로 붙여 실행하고 `visualReport(document, window)`를 부른다
+  - 붙여 넣기 전에: 이 스킬은 공개 저장소(https://github.com/blueeeeg/design-agent)에 있다. 로컬 `visual-audit.js`에 올리지 않은 변경이 없으면(`git status`, `git log origin/main..`이 비어 있으면) 105KB를 붙이는 대신 그 페이지에서 `const t = await (await fetch('https://raw.githubusercontent.com/blueeeeg/design-agent/<커밋>/.claude/skills/design-agent/scripts/visual-audit.js')).text(); (0, eval)(t);`로 불러온다. `<커밋>`은 `git rev-parse HEAD`. 사이트 보안 설정(CSP)이 막으면 붙여 넣는다(2026-11-10 확인)
   - 이 PC에서 띄운 앱(localhost)은 `node .claude/skills/design-agent/scripts/serve-audit.mjs`를 뒤에 띄우고 그 페이지에서 `const t = await (await fetch('http://127.0.0.1:4412/visual-audit.js')).text(); (0, eval)(t); visualReport(document, window)`
   - 조건이 있으면 `node .claude/skills/design-agent/scripts/params.mjs --sel platform=…` 끝에 나오는 `window.__designCond = …` 줄을 `visualReport` 전에 붙인다. 없으면 조건과 상관없는 흔한 기준(본문 14px, 누를 곳 24px)으로 잰다
   - 서비스 규칙이 있으면 `visualReport` 전에 `window.__designRules = { house: true }`(규칙 파일이 있으면 그 내용)를 넣는다. 취향 항목이 끝의 「정한 건지 확인」으로 간다

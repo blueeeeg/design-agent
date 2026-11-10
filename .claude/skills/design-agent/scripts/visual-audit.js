@@ -196,6 +196,16 @@ function visualAudit(doc, win, depth = 0) {
   const textEls = [...doc.body.querySelectorAll('*')].filter(e => visible(e) && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 0));
   // 겹친 opacity는 글자 색을 옅게 만든다. 조상까지 곱한다
   const opacityOf = el => { let o = 1; for (let e = el; e && e.nodeType === 1; e = e.parentElement) { const v = parseFloat(cs(e).opacity); if (!isNaN(v)) o *= v; } return o; };
+  // 로고 글자인가: 자기나 위 세 단계 안에 로고를 뜻하는 클래스 이름(통째로)이나 aria-label이 있다. text-brand·bg-brand-500 같은 색 클래스는 로고가 아니다. 버튼 안 글자는 로고로 치지 않는다
+  const LOGO_CLASS = /^(logo|logotype|wordmark|brand|brand[-_]?(mark|logo|name|lockup)|navbar-brand|site[-_](logo|title|name)|[a-z0-9]+[-_]logo)$/i;
+  const isLogo = el => {
+    if (el.closest('button, [role="button"]')) return false;
+    for (let e = el, i = 0; e && e.nodeType === 1 && i < 4; e = e.parentElement, i++) {
+      if ([...(e.classList || [])].some(c => LOGO_CLASS.test(c))) return true;
+      if (/logo|로고/i.test(e.getAttribute('aria-label') || '')) return true;
+    }
+    return false;
+  };
   const texts = textEls.map(el => {
     const s = cs(el);
     // 읽지 못한 색(oklch 등)은 검정으로 치지 않고 대비를 「모름」으로 둔다. 검정으로 치면 없는 문제를 지어낸다
@@ -222,6 +232,9 @@ function visualAudit(doc, win, depth = 0) {
     const full = [...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join(' ');
     const sample = full.slice(0, 24);
     const disabled = !!el.closest('[disabled], [aria-disabled="true"]');
+    // 대비 기준(WCAG 1.4.3)에서 빼는 것: 글자·숫자 없이 이모지·기호만 있는 것(색을 쓰는 그림이라 글자색 대비가 뜻이 없다), 로고 글자(1.4.3 예외)
+    const pict = !/[\p{L}\p{N}]/u.test(full);
+    const logo = full.length <= 12 && isLogo(el);
     // 한글 조판을 볼 값: 행간(글자 크기의 몇 배, normal은 null), 정렬, 이탤릭, 자간(글자 크기의 몇 배), 대문자
     const lhRaw = String(s.lineHeight || 'normal');
     const lh = /px$/.test(lhRaw) ? parseFloat(lhRaw) / size : /%$/.test(lhRaw) ? parseFloat(lhRaw) / 100 : /^[\d.]+$/.test(lhRaw) ? +lhRaw : null;
@@ -229,7 +242,7 @@ function visualAudit(doc, win, depth = 0) {
     const hangul = (full.match(/[가-힣]/g) || []).length;
     const nearHangul = hangul > 0 || /[가-힣]/.test(el.parentElement?.textContent || '');
     // 글자 수는 자르지 않은 전체 길이로 센다(본문 크기·주 글자색을 글자 수로 정한다)
-    return { el, grad, disabled, hangul, nearHangul, lh: lh && Math.round(lh * 100) / 100, align: s.textAlign || '', italic: /italic|oblique/.test(s.fontStyle || ''), ls: Math.round(ls * 1000) / 1000, upper: s.textTransform === 'uppercase' || (/^[A-Z0-9\s&·/-]{4,}$/.test(full) && /[A-Z]{3}/.test(full)), chars: full.replace(/\s+/g, '').length || 1, fg: fg ? hex(blend(fg, bg.unknown ? { r: 255, g: 255, b: 255, a: 1 } : bg)) : '?', bg: bg.unknown ? null : hex(bg), size: Math.round(size * 10) / 10, weight, ratio: ratio && Math.round(ratio * 100) / 100, need: large ? 3 : 4.5, sample, tag: el.tagName.toLowerCase(), family: (s.fontFamily || '').split(',')[0].replace(/["']/g, '').trim(), ...(grad && { fg: grad.fg, bg: grad.bg }) };
+    return { el, grad, disabled, pict, logo, hangul, nearHangul, lh: lh && Math.round(lh * 100) / 100, align: s.textAlign || '', italic: /italic|oblique/.test(s.fontStyle || ''), ls: Math.round(ls * 1000) / 1000, upper: s.textTransform === 'uppercase' || (/^[A-Z0-9\s&·/-]{4,}$/.test(full) && /[A-Z]{3}/.test(full)), chars: full.replace(/\s+/g, '').length || 1, fg: fg ? hex(blend(fg, bg.unknown ? { r: 255, g: 255, b: 255, a: 1 } : bg)) : '?', bg: bg.unknown ? null : hex(bg), size: Math.round(size * 10) / 10, weight, ratio: ratio && Math.round(ratio * 100) / 100, need: large ? 3 : 4.5, sample, tag: el.tagName.toLowerCase(), family: (s.fontFamily || '').split(',')[0].replace(/["']/g, '').trim(), ...(grad && { fg: grad.fg, bg: grad.bg }) };
   });
 
   // ---- 쓰인 색 모으기(글자·바탕·테두리) ----
@@ -372,7 +385,7 @@ function visualAudit(doc, win, depth = 0) {
     const c = thick >= 3 ? parse(s[`border${side}Color`]) : parse((s.boxShadow.match(/(?:rgba?|oklch|oklab|lab|lch)\([^)]*\)|#[0-9a-f]{3,8}/i) || [])[0]);
     return c && hsl(c).s >= 0.3;
   }).map(el => ({ sample: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 20) }));
-  const glass = allVisible.filter(el => /blur\(/.test(cs(el).backdropFilter || cs(el).webkitBackdropFilter || '')).map(el => ({ sample: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 20) }));
+  const glass = allVisible.filter(el => /blur\(/.test(cs(el).backdropFilter || cs(el).webkitBackdropFilter || '') && !/sticky|fixed/.test(cs(el).position || '')).map(el => ({ sample: (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 20) }));
   // 레이아웃을 계산하는 브라우저인가(jsdom은 크기가 0이라 크기·위치로 재는 검사는 브라우저에서만 한다)
   const layout = !win.__jsdom && typeof doc.documentElement.getBoundingClientRect === 'function';
   const layout0 = el => (layout ? el.getBoundingClientRect().width : 0);
@@ -787,9 +800,9 @@ function visualAudit(doc, win, depth = 0) {
   return {
     textCount: texts.length,
     // 꺼진 컨트롤은 대비 기준에서 빠진다(WCAG 2.2 1.4.3 예외)
-    lowContrast: texts.filter(t => !t.disabled && !t.grad && t.ratio != null && t.ratio < t.need).map(({ el, ...t }) => t),
+    lowContrast: texts.filter(t => !t.disabled && !t.pict && !t.logo && !t.grad && t.ratio != null && t.ratio < t.need).map(({ el, ...t }) => t),
     // 그라데이션은 글자가 실제로 놓인 자리보다 넓을 수 있어(가장 낮은 단계로 쟀다) 따로 둔다
-    gradLow: texts.filter(t => !t.disabled && t.grad && t.ratio != null && t.ratio < t.need).map(({ el, ...t }) => t),
+    gradLow: texts.filter(t => !t.disabled && !t.pict && !t.logo && t.grad && t.ratio != null && t.ratio < t.need).map(({ el, ...t }) => t),
     gradCount: texts.filter(t => t.grad).length,
     unknownBg: texts.filter(t => t.ratio == null).length,
     colors: colors.map(c => ({ ...c, chroma: isChroma(c) })),

@@ -102,6 +102,14 @@
 - **pogomate.com** — 2026-11-02 · 메인과 대표 페이지, 데스크톱과 390px
   - 정리: `HANDOFF.md` 2026-11-02. 리뷰에서 나온 오판은 커밋 fd98f37에서 고쳤다
 
+## UX 규칙의 틀
+
+- **UX 규칙을 어떻게 잡나** — NN/g 휴리스틱·심각도, GOV.UK 서비스 기준·Design System, KRDS(필수·권장·우수, 자체 검증), Baymard, WCAG 2.2·WAI-ARIA APG, Apple·Material·Carbon·Polaris·Atlassian·Fluent·Primer, 토스·당근 SEED, 린트와 AI 에이전트용 규칙 · 2026-11-11 · 서브에이전트 둘이 공개 문서를 읽음(Material 3은 검색 요약만)
+  - 정리: `research/ux-rules.md`
+  - 가져온 것: 확인 창이 위험 버튼에 첫 초점을 두는 검사의 근거(APG, Carbon, Primer, NN/g)
+  - 남은 것: UX 확인 목록(사고 위험·키보드·할 일·누른 뒤·말)을 `references/failures.md`에 「규칙 한 문장 · 예외 · 눈으로 · 근거」 칸으로 넣기. KRDS 체크리스트 원문과 기본 패턴 「확인」「오류」 읽기
+  - 다시 볼 곳: https://www.krds.go.kr/html/site/outline/outline_05.html (체크리스트), https://primer.style/accessibility/tools-and-resources/checklists/designer-checklist/ · 2026-11-11
+
 ## 후보
 
 2026-11-06 새로 찾기에서 나온 것. 원문(README·SKILL)을 읽었다. 「반영」은 같은 날 사용자가 골라 넣은 것, 「미룸」은 `HANDOFF.md` 다음 할 일 15번에 둔 것이다.

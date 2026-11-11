@@ -41,6 +41,44 @@
       "has": ["브라우저 기본 확인창", "대화상자 버튼이 「확인·예」", "입력이 맞을 때까지 제출 잠금", "저절로 움직이는데 멈춤 없음", "끌기로만 하는 동작", "「정말 ~하시겠어요?」 제목"]
     },
     {
+      "name": "screen-danger-focus",
+      "why": "2026-11-11 직접 만든 내부 도구 화면 비교에서 지우기 확인창이 위험 버튼에 첫 초점을 두고 열리는 것을 놓쳤다. 위험 버튼이 앞에 있음, autofocus가 위험 버튼, 닫혀 있는(hidden) 대화상자의 글자로만 알아보는 위험 버튼을 잡는다",
+      "run": ["check-screen.mjs", "scripts/fixtures/danger-focus.html"],
+      "exit": 1,
+      "has": ["[꼭 고칠 것 · 사고 위험] 위험 버튼에 첫 초점", "「파일 지우기」", "「휴지통 비우기」", "「폴더 삭제」", "Enter나 Space를 누르면 바로 지운다"]
+    },
+    {
+      "name": "screen-danger-focus-ok",
+      "why": "취소가 앞에 있거나 autofocus가 취소에 있으면, 지우는 일이 아닌 대화상자면 잡지 않는다",
+      "run": ["check-screen.mjs", "scripts/fixtures/danger-focus-ok.html"],
+      "exit": 0,
+      "has": ["걸린 것 없음"],
+      "not": ["위험 버튼에 첫 초점"]
+    },
+    {
+      "name": "screen-keyboard",
+      "why": "ux-basics.md 키보드-1·키보드-3(2026-11-11). onclick·@click만 단 div·li·img·span, 꺼진 이유가 버튼이나 감싼 span의 title에만 있는 것, aria-describedby가 화면에 안 보이는 글(sr-only)만 가리키는 것을 잡는다",
+      "run": ["check-screen.mjs", "scripts/fixtures/keyboard.html"],
+      "exit": 1,
+      "has": ["[꼭 고칠 것 · 읽기·누르기 어려움] 키보드로 못 누르는 곳: 5곳", "「소설」", "Enter·Space에도", "[고치기 권함 · 헷갈림] 꺼진 이유가 title에만 있음", "「다음 책 고르기」", "「투표 열기」", "aria-describedby로 잇는다"],
+      "not": ["말투가 섞임"]
+    },
+    {
+      "name": "screen-speech-mixed",
+      "why": "ux-basics.md 말-2(2026-11-11). 안내는 해요체, 도움말은 한다체, 오류는 합니다체인 화면. 말투는 서비스가 정하니 「확인」이다",
+      "run": ["check-screen.mjs", "scripts/fixtures/speech-mixed.html"],
+      "exit": 0,
+      "has": ["[확인 · 헷갈림] 말투가 섞임", "해요체 2문장", "합니다체 2문장", "한다체 2문장"]
+    },
+    {
+      "name": "screen-keyboard-speech-ok",
+      "why": "키보드가 닿는 클릭(버튼, role·tabindex, tabindex만, 안에 버튼이 있는 목록, 대화상자 바깥 누르기), 옆 글로 이유를 밝힌 꺼진 버튼, title 없는 꺼진 버튼, 쓰는 사람 말인 질문(summary)·버튼, 코드·숨긴 글·입력값·「」 예시·「필요」 라벨은 잡지 않는다",
+      "run": ["check-screen.mjs", "scripts/fixtures/keyboard-speech-ok.html"],
+      "exit": 0,
+      "has": ["걸린 것 없음"],
+      "not": ["키보드로 못 누르는 곳", "꺼진 이유가 title에만", "말투가 섞임"]
+    },
+    {
       "name": "screen-ai-defaults",
       "why": "AI 글투 검사",
       "run": ["check-screen.mjs", "scripts/fixtures/ai-defaults.html"],
@@ -166,6 +204,21 @@
       "has": ["고치기 권함 · 흔한 기본값: 아이콘 자리에 이모지 3개", "일부러 정한 모양이면 그대로 둔다"]
     },
     {
+      "name": "visual-same-role",
+      "why": "2026-11-11 직접 만든 내부 도구 화면 비교에서 펼치기 표시가 details 기본 ▶와 글자 ▸로 섞인 것을 놓쳤다(▸ 크기까지 고치면서). 같은 역할을 다르게 만든 것을 잡는다",
+      "run": ["check-visual.mjs", "scripts/fixtures/same-role.html"],
+      "exit": 0,
+      "has": ["확인 · 제각각: 펼치기 표시 2가지", "브라우저 기본 ▶ 3곳", "글자 ▸(14px) 1곳(「알림 설정」)"]
+    },
+    {
+      "name": "visual-same-role-ok",
+      "why": "summary와 aria-expanded 버튼이 같은 ::before 표시를 쓰면(열린 것만 ▾) 섞였다고 잡으면 안 된다",
+      "run": ["check-visual.mjs", "scripts/fixtures/same-role-ok.html"],
+      "exit": 0,
+      "has": ["검사로 잡힌 고칠 것 없음"],
+      "not": ["펼치기 표시"]
+    },
+    {
       "name": "screen-review-gaps",
       "run": ["check-screen.mjs", "scripts/fixtures/review-gaps.html"],
       "has": ["기호만 있는 버튼"]
@@ -239,18 +292,18 @@
 
     {
       "name": "review-page",
-      "why": "리뷰를 페이지로 만든다(2026-11-10). 사진 넣기, 못 찾은 사진, 먼저 고칠 셋 연결, 출처 표시를 보고, 만든 페이지를 우리 검사기로 재서 고칠 것이 없어야 한다",
+      "why": "리뷰를 페이지로 만든다(2026-11-10). 사진 넣기, 못 찾은 사진, 먼저 고칠 셋 연결, 출처 표시, 코드에서 고칠 곳(where, 2026-11-11)을 보고, 만든 페이지를 우리 검사기로 재서 고칠 것이 없어야 한다",
       "run": ["review-page.mjs", "scripts/fixtures/review/review.json", "--out", "scripts/tests/out/review.html"],
       "then": ["check-visual.mjs", "scripts/tests/out/review.html", "--run-scripts", "--sel", "platform=mobile,skill=occasional,device=personal,content=text"],
       "exit": 2,
-      "has": ["사진을 못 찾았다: 없는파일.png", "넘기기 전에 볼 것", "맨 위 fails에 없는 실패 이름: 「헷갈림」", "먼저 고칠 셋 1에 연결된 고칠 곳이 없다", "사진이 있는데 「바뀐 것」이 없다", "둘 중 하나를 골랐나", "걸리는 시간(effort", "우리 도구·문서 이름 「palette.mjs」", "exit 0]", "검사로 잡힌 고칠 것 없음"]
+      "has": ["사진을 못 찾았다: 없는파일.png", "넘기기 전에 볼 것", "맨 위 fails에 없는 실패 이름: 「헷갈림」", "먼저 고칠 셋 1번에 연결된 고칠 곳이 없다", "사진이 있는데 「바뀐 것」이 없다", "둘 중 하나를 골랐나", "걸리는 시간(effort", "우리 도구·문서 이름 「palette.mjs」", "처방에 사진용 흔적", "먼저 고칠 셋을 고른 기준(topWhy)이 없다", "저장소를 읽었는데 코드 위치(where)가 없다", "토큰 값을 바꾸면 쓰는 곳이 다 바뀐다", "이 PC 경로다", "코드 위치에 file이 없다", "exit 0]", "검사로 잡힌 고칠 것 없음"]
     },
     {
       "name": "review-page-screen",
       "run": ["review-page.mjs", "scripts/fixtures/review/review.json", "--out", "scripts/tests/out/review-screen.html"],
       "then": ["check-screen.mjs", "scripts/tests/out/review-screen.html", "--sel", "platform=mobile,skill=occasional,device=personal,content=text"],
       "has": ["exit 0]"],
-      "not": ["꼭 고칠 것", "고치기 권함"]
+      "not": ["[꼭 고칠 것 ·", "[고치기 권함 ·", "이름 없는 버튼"]
     },
     {
       "name": "review-page-unsafe",
@@ -258,7 +311,7 @@
       "run": ["review-page.mjs", "scripts/fixtures/review/unsafe.json", "--out", "scripts/tests/out/unsafe.html"],
       "then": ["check-screen.mjs", "scripts/tests/out/unsafe.html"],
       "exit": 2,
-      "has": ["링크로 걸지 않았다: javascript:alert(1)"],
+      "has": ["링크로 걸지 않았다: javascript:alert(1)", "where가 있는데 읽은 저장소(repo"],
       "not": ["이름 없는 버튼"]
     },
     { "name": "review-page-no-file", "run": ["review-page.mjs"], "exit": 1, "has": ["리뷰 파일을 넣어 주세요"] },

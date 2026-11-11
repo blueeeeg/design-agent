@@ -3,6 +3,7 @@
   "title": "시험 서비스 디자인 리뷰",
   "url": "https://example.com/",
   "date": "2026-11-10",
+  "repo": "example/test-app @ abc1234",
   "context": [
     "남긴 것: 없다",
     "조건 짐작: 모바일, 가끔 쓴다, 내 폰, 글 중심"
@@ -29,12 +30,34 @@
         }
       ],
       "css": ".topbar { background: var(--surface); }",
-      "effort": "10분"
+      "effort": "10분",
+      "where": [
+        {
+          "file": "src/styles/app.css",
+          "line": 42,
+          "what": "머리 막대 바탕",
+          "before": ".topbar { background: rgba(255,255,255,.94); }",
+          "after": ".topbar { background: color-mix(in srgb, var(--surface) 94%, transparent); }"
+        },
+        {
+          "file": "src/styles/tokens.css",
+          "line": 3,
+          "what": "회색 글 토큰",
+          "before": "--muted: #76767f;",
+          "after": "--muted: #6b6b74;"
+        }
+      ]
     },
     {
       "title": "휴대폰 뒤로 가기를 누르면 앱 밖으로 나간다",
       "body": "화면을 일곱 번 옮겨도 `history.length`가 2 그대로다(잰 것)",
-      "code": "history.pushState({ screen }, '', '#' + screen);"
+      "code": "history.pushState({ screen }, '', '#' + screen);",
+      "css": "._1pwsqmmf { color: #111 !important; }",
+      "where": [
+        {
+          "missing": "화면을 바꾸는 함수를 `render`·`navigate`로 찾았지만 없다(코드에서 본 것)"
+        }
+      ]
     },
     {
       "title": "사진 경로가 틀린 예",
@@ -47,7 +70,22 @@
     {
       "level": "꼭",
       "fail": "읽기·누르기 어려움",
-      "text": "「필수」 배지 3.9:1, 10px(잰 것)"
+      "text": "「필수」 배지 3.9:1, 10px(잰 것)",
+      "where": [
+        {
+          "file": "/Users/me/app/src/Badge.tsx",
+          "line": 8,
+          "sure": false,
+          "what": "「필수」 배지 글자",
+          "before": "--badge-fg: var(--brand);",
+          "after": "--badge-fg: var(--brand-strong);",
+          "uses": "`--badge-fg`를 쓰는 곳 3군데(코드에서 본 것)"
+        },
+        {
+          "what": "파일을 안 적은 예",
+          "after": "color: var(--brand-strong);"
+        }
+      ]
     },
     {
       "level": "권장",

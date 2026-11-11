@@ -21,11 +21,11 @@ if (R.url && !/^https?:\/\//i.test(R.url)) warn.push(`주소가 http·https가 �
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 // 글 꾸밈: 이스케이프한 뒤 **굵게**, `코드`, 출처 표시만 바꾼다
-const SRC = /\((잰 것|계산한 것|계산|눈으로 본 것|눈|소스|눌러 본 것|내 판단|짐작)([^()]*)\)/g;
+const SRC = /\((잰 것|계산한 것|계산|눈으로 본 것|눈|소스|코드에서 본 것|눌러 본 것|내 판단|짐작)([^()]*)\)/g;
 const inline = s => esc(s)
   .replace(/`([^`]+)`/g, '<code>$1</code>')
   .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-  .replace(SRC, (_, k, rest) => `<span class="src src-${{ '잰 것': 'm', '계산한 것': 'c', '계산': 'c', '소스': 'c', '눈으로 본 것': 'e', '눈': 'e', '눌러 본 것': 'e', '내 판단': 'j', '짐작': 'j' }[k]}">(${k}${rest})</span>`);
+  .replace(SRC, (_, k, rest) => `<span class="src src-${{ '잰 것': 'm', '계산한 것': 'c', '계산': 'c', '소스': 'c', '코드에서 본 것': 'm', '눈으로 본 것': 'e', '눈': 'e', '눌러 본 것': 'e', '내 판단': 'j', '짐작': 'j' }[k]}">(${k}${rest})</span>`);
 // 여러 줄 글: 「- 」로 시작하는 줄은 목록으로, 나머지 줄은 문단으로
 const rich = s => {
   const out = []; let ul = [];
@@ -60,9 +60,26 @@ const detail = (t, name) => {
       </div>` : '';
   const changes = t.changes?.length ? `<h4>바뀐 것</h4><ol class="changes">${t.changes.map(c => `<li>${c.n != null ? `<span class="n" aria-hidden="true">${esc(c.n)}</span>` : '<span class="n n-none" aria-hidden="true"></span>'}<span>${c.n != null ? `<span class="sr">${esc(c.n)}번. </span>` : ''}${inline(c.text)}</span></li>`).join('')}</ol>` : '';
   const more = t.more?.length ? `<div class="more-shots">${t.more.map(m => `<figure>${img(m.src, m.caption || name)}<figcaption>${inline(m.caption || '')}</figcaption></figure>`).join('')}</div>` : '';
-  return `${shots}${more}${changes}${block('넣은 CSS', t.css)}${block('코드', t.code)}${t.note ? `<p class="note">${inline(t.note)}</p>` : ''}`;
+  return `${shots}${more}${changes}${where(t.where)}${block('넣은 CSS', t.css)}${block('코드', t.code)}${t.note ? `<p class="note">${inline(t.note)}</p>` : ''}`;
 };
-const hasDetail = t => !!(t.shots || t.more?.length || t.changes?.length || t.css || t.code || t.note);
+// 코드에서 고칠 곳: 그 서비스 저장소를 읽었을 때 파일·줄과 지금 → 고친 뒤(2026-11-11). 복사는 고친 뒤만
+const where = ws => ws?.length ? `<h4>코드에서 고칠 곳</h4>${ws.map(w => w.missing ? `<p class="missing">코드 위치를 못 찾았다: ${inline(w.missing)}</p>` : `
+      <div class="code where">
+        <div class="code-head"><span><code>${esc(w.file || '')}${w.line ? ':' + esc(w.line) : ''}</code>${w.what ? ` · ${inline(w.what)}` : ''}${w.sure === false ? ' <span class="effort">후보</span>' : ''}</span>${w.after ? '<button type="button" class="copy">복사</button>' : ''}</div>
+        ${w.before ? `<div class="ba ba-before"><span class="ba-label">지금</span><pre><code>${esc(w.before)}</code></pre></div>` : ''}
+        ${w.after ? `<div class="ba ba-after"><span class="ba-label">고친 뒤</span><pre><code class="copy-src">${esc(w.after)}</code></pre></div>` : ''}
+        ${w.uses ? `<p class="uses">바뀌는 범위: ${inline(w.uses)}</p>` : ''}
+      </div>`).join('')}` : '';
+const hasDetail = t => !!(t.shots || t.more?.length || t.changes?.length || t.css || t.code || t.note || t.where?.length);
+
+// 사람 판정: 항목마다 「지적이 맞나」「처방을 쓸 수 있나」와 메모. 내려받아 스킬을 고치는 자료로 쓴다(2026-11-10)
+const judge = (id, label) => `
+      <fieldset class="judge" data-id="${id}" data-label="${esc(label)}">
+        <legend>판정</legend>
+        <div class="jrow"><span class="jq" id="${id}-f">지적이</span><div class="seg" role="radiogroup" aria-labelledby="${id}-f">${['맞다', '틀렸다', '모르겠다'].map(v => `<label><input type="radio" name="${id}-f" value="${v}"><span>${v}</span></label>`).join('')}</div></div>
+        <div class="jrow"><span class="jq" id="${id}-x">처방은</span><div class="seg" role="radiogroup" aria-labelledby="${id}-x">${['그대로', '고쳐서', '못 쓴다'].map(v => `<label><input type="radio" name="${id}-x" value="${v}"><span>${v}</span></label>`).join('')}</div></div>
+        <label class="memo"><span>메모</span><input type="text" name="${id}-m" placeholder="틀린 곳이나 고칠 점(선택)"></label>
+      </fieldset>`;
 
 // 먼저 고칠 셋
 const card = (t, i) => `
@@ -70,6 +87,7 @@ const card = (t, i) => `
       <h3><span class="num">${i + 1}</span>${inline(t.title)}${t.effort ? ` <span class="effort">${esc(t.effort)}</span>` : ''}</h3>
       ${t.body ? `<div class="body">${rich(t.body)}</div>` : ''}
       ${detail(t, t.title)}
+      ${judge(`top-${i + 1}`, t.title)}
     </article>`;
 
 // 나머지 고칠 곳: 단계 → 실패 이름으로 묶는다
@@ -80,7 +98,7 @@ const byLevel = ['꼭', '권장', '확인'].map(lv => {
   const groups = [...new Set(items.map(f => f.fail || '그 밖'))];
   return `<section class="level level-${{ '꼭': 'must', '권장': 'should', '확인': 'check' }[lv]}">
       <h3>${LEVEL[lv]} <span class="count">${items.length}</span></h3>
-      ${groups.map(g => `<h4>${esc(g)}</h4><ul>${items.filter(f => (f.fail || '그 밖') === g).map(f => `<li>${f.top ? `<a class="totop" href="#fix${f.top}">먼저 고칠 셋 ${esc(f.top)}</a> ` : ''}${f.effort ? `<span class="effort">${esc(f.effort)}</span> ` : ''}${rich(f.text)}${hasDetail(f) ? `<details class="more"><summary>고친 모습 보기</summary>${detail(f, f.text.split('\n')[0].slice(0, 20))}</details>` : ''}</li>`).join('')}</ul>`).join('')}
+      ${groups.map(g => `<h4>${esc(g)}</h4><ul>${items.filter(f => (f.fail || '그 밖') === g).map(f => `<li>${f.top ? `<a class="totop" href="#fix${f.top}">먼저 고칠 셋 ${esc(f.top)}</a> ` : ''}${f.effort ? `<span class="effort">${esc(f.effort)}</span> ` : ''}${rich(f.text)}${hasDetail(f) ? `<details class="more"><summary>${f.shots || f.changes?.length || f.css || !f.where?.length ? '고친 모습 보기' : '코드에서 고칠 곳 보기'}</summary>${detail(f, f.text.split('\n')[0].slice(0, 20))}</details>` : ''}${f.top ? '' : judge(`fix-${fixes.indexOf(f) + 1}`, f.text.split('\n')[0].slice(0, 60))}</li>`).join('')}</ul>`).join('')}
     </section>`;
 }).join('');
 
@@ -133,9 +151,14 @@ const html = `<!doctype html>
   .n-none { background: none; border: 1px dashed var(--strong-line); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .code { margin-top: 12px; border-radius: 8px; background: var(--surface); }
-  .code-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 4px 0 12px; font-size: 14px; color: var(--sub); }
+  .code-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 4px 0 12px; font-size: 15px; color: var(--sub); }
   .copy { min-height: 44px; min-width: 64px; border: 1px solid var(--strong-line); border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; font-size: 14px; }
   pre { margin: 0; padding: 12px; overflow-x: auto; }
+  .ba { margin: 0 12px 8px; border-left: 4px solid var(--strong-line); }
+  .ba-after { border-left-color: var(--accent); }
+  .ba-label { display: block; padding: 4px 12px 0; font-size: 13px; color: var(--sub); }
+  .ba pre { padding: 4px 12px 8px; }
+  .uses { margin: 0; padding: 0 12px 12px; }
   .note { color: var(--sub); font-size: 15px; }
   .src { font-size: 13px; color: var(--sub); white-space: nowrap; }
   .level h3 { display: flex; gap: 8px; align-items: baseline; }
@@ -162,6 +185,24 @@ const html = `<!doctype html>
   dl { display: grid; grid-template-columns: 48px 1fr; gap: 4px 12px; margin: 8px 0 0; }
   dt { color: var(--sub); font-size: 14px; }
   dd { margin: 0; }
+  .judge { border: 0; border-top: 1px dashed var(--line); margin: 16px 0 0; padding: 12px 0 0; min-width: 0; }
+  .judge legend { font-size: 13px; color: var(--sub); padding: 0; }
+  .jrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0; }
+  .jq { width: 48px; font-size: 14px; color: var(--sub); }
+  .seg { display: flex; flex-wrap: wrap; gap: 4px; }
+  .seg label { position: relative; }
+  .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .seg span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 1px solid var(--strong-line); border-radius: 8px; font-size: 14px; cursor: pointer; }
+  .seg input:checked + span { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 700; }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .memo { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .memo span { width: 48px; font-size: 14px; color: var(--sub); }
+  .memo input { flex: 1; min-width: 0; min-height: 44px; padding: 0 12px; border: 1px solid var(--strong-line); border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; font-size: 15px; }
+  .judge-bar { margin: 24px 0 0; padding: 16px; border-radius: 12px; background: var(--surface); }
+  .judge-bar p { margin: 0 0 8px; font-size: 15px; }
+  .judge-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .judge-count { font-size: 14px; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .judge-save { min-height: 44px; padding: 0 16px; border: 1px solid var(--text); border-radius: 8px; background: var(--text); color: var(--bg); font: inherit; font-size: 15px; font-weight: 700; }
   @media (max-width: 719px) { .fix { padding: 16px; } }
   @media (hover: hover) { .switch button:hover, .copy:hover { border-color: var(--text); } }
 </style>
@@ -170,12 +211,18 @@ const html = `<!doctype html>
 <main>
   <header>
     <h1>${esc(R.title || '디자인 리뷰')}</h1>
-    <p class="meta">${[R.url ? (/^https?:\/\//i.test(R.url) ? `<a href="${esc(R.url)}">${esc(R.url)}</a>` : esc(R.url)) : '', esc(R.date || '')].filter(Boolean).join(' · ')}</p>
+    <p class="meta">${[R.url ? (/^https?:\/\//i.test(R.url) ? `<a href="${esc(R.url)}">${esc(R.url)}</a>` : esc(R.url)) : '', esc(R.date || ''), R.repo ? `코드: ${esc(R.repo)}` : ''].filter(Boolean).join(' · ')}</p>
     ${R.context?.length ? `<div class="meta">${list(R.context)}</div>` : ''}
     ${R.fails?.length ? `<p class="fails">해당하는 실패: ${R.fails.map(esc).join(', ')}</p>` : ''}
   </header>
 
+  <section class="judge-bar" aria-label="판정">
+    <p>항목마다 <strong>지적이 맞나</strong>와 <strong>처방을 쓸 수 있나</strong>를 골라 주세요. 다 고르지 않아도 됩니다. 고른 것은 이 브라우저에만 남습니다.</p>
+    <p class="judge-actions"><span class="judge-count" aria-live="polite"></span> <button type="button" class="judge-save">판정 내려받기</button></p>
+  </section>
+
   ${R.top?.length ? `<h2>먼저 고칠 ${R.top.length === 3 ? '셋' : R.top.length + '가지'}</h2>
+  ${R.topWhy ? `<p class="note">고른 기준: ${inline(R.topWhy)}</p>` : ''}
   ${R.top.length && R.top.some(t => t.shots) ? `<p class="note">사진은 그 페이지에 고칠 CSS를 잠깐 넣어 찍은 흉내다. 번호 점선은 바뀐 자리를 가리킨다.</p>` : ''}
   ${R.top.map(card).join('')}` : ''}
 
@@ -193,18 +240,44 @@ const html = `<!doctype html>
     box.querySelectorAll('.switch button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   })));
   document.querySelectorAll('.copy').forEach(b => b.addEventListener('click', async () => {
-    const t = b.closest('.code').querySelector('code').textContent;
+    const src = b.closest('.code').querySelector('code.copy-src') || b.closest('.code').querySelector('pre code');
+    const t = src.textContent;
     try { await navigator.clipboard.writeText(t); b.textContent = '복사했어요'; }
-    catch (e) { const r = document.createRange(); r.selectNodeContents(b.closest('.code').querySelector('code')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = '선택했어요. 복사 단축키로'; }
+    catch (e) { const r = document.createRange(); r.selectNodeContents(src); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = '선택했어요. 복사 단축키로'; }
     setTimeout(() => { b.textContent = '복사'; }, 2000);
   }));
+  // 판정: 이 브라우저에 남기고(편의), 내려받기로 JSON 파일 하나를 준다. 바깥 템플릿 안이라 백틱을 쓰지 않는다
+  var KEY = 'review-judge:' + document.title + ':' + ((document.querySelector('.meta') || {}).textContent || '');
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('.judge'));
+  var load = function () { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } };
+  var pick = function (b, id, n) { var el = b.querySelector('[name="' + id + '-' + n + '"]:checked'); return el ? el.value : ''; };
+  var read = function () { var r = {}; boxes.forEach(function (b) { var id = b.dataset.id; r[id] = { finding: pick(b, id, 'f'), fix: pick(b, id, 'x'), memo: b.querySelector('[name="' + id + '-m"]').value.trim() }; }); return r; };
+  var count = function () { var r = read(); var n = Object.keys(r).filter(function (k) { return r[k].finding || r[k].fix; }).length; document.querySelector('.judge-count').textContent = boxes.length + '개 중 ' + n + '개 판정'; try { localStorage.setItem(KEY, JSON.stringify(r)); } catch (e) {} };
+  var saved = load();
+  boxes.forEach(function (b) {
+    var id = b.dataset.id, sv = saved[id] || {};
+    [['f', sv.finding], ['x', sv.fix]].forEach(function (p) { if (!p[1]) return; var el = b.querySelector('[name="' + id + '-' + p[0] + '"][value="' + p[1] + '"]'); if (el) el.checked = true; });
+    b.querySelector('[name="' + id + '-m"]').value = sv.memo || '';
+    b.addEventListener('change', count); b.addEventListener('input', count);
+  });
+  count();
+  document.querySelector('.judge-save').addEventListener('click', function () {
+    var r = read();
+    var items = boxes.map(function (b) { var x = r[b.dataset.id]; return { id: b.dataset.id, item: b.dataset.label, finding: x.finding, fix: x.fix, memo: x.memo }; });
+    var data = { review: document.title, page: ((document.querySelector('.meta') || {}).textContent || ''), judgedAt: new Date().toISOString(), items: items };
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    a.download = 'review-judgments.json';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
 </script>
 </body>
 </html>
 `;
 // ---- 고치는 사람 눈으로 확인(2026-11-10 개발자 역할로 읽혀 본 결과). 페이지는 만들고 알림만 낸다 ----
 const fixesAll = R.fixes || [], tops = R.top || [];
-const txt = t => [t.title, t.body, t.text, t.note, ...(t.changes || []).map(c => c.text)].filter(Boolean).join('\n');
+const txt = t => [t.title, t.body, t.text, t.note, ...(t.changes || []).map(c => c.text), ...(t.where || []).flatMap(w => [w.what, w.uses, w.missing])].filter(Boolean).join('\n');
+const whereCode = t => (t.where || []).map(w => w.after || '').join('\n');
 // 1. 폴더에 있는데 어디에도 안 쓴 사진
 for (const f of readdirSync(base)) if (MIME[extname(f).toLowerCase()] && !usedImgs.has(resolve(base, f))) warn.push(`연결 안 된 사진: ${f}. 쓰려면 shots나 more에 넣고, 아니면 지운다`);
 // 2. 맨 위 「해당하는 실패」에 없는 실패 이름
@@ -213,7 +286,7 @@ if (R.fails?.length) for (const g of new Set(fixesAll.map(f => f.fail).filter(Bo
 const EITHER = /[가-힣]+(거나|든지)\s+[가-힣「]/;
 [...tops.map((t, i) => [`먼저 고칠 셋 ${i + 1}`, t]), ...fixesAll.map((f, i) => [`고칠 곳 ${i + 1}`, f])].forEach(([name, t]) => { const m = txt(t).match(EITHER); if (m) warn.push(`${name}: 「${m[0]}…」 둘 중 하나를 골랐나. 정한 쪽을 쓰고 다른 쪽은 「다른 방법:」으로`); });
 // 4. 단계 어긋남: 먼저 고칠 셋인데 고칠 곳에서 「꼭」이 아님 / 「꼭」인데 셋에도 연결에도 없음은 정상이지만, 셋이 「확인」이면 이상하다
-tops.forEach((t, i) => { const linked = fixesAll.filter(f => f.top === i + 1); if (linked.length && linked.every(f => f.level === '확인')) warn.push(`먼저 고칠 셋 ${i + 1}이 고칠 곳에서 「확인」이다. 단계를 맞춘다`); if (!linked.length) warn.push(`먼저 고칠 셋 ${i + 1}에 연결된 고칠 곳이 없다(fixes에 top: ${i + 1})`); });
+tops.forEach((t, i) => { const linked = fixesAll.filter(f => f.top === i + 1); if (linked.length && linked.every(f => f.level === '확인')) warn.push(`먼저 고칠 셋 ${i + 1}번이 고칠 곳에서 「확인」이다. 단계를 맞춘다`); if (!linked.length) warn.push(`먼저 고칠 셋 ${i + 1}번에 연결된 고칠 곳이 없다(fixes에 top: ${i + 1})`); });
 // 5. 사진이 있는데 바뀐 것이 없다
 [...tops, ...fixesAll].forEach(t => { if (t.shots && (t.shots.before || t.shots.after) && !t.changes?.length) warn.push(`사진이 있는데 「바뀐 것」이 없다: ${(t.title || t.text || '').split('\n')[0].slice(0, 30)}`); });
 
@@ -221,7 +294,29 @@ tops.forEach((t, i) => { const linked = fixesAll.filter(f => f.top === i + 1); i
 [...tops.map((t, i) => [`먼저 고칠 셋 ${i + 1}`, t]), ...fixesAll.filter(f => !f.top && f.level !== '확인').map(f => [`고칠 곳 「${(f.text || '').split('\n')[0].slice(0, 16)}…」`, f])].forEach(([name, t]) => { if (!t.effort) warn.push(`${name}: 걸리는 시간(effort: 10분·1시간·반나절)이 없다`); });
 // 7. 서비스 쪽 사람에게 뜻이 없는 우리 도구·문서 이름
 const OURS = /\b[\w-]+\.mjs\b|visual-basics\.md|failures\.md|extra-questions\.md|design-rules\.json|SKILL\.md/;
-[...tops, ...fixesAll, ...(R.good || []).map(g => ({ text: g })), ...(R.ask || []).map(a => ({ text: a })), ...(R.patterns || []).map(p => ({ text: [p.now, p.rec, p.verdict].join(' ') }))].forEach(t => { const all = txt(t) + '\n' + (t.css || '') + '\n' + (t.code || ''); const m = all.match(OURS); if (m) warn.push(`우리 도구·문서 이름 「${m[0]}」: 받는 사람에게 뜻이 없다. 뜻으로 풀어 쓴다`); });
+[...tops, ...fixesAll, ...(R.good || []).map(g => ({ text: g })), ...(R.ask || []).map(a => ({ text: a })), ...(R.patterns || []).map(p => ({ text: [p.now, p.rec, p.verdict].join(' ') }))].forEach(t => { const all = txt(t) + '\n' + (t.css || '') + '\n' + (t.code || '') + '\n' + whereCode(t); const m = all.match(OURS); if (m) warn.push(`우리 도구·문서 이름 「${m[0]}」: 받는 사람에게 뜻이 없다. 뜻으로 풀어 쓴다`); });
+
+// 8. 처방 CSS·코드에 사진용 흔적(빌드가 붙인 해시 클래스, !important, style 속성 선택자)
+const HASHY = /\.(_[a-z0-9]{5,}|[a-z]{1,4}[0-9][a-z0-9]{3,})\b|!important|\[style\*?=/i;
+[...tops.map((t, i) => [`먼저 고칠 셋 ${i + 1}`, t]), ...fixesAll.map(f => [`고칠 곳 「${(f.text || '').split('\n')[0].slice(0, 16)}…」`, f])].forEach(([name, t]) => { const m = `${t.css || ''}\n${t.code || ''}\n${whereCode(t)}`.match(HASHY); if (m) warn.push(`${name}: 처방에 사진용 흔적 「${m[0]}」. 그 사이트의 컴포넌트·토큰 이름으로 쓰고, 못 찾았으면 (이름은 짐작)`); });
+// 9. 먼저 고칠 셋을 고른 기준
+if (tops.length && !R.topWhy) warn.push('먼저 고칠 셋을 고른 기준(topWhy)이 없다. 예: 「꼭 고칠 것 중 피해가 크고, 싸고, 그 팀이 혼자 고칠 수 있는 것」');
+const RANK = e => { const m = String(e || ''); return /10분/.test(m) ? 1 : /30분/.test(m) ? 2 : /1시간/.test(m) ? 3 : /반나절/.test(m) ? 4 : /일/.test(m) ? 5 : 9; };
+tops.forEach((t, i) => { const linked = fixesAll.filter(f => f.top === i + 1); if (linked.length && linked.every(f => f.level === '권장')) { const cheaper = fixesAll.find(f => !f.top && f.level === '꼭' && RANK(f.effort) <= RANK(t.effort)); if (cheaper) warn.push(`먼저 고칠 셋 ${i + 1}번은 「권장」인데, 셋에 없는 「꼭」 「${cheaper.text.split('\n')[0].slice(0, 20)}…」이 같거나 더 싸다. 고른 이유를 topWhy에 쓴다`); } });
+
+
+// 10. 코드에서 고칠 곳(where). 저장소를 읽었으면(repo) 먼저 고칠 셋과 「꼭」마다 위치를 쓴다. 못 찾았으면 missing에 무엇으로 찾았는지
+const named = [...tops.map((t, i) => [`먼저 고칠 셋 ${i + 1}`, t]), ...fixesAll.map(f => [`고칠 곳 「${(f.text || '').split('\n')[0].slice(0, 16)}…」`, f])];
+if (R.repo) named.forEach(([name, t]) => { if ((tops.includes(t) || (t.level === '꼭' && !t.top)) && !t.where?.length) warn.push(`${name}: 저장소를 읽었는데 코드 위치(where)가 없다. 못 찾았으면 where에 missing으로 무엇으로 찾았는지`); });
+if (!R.repo && named.some(([, t]) => t.where?.length)) warn.push('where가 있는데 읽은 저장소(repo: 이름·커밋)가 없다');
+named.forEach(([name, t]) => (t.where || []).forEach(w => {
+  if (w.missing) return;
+  if (!w.file) warn.push(`${name}: 코드 위치에 file이 없다`);
+  else if (/^(\/|~|[A-Za-z]:\\)/.test(w.file)) warn.push(`${name}: 「${w.file}」 이 PC 경로다. 저장소 기준 경로로 쓴다`);
+  if (!w.before && !w.after) warn.push(`${name}: 코드 위치 「${w.file || ''}」에 지금(before)·고친 뒤(after)가 없다`);
+  // 토큰(CSS 변수) 값을 바꾸면 그 토큰을 쓰는 곳이 다 바뀐다. 몇 군데인지 같이 쓴다
+  if (/--[\w-]+\s*:/.test(`${w.before || ''}\n${w.after || ''}`) && !w.uses) warn.push(`${name}: 「${w.file || ''}」 토큰 값을 바꾸면 쓰는 곳이 다 바뀐다. uses에 몇 군데인지(코드에서 본 것)`);
+}));
 
 writeFileSync(out, html);
 console.log(`리뷰 페이지: ${out}${warn.length ? `\n넘기기 전에 볼 것 ${warn.length}개(references/visual-basics.md 「고치는 사람이 그대로 움직일 수 있게」)\n${warn.map(w => `- ${w}`).join('\n')}` : ''}`);

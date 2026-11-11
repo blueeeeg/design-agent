@@ -1,0 +1,6 @@
+$ check-screen.mjs scripts/fixtures/danger-focus.html
+[exit 1]
+검사: .claude/skills/design-agent/scripts/fixtures/danger-focus.html
+해당하는 실패: 사고 위험 1 (이름 뜻과 고치는 순서: references/failures.md)
+- [꼭 고칠 것 · 사고 위험] 위험 버튼에 첫 초점: 대화상자의 「파일 지우기」, 「휴지통 비우기」, 「폴더 삭제」 버튼에 첫 초점이 간다. 창이 열리자마자 Enter나 Space를 누르면 바로 지운다. 첫 초점을 취소에 둔다(autofocus). 위험 버튼은 취소 다음 자리에
+    위치: <button.danger>, <button>, <button>

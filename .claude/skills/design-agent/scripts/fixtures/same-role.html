@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>펼치기 표시 섞임 시험</title>
+<!-- 시험용(2026-11-11). 같은 펼치기인데 세 곳은 details의 브라우저 기본 표시(▶), 한 곳은 aria-expanded 버튼에 글자 ▸(14px, 옅은 색, 열면 돈다)를 달았다. 기본 ▶ 하나는 글자가 작아도 같은 갈래로 세는지, ▸가 글과 붙어 있어도 예시 글에서 떼는지 본다.
+     값(크기·모서리)만 세는 검사로는 안 걸리던 「같은 역할, 다른 모양」이다 -->
+<style>
+  body { margin: 0; padding: 16px; font-family: Pretendard, sans-serif; background: #ffffff; color: #111111; font-size: 16px; line-height: 1.6; }
+  h1 { font-size: 32px; margin: 0 0 16px; }
+  h2 { font-size: 20px; margin: 32px 0 8px; }
+  details, .group { border-bottom: 1px solid #8a8f98; padding: 12px 0; }
+  summary { cursor: pointer; }
+  .toggle { display: flex; gap: 8px; align-items: center; min-height: 44px; padding: 0; border: 0; background: none; color: #111111; font-size: 16px; }
+  .chev { font-size: 14px; color: #5b6170; }
+  .toggle[aria-expanded="true"] .chev { transform: rotate(90deg); }
+  p { margin: 8px 0 0; }
+</style>
+</head>
+<body>
+  <h1>도움말</h1>
+  <h2>자주 묻는 질문</h2>
+  <details>
+    <summary>배송은 얼마나 걸리나요</summary>
+    <p>주문한 다음 날부터 2~3일 걸립니다.</p>
+  </details>
+  <details>
+    <summary>주문을 바꿀 수 있나요</summary>
+    <p>상품을 보내기 전까지 주문 내역에서 바꿀 수 있습니다.</p>
+  </details>
+  <details>
+    <summary style="font-size: 14px">영수증은 어디서 받나요</summary>
+    <p>주문 내역의 주문 하나를 열면 영수증 받기가 있습니다.</p>
+  </details>
+  <h2>설정</h2>
+  <div class="group">
+    <button class="toggle" type="button" aria-expanded="false" aria-controls="notice-panel"><span class="chev">▸</span>알림 설정</button>
+    <div id="notice-panel" hidden>
+      <p>주문 알림과 배송 알림을 따로 켜고 끌 수 있습니다.</p>
+    </div>
+  </div>
+</body>
+</html>

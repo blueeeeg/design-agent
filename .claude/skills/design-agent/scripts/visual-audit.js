@@ -682,6 +682,116 @@ function visualAudit(doc, win, depth = 0) {
     if (outer.v < gin * 1.5) groupGaps.push({ sample: sampleOf(inner[0].k).slice(0, 12) || `<${el.tagName.toLowerCase()}>`, out: Math.round(outer.v), in: Math.round(gin) });
   }
 
+  // ---- 같은 역할인데 다르게 만든 컴포넌트(2026-11-11) ----
+  // 값(크기·모서리·아이콘 채움)만 세면 「펼치기 표시가 어디는 브라우저 기본 ▶, 어디는 글자 ▸」 같은 어긋남을 못 본다. 리뷰가 ▸ 크기까지 고치면서 놓쳤다
+  // 역할마다 { role, find: 그 역할의 컴포넌트, mark: 하나의 표시 } 를 ROLES에 둔다. 닫기 버튼 같은 역할은 여기에 더한다
+  // jsdom은 가상 요소(::before·::marker)의 계산된 스타일을 주지 않고, summary의 display와 list-style 줄임 표기도 반영하지 않는다.
+  // 그래서 jsdom에서는 CSS 규칙을 직접 맞춰 본다(선택자 우선순위는 보지 않고 나중 규칙이 이긴다. @media 안 규칙은 뺀다)
+  const declOf = css => { const o = {}; String(css || '').replace(/(?:^|;)\s*([\w-]+)\s*:\s*((?:"[^"]*"|'[^']*'|[^;"'])*)/g, (_, k, v) => { o[k.toLowerCase()] = v.replace(/\s*!important\s*$/i, '').trim(); }); return o; };
+  const PSEUDO_END = /::?(before|after|marker|-webkit-details-marker)$/i;
+  const ruleDecl = (el, pseudo) => {
+    const out = {};
+    for (const r of rules) {
+      if (r.media) continue;
+      const hit = splitSel(r.sel).some(x => {
+        const m = x.match(PSEUDO_END);
+        if (pseudo ? !m || m[1].toLowerCase() !== pseudo : /::|:(before|after)\b/i.test(x)) return false;
+        try { return el.matches((pseudo ? x.slice(0, m.index) : x).trim() || '*'); } catch (e) { return false; }
+      });
+      if (hit) Object.assign(out, declOf(r.css));
+    }
+    if (!pseudo) Object.assign(out, declOf(el.getAttribute('style')));
+    return out;
+  };
+  // 가상 요소의 content·크기·색. 브라우저는 계산된 값, jsdom은 규칙에서 읽는다(크기·색을 안 적었으면 그 요소 값을 물려받는다)
+  const pseudoOf = (el, which) => {
+    if (!win.__jsdom) { const s = win.getComputedStyle(el, `::${which}`); return { content: s.content, size: px(s.fontSize, el), color: s.color, shape: [s.backgroundImage, s.maskImage, s.webkitMaskImage].some(v => v && v !== 'none') || ['Top', 'Right', 'Bottom', 'Left'].some(k => parseFloat(s[`border${k}Width`]) > 0 && s[`border${k}Style`] !== 'none') }; }
+    const d = ruleDecl(el, which), s = cs(el);
+    return { content: d.content, size: px(d['font-size'], el) || px(s.fontSize, el), color: d.color || s.color, shape: Object.keys(d).some(k => /^(background|mask|-webkit-mask)(-image)?$/.test(k) && !/^none$/i.test(d[k])) || Object.keys(d).some(k => /^border(-(top|right|bottom|left))?(-width)?$/.test(k) && /[1-9]/.test(d[k])) };
+  };
+  // content 값에서 글자를 꺼낸다(「"\25B8"」 같은 이스케이프도). 따옴표 글이 아니면(none, counter()) null
+  const contentText = c => { const m = String(c || '').match(/^(["'])(.*)\1$/); return m ? m[2].replace(/\\([0-9a-f]{1,6})\s?/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/\\(.)/g, '$1') : null; };
+  // 열림·닫힘에 따라 ▸/▾, ›/⌄, +/−로 바꿔 다는 경우가 많아 기호는 모양 갈래로 견준다
+  const GLYPHS = [['▸▹▾▿◂◃▴▵', '작은 삼각형'], ['▶▷►▼▽◀◁◄▲△', '삼각형'], ['›‹»«❯❮〉〈⌄⌃⌵∨∧', '꺾쇠'], ['+＋−－', '더하기·빼기']];
+  const glyphKind = ch => (GLYPHS.find(([set]) => ch && set.includes(ch)) || [])[1] || null;
+  const ROLES = [{
+    role: '펼치기 표시',
+    // details의 summary와 aria-expanded로 내용을 펼치는 버튼. 메뉴·콤보박스·탭(aria-haspopup, role)과 메뉴 여는 버튼은 뺀다. 닫힌 details 안은 안 보이니 뺀다
+    find: () => allVisible.filter(el => {
+      if (el.matches('details > summary:first-of-type')) return !el.parentElement.parentElement?.closest('details:not([open])');
+      if (!el.matches('[aria-expanded]') || !el.matches('button, [role="button"], a[href], [role="treeitem"], [tabindex]') || el.closest('summary')) return false;
+      if (el.matches('[aria-haspopup]:not([aria-haspopup="false"]), [role="combobox"], [role^="menuitem"], [role="tab"], [role="option"]') || el.querySelector('[aria-expanded]')) return false;
+      const target = el.getAttribute('aria-controls') && doc.getElementById(el.getAttribute('aria-controls'));
+      if (target && target.matches('nav, dialog, [role="navigation"], [role="menu"], [role="listbox"], [role="dialog"]')) return false;
+      if (/^(메뉴|전체\s*메뉴|menu|navigation|☰|≡)$/i.test((el.getAttribute('aria-label') || el.textContent || '').trim())) return false;
+      return !el.parentElement?.closest('details:not([open])');
+    }).slice(0, 60), // jsdom에서는 컴포넌트마다 CSS 규칙을 훑으니 앞 60개만 본다
+    mark: el => {
+      const parts = [];
+      // 브라우저 기본 표시(::marker). summary가 list-item이고 list-style이 none이 아니고 ::marker·::-webkit-details-marker를 지우지 않았으면 보인다
+      if (el.tagName === 'SUMMARY') {
+        const d = win.__jsdom ? ruleDecl(el) : null, c = d ? null : raw(el);
+        const listItem = d ? !d.display || /list-item/.test(d.display) : /list-item/.test(c.display);
+        const ls = d ? `${d['list-style'] || ''} ${d['list-style-type'] || ''}` : c.listStyleType;
+        // ::-webkit-details-marker는 어느 쪽에서도 계산된 값을 읽을 수 없어 규칙으로 본다
+        const mk = pseudoOf(el, 'marker'), wk = ruleDecl(el, '-webkit-details-marker');
+        const gone = /^(none|""|'')$/.test(String(mk.content || '').trim()) || wk.display === 'none';
+        if (listItem && !/\bnone\b/.test(ls) && !gone) parts.push({ kind: '기본', char: '▶', family: '기본', size: mk.size || px(cs(el).fontSize, el), color: mk.color || cs(el).color });
+      }
+      // 가상 요소로 단 기호나 그림(자기와 바로 아래 세 개까지)
+      for (const e of [el, ...[...el.children].slice(0, 3)]) for (const which of ['before', 'after']) {
+        const p = pseudoOf(e, which), t = contentText(p.content);
+        if (t == null) continue;
+        const ch = t.trim();
+        if (glyphKind(ch)) parts.push({ kind: '글자', char: ch, family: glyphKind(ch), size: p.size, color: p.color });
+        else if (!ch && p.shape) parts.push({ kind: '그림', char: '', family: 'CSS', size: p.size, color: p.color });
+      }
+      // 아이콘(svg, 그림, 아이콘 글꼴)
+      const icon = [...el.querySelectorAll('svg, img, [class*="icon" i], [class*="material-symbols" i], [class*="chevron" i], [class*="caret" i]')].find(visible);
+      if (icon) parts.push({ kind: '아이콘', char: '', family: icon.tagName.toLowerCase() === 'svg' ? 'svg' : 'icon', size: px(icon.getAttribute('width'), icon) || px(cs(icon).width, icon) || px(cs(icon).fontSize, icon), color: cs(icon).color });
+      // 글 앞뒤에 따로 붙인 기호(「▸ 알림 설정」, 「자세히 ⌄」)
+      const nodes = [];
+      for (let w = doc.createTreeWalker(el, 4), n; (n = w.nextNode());) if (n.textContent.trim() && !n.parentElement.closest('svg') && visible(n.parentElement)) nodes.push(n);
+      for (const [n, re] of [[nodes[0], /^(\S)(?:\s|$)/], [nodes[nodes.length - 1], /(?:^|\s)(\S)$/]]) {
+        const m = n && n.textContent.trim().match(re);
+        if (!m || !glyphKind(m[1])) continue;
+        parts.push({ kind: '글자', char: m[1], family: glyphKind(m[1]), size: px(cs(n.parentElement).fontSize, n.parentElement), color: cs(n.parentElement).color });
+        break;
+      }
+      return parts.length ? parts : [{ kind: '없음', char: '', family: '없음' }];
+    },
+  }];
+  const markName = (p, withColor) => {
+    const col = withColor && p.color ? (() => { const c = parse(p.color); return c ? `·${hex(c)}` : ''; })() : '';
+    if (p.kind === '기본') return `브라우저 기본 ▶${col ? `(${col.slice(1)})` : ''}`;
+    if (p.kind === '없음') return '표시 없음';
+    const sz = p.size ? `${Math.round(p.size)}px` : '?';
+    return `${{ 글자: `글자 ${p.char}`, 아이콘: '아이콘', 그림: 'CSS 그림' }[p.kind]}(${sz}${col})`;
+  };
+  const sameRole = [];
+  for (const R of ROLES) {
+    const found = R.find();
+    if (found.length < 2) continue;
+    const groups = {};
+    found.forEach(el => {
+      const parts = R.mark(el);
+      // 브라우저 기본 ▶는 크기·색이 글자를 따라가니 한 갈래로 센다(글자 크기가 다른 것까지 「제각각」이라 하면 같은 이름이 여러 번 나온다)
+      const key = parts.map(p => { if (p.kind === '기본') return '기본'; const c = p.color && parse(p.color); return `${p.kind}|${p.family}|${p.size ? Math.round(p.size) : ''}|${c ? hex(c) : ''}`; }).join('+');
+      // 앞뒤 기호는 붙어 있어도 뗀다(「▸완료 12개」)
+      const sample = (el.textContent || el.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim().replace(/^\S|\S$/g, m => (glyphKind(m) ? '' : m)).trim().slice(0, 16).replace(/[\s·—-]+$/, '');
+      // 이름에 쓸 기호는 닫힌 것에서 가져온다(열린 것은 ▾처럼 바꿔 달았을 수 있다)
+      const open = el.tagName === 'SUMMARY' ? el.parentElement.open : el.getAttribute('aria-expanded') === 'true';
+      const g = (groups[key] ||= { parts, open, n: 0, sample });
+      if (g.open && !open) Object.assign(g, { parts, open });
+      g.n++;
+    });
+    const list = Object.values(groups).sort((a, b) => b.n - a.n);
+    if (list.length < 2) continue;
+    // 모양·크기는 같고 색만 다른 갈래는 색까지 적는다
+    const shape = list.map(g => g.parts.map(p => (p.kind === '기본' ? '기본' : `${p.kind}|${p.family}|${p.size ? Math.round(p.size) : ''}`)).join('+'));
+    sameRole.push({ role: R.role, groups: list.map((g, i) => ({ label: g.parts.map(p => markName(p, shape.filter(x => x === shape[i]).length > 1)).join(' + '), n: g.n, sample: g.sample })) });
+  }
+
   // ---- 넘침·잘림: 레이아웃을 계산하는 브라우저에서만(jsdom은 크기가 0) ----
   let overflowX = 0;
   const wide = [], clipped = [], targets = [], tightInset = [], nearAligned = [], fatRows = [], inventedMarks = [];
@@ -876,6 +986,7 @@ function visualAudit(doc, win, depth = 0) {
     inventedMarks,
     unevenPads,
     mixedIcons,
+    sameRole,
     emojiIcons,
     sparkles,
     smallInputs,
@@ -998,6 +1109,8 @@ function visualJudge(r, cond) {
   if ((r.unevenPads || []).length) say('여백·모양', '확인', `안쪽 여백이 쪽마다 다른 카드 ${r.unevenPads.length}개: ${r.unevenPads.slice(0, 3).map(t => `「${t.sample}」 위/오른/아래/왼 ${t.pad}px`).join(', ')}. 카드는 네 쪽을 같게(위아래만 조금 줄이는 정도)`, 'uneven', 'spacing');
   // 아이콘
   if ((r.mixedIcons || []).length) say('여백·모양', '확인', `같은 크기 아이콘에 채운 것과 선만 있는 것이 섞였다: ${r.mixedIcons.map(g => `${g.size}px 채움 ${g.filled}·선 ${g.outline}`).join(', ')}. 한 세트·한 굵기로`, 'uneven', 'decor');
+  // 같은 역할인데 다르게 만든 컴포넌트(2026-11-11). 한 화면 안의 어긋남이라 브랜드가 정한 것일 수 없어 topic을 두지 않는다(서비스 규칙 모드에서도 고칠 곳에 남는다)
+  (r.sameRole || []).forEach(s => say('여백·모양', '확인', `${s.role} ${s.groups.length}가지: ${s.groups.map(g => `${g.label} ${g.n}곳(「${g.sample}」${g.n > 1 ? ' 등' : ''})`).join(' · ')}. 같은 역할을 하는 컴포넌트는 기호·크기·색을 하나로 맞춘다. 하나를 고칠 때 같은 역할인 나머지도 같이 고친다`, 'uneven'));
   if ((r.emojiIcons || []).length) {
     const lab = r.emojiIcons.filter(x => x.withLabel !== false), bare = r.emojiIcons.filter(x => x.withLabel === false), many = r.emojiIcons.length >= 3;
     const where = [lab.length ? `글자 옆 ${lab.length}개(${list(lab)})는 빼도 뜻이 남는다` : '', bare.length ? `이모지만 있는 ${bare.length}개(${list(bare)})는 뜻을 이모지가 다 진다. 빼려면 글자 이름을 붙인다` : ''].filter(Boolean).join('. ');

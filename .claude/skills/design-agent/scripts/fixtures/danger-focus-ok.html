@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>파일 지우기 확인창(맞게 만든 것)</title>
+<!-- 지우기 확인창의 첫 초점이 취소에 가는 화면(2026-11-11). 지어낸 파일 관리 화면이다 -->
+<style>
+  body { font-family: "Pretendard", sans-serif; font-size: 16px; line-height: 1.6; color: #1f2328; background: #fff; margin: 0; padding: 24px; }
+  h1 { font-size: 28px; margin: 0 0 16px; }
+  button { min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #d0d7de; background: #fff; font: inherit; }
+  .danger { background: #c62828; border-color: #c62828; color: #fff; }
+  dialog, [role="dialog"], [role="alertdialog"] { border: 1px solid #d0d7de; border-radius: 12px; padding: 24px; }
+  .row { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+<h1>내 파일</h1>
+<p>회의록.txt · 2026-11-10 수정</p>
+<button type="button" id="open">파일 지우기</button>
+
+<!-- 취소가 앞에 있다 -->
+<dialog id="del" aria-labelledby="del-title">
+  <h2 id="del-title">‘회의록.txt’를 지울까요?</h2>
+  <p>휴지통을 거치지 않아 되돌릴 수 없어요.</p>
+  <div class="row">
+    <button type="button">취소</button>
+    <button type="button" class="danger">파일 지우기</button>
+  </div>
+</dialog>
+
+<!-- 위험 버튼이 앞에 있지만 autofocus를 취소에 걸었다 -->
+<div role="alertdialog" aria-labelledby="empty-title" hidden>
+  <h2 id="empty-title">휴지통의 파일 12개를 모두 지울까요?</h2>
+  <div class="row">
+    <button type="button" class="danger">휴지통 비우기</button>
+    <button type="button" autofocus>그대로 두기</button>
+  </div>
+</div>
+
+<!-- 지우는 일이 아닌 대화상자. 앞 버튼이 하는 일 버튼이어도 잡지 않는다 -->
+<dialog id="share" aria-labelledby="share-title">
+  <h2 id="share-title">‘회의록.txt’ 공유 링크</h2>
+  <div class="row">
+    <button type="button">링크 복사</button>
+    <button type="button">닫기</button>
+  </div>
+</dialog>
+<script>
+  document.getElementById('open').addEventListener('click', () => document.getElementById('del').showModal());
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 $ check-screen.mjs scripts/fixtures/landing-kit.html
 [exit 0]
 검사: .claude/skills/design-agent/scripts/fixtures/landing-kit.html
-해당하는 실패: 빠진 상태 1 (이름 뜻과 고치는 순서: references/failures.md)
+해당하는 실패: 헷갈림 1 · 빠진 상태 1 (이름 뜻과 고치는 순서: references/failures.md)
 - [확인 · 빠진 상태] 빈 화면 없음: 목록이 비었을 때 보일 문구·다음 행동이 페이지에 없다. 처음·검색 결과 없음·오류를 나눠 쓴다
     위치: <ul.menu>
+- [확인 · 헷갈림] 말투가 섞임: 해요체 4문장(「새 기능이 나왔어요」), 합니다체 10문장(「…달은 무료로 쓸 수 있습니다.」)이 한 화면에 섞였다. 한 화면은 한 말투로 두고, 오류는 같은 말투로 더 짧게 쓴다. 서비스가 정한 말투가 있으면 그쪽에 맞춘다

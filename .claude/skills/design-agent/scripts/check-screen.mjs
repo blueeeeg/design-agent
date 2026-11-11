@@ -69,9 +69,9 @@ if (!text(doc.body) && doc.querySelector('script[src], script[type="module"]')) 
 const found = [];
 // 세기: 꼭 = 꼭 고칠 것(규격·사고), 권장 = 고치기를 권함, 확인 = 사람이 한 번 볼 것
 // 서비스가 일부러 정했을 수 있는 항목(visual-audit.js HOUSE_TOPICS와 같은 주제 이름)
-const TOPIC = { '사진 목록에 스피너': 'pattern.loading', '굵은 글자가 너무 많음': 'weight', '보라·파랑 그라데이션': 'palette', 'Inter 한 가지 서체': 'font', '이모지 제목 표시': 'decor', '과장 문구': 'copy', '「A가 아니라 B」 문장': 'copy', '대시(—) 남발': 'copy' };
+const TOPIC = { '사진 목록에 스피너': 'pattern.loading', '굵은 글자가 너무 많음': 'weight', '보라·파랑 그라데이션': 'palette', 'Inter 한 가지 서체': 'font', '이모지 제목 표시': 'decor', '과장 문구': 'copy', '「A가 아니라 B」 문장': 'copy', '대시(—) 남발': 'copy', '말투가 섞임': 'copy' };
 // 실패 이름(references/failures.md, visual-audit.js FAILS)
-const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '기호만 있는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard', '번호가 두 번 붙음': 'confusing', '브라우저 기본 확인창': 'confusing', '대화상자 버튼이 「확인·예」': 'confusing', '「정말 ~하시겠어요?」 제목': 'confusing', '입력이 맞을 때까지 제출 잠금': 'confusing', '저절로 움직이는데 멈춤 없음': 'hard', '끌기로만 하는 동작': 'hard' };
+const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '기호만 있는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '위험 버튼에 첫 초점': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard', '번호가 두 번 붙음': 'confusing', '브라우저 기본 확인창': 'confusing', '대화상자 버튼이 「확인·예」': 'confusing', '「정말 ~하시겠어요?」 제목': 'confusing', '입력이 맞을 때까지 제출 잠금': 'confusing', '저절로 움직이는데 멈춤 없음': 'hard', '끌기로만 하는 동작': 'hard', '키보드로 못 누르는 곳': 'hard', '꺼진 이유가 title에만 있음': 'confusing', '말투가 섞임': 'confusing' };
 const add = (level, rule, why, els = []) => found.push({ level, rule, why, at: els.slice(0, 3).map(where), fail: FAIL[rule], ...(TOPIC[rule] && { topic: TOPIC[rule] }) });
 
 if (badViewport) add('꼭', '확대 막기', `viewport에 「${viewport.trim()}」. user-scalable=no와 maximum-scale=1을 지운다(WCAG 2.2 1.4.4)`, [doc.querySelector('meta[name="viewport"]')]);
@@ -171,6 +171,20 @@ const vagueDlg = dialogs.filter(d => { const bs = [...d.querySelectorAll('button
 if (vagueDlg.length) add('권장', '대화상자 버튼이 「확인·예」', '버튼만 읽어도 무슨 일이 일어나는지 알게 「삭제」「주문 취소」처럼 하는 일을 적는다. 닫는 쪽은 「취소」「그대로 두기」', vagueDlg);
 const sureDlg = dialogs.filter(d => /정말\s?[^?.!]{0,30}(하시겠|할까|인가|이에요|입니까|나요)|are you sure/i.test(text(d)));
 if (sureDlg.length) add('확인', '「정말 ~하시겠어요?」 제목', '무엇을 하는지(무엇을 지우는지) 제목에 적는다. 예: 「‘3분기 보고서’를 지울까요?」. 되돌릴 수 없으면 그 사실을 한 줄로', sureDlg);
+// 지우기 확인창이 위험 버튼에 첫 초점을 두고 열린다. showModal()은 autofocus가 없으면 안의 첫 초점 자리로 간다
+// 그래서 위험 버튼이 앞에 있으면 열리자마자 Enter·Space 한 번에 지워진다(2026-11-11 직접 만든 내부 도구 화면 비교)
+// 스크립트로 .focus()를 옮기는 것은 보지 않는다(autofocus만 본다)
+const btnName = b => `${text(b) || b.value || ''} ${b.getAttribute('aria-label') || ''}`.trim();
+const isCancel = b => /^(취소|닫기|아니(요|오)|그대로 두기|cancel|close|no|keep)$/i.test(text(b) || b.value || b.getAttribute('aria-label') || '');
+const isDanger = b => b.matches('button, [role="button"], input[type="submit"], input[type="button"]') && !isCancel(b) && (/danger|destructive|delete|warn/i.test(b.getAttribute('class') || '') || /삭제|지우기|종료|탈퇴|해지|비우기|초기화|\b(delete|remove|discard|reset)\b/i.test(btnName(b)));
+const FOCUSABLE = 'button, [href], input:not([type="hidden"]), select, textarea, summary, [tabindex]:not([tabindex="-1"])';
+const dangerFirst = [...doc.querySelectorAll('dialog, [role="dialog"], [role="alertdialog"]')].filter(d => !d.parentElement?.closest('dialog, [role="dialog"], [role="alertdialog"]')).flatMap(d => {
+  const bs = [...d.querySelectorAll('button, [role="button"], input[type="submit"], input[type="button"]')];
+  if (!bs.some(isDanger) || !bs.some(isCancel) || d.hasAttribute('autofocus')) return [];
+  const first = d.querySelector('[autofocus]') || [...d.querySelectorAll(FOCUSABLE)].find(e => { const h = e.closest('[hidden]'); return !e.disabled && (!h || h === d || !d.contains(h)); });
+  return first && isDanger(first) ? [first] : [];
+});
+if (dangerFirst.length) add('꼭', '위험 버튼에 첫 초점', `대화상자의 ${dangerFirst.slice(0, 3).map(b => `「${text(b) || b.value || b.getAttribute('aria-label')}」`).join(', ')} 버튼에 첫 초점이 간다. 창이 열리자마자 Enter나 Space를 누르면 바로 지운다. 첫 초점을 취소에 둔다(autofocus). 위험 버튼은 취소 다음 자리에`, dangerFirst);
 // 입력이 다 맞을 때까지 제출 버튼을 잠그면 무엇이 틀렸는지 모른다. 누를 때 검사하고 첫 오류 칸으로 옮긴다
 // HTML에 처음부터 박힌 disabled(--run-scripts 전 원본)나 「disabled = !valid」 같은 코드를 본다
 const rawDoc = runScripts ? new JSDOM(raw).window.document : doc;
@@ -188,6 +202,47 @@ const dragEls = [...doc.querySelectorAll('[draggable="true"], [class*="sortable"
 const dragJs = /addEventListener\(\s*['"](dragstart|drop)['"]|ondragstart|Sortable\.create|new Sortable\b|useSortable|useDrag\b|DndContext/.test(scripts);
 const moveBtn = buttons.some(b => /위로|아래로|올리기|내리기|이동|옮기기|순서|\b(move|up|down)\b/i.test(`${text(b)} ${b.getAttribute('aria-label') || ''}`));
 if ((dragEls.length || dragJs) && !moveBtn) add('권장', '끌기로만 하는 동작', '끌기가 어려운 사람(떨림, 한 손가락, 스위치 기기)은 못 한다(WCAG 2.2 2.5.7). 「위로·아래로」 버튼이나 옮길 곳을 고르는 메뉴를 같이 둔다', dragEls);
+
+// 10-3. 키보드와 말투(references/ux-basics.md 키보드-1·키보드-3·말-2, 2026-11-11)
+const short = (s, n = 16) => (s.length > n ? `${s.slice(0, n)}…` : s);
+// 키보드-1: 클릭은 받는데 키보드로 갈 수도 누를 수도 없는 곳(div·span·li·td·img에 onclick)
+// HTML 속성(onclick, @click, v-on:click, x-on:click)만 본다. 스크립트에서 addEventListener로 붙인 클릭은 이 정적 검사에 안 보인다
+// 안에 버튼·링크가 있으면(이벤트 위임) 키보드는 그 버튼으로 누르니 넘긴다. 버튼·링크 안의 span도 넘긴다
+const CLICK_ATTR = /^(onclick|@click|(v|x)-on:click)(\.|$)/i;
+const NATIVE = 'a[href], button, input, select, textarea, summary, label, option, details, dialog, area[href], video[controls], audio[controls], body, html';
+const ROLE_OK = /^(button|link|checkbox|radio|tab|menuitem|menuitemcheckbox|menuitemradio|switch|option|treeitem)$/;
+const clickOnly = [...doc.body.querySelectorAll('*')].filter(e => visible(e) && [...e.attributes].some(a => CLICK_ATTR.test(a.name))
+  && !e.matches(NATIVE) && !e.parentElement?.closest('a[href], button, summary, label')
+  && !ROLE_OK.test((e.getAttribute('role') || '').trim().split(/\s+/)[0])
+  && !/^\s*\d+\s*$/.test(e.getAttribute('tabindex') || '')
+  && !e.querySelector(FOCUSABLE));
+if (clickOnly.length) add('꼭', '키보드로 못 누르는 곳', `${clickOnly.length}곳(${clickOnly.slice(0, 3).map(e => `「${short(text(e)) || e.getAttribute('alt') || e.tagName.toLowerCase()}」`).join(', ')})이 클릭은 받지만 키보드로는 갈 수도 누를 수도 없다. button 요소로 바꾼다. 못 바꾸면 role="button"과 tabindex="0"을 달고 Enter·Space에도 같은 일을 하게 한다 (WCAG 2.2 · 2.1.1)`, clickOnly);
+// 키보드-3: 꺼진 버튼의 이유가 title(마우스 올림 설명)에만 있다. 꺼진 버튼은 초점을 받지 않아 키보드로도, 터치로도 그 설명을 못 본다
+// 꺼진 버튼은 마우스 이벤트도 안 받아 title을 감싼 span에 다는 일이 많다. 바로 위 span·div의 title도 본다
+// title 없이 꺼진 것은 여기서 보지 않는다(제출 잠금은 「입력이 맞을 때까지 제출 잠금」)
+const DISABLED = 'button[disabled], input[disabled], select[disabled], textarea[disabled], [aria-disabled="true"]';
+const describedShown = e => (e.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean).some(id => { const t = doc.getElementById(id); return t && visible(t) && text(t) && !/sr-only|visually-hidden|screen-reader/i.test(t.getAttribute('class') || ''); });
+const tipOf = e => (e.getAttribute('title') || '').trim() || (e.parentElement?.matches('span, div') ? (e.parentElement.getAttribute('title') || '').trim() : '');
+const titleOnly = [...doc.querySelectorAll(DISABLED)].filter(e => visible(e) && tipOf(e) && !describedShown(e));
+if (titleOnly.length) add('권장', '꺼진 이유가 title에만 있음', `꺼진 ${titleOnly.slice(0, 3).map(e => `「${short(text(e) || e.value || e.getAttribute('aria-label') || e.tagName.toLowerCase())}」`).join(', ')}의 이유가 마우스를 올려야 보이는 설명(title 「${short(tipOf(titleOnly[0]), 24)}」)에만 있다. 키보드·터치로는 볼 수 없다. 이유를 버튼 옆 글로 두고 aria-describedby로 잇는다`, titleOnly);
+// 말-2: 한 화면에 해요체·합니다체·한다체가 섞임. 끝맺음이 있는 문장만 센다(라벨·제목은 끝맺음이 없어 세지 않는다)
+// 한다체는 마침표로 끝나는 동사 끝(받침 ㄴ·ㅆ + 다: 한다·보낸다·했다·있다, 는다, 없다)만 센다. 「좋다.」「책이다.」 같은 형용사·이다는 세지 않는다
+// 「필요」「중요」로 끝나는 라벨은 해요체로 치지 않는다
+// 「」 안에 든 예시 글은 끝이 「」라 세지 않는다. 코드·입력값·숨긴 글은 뺀다
+// 쓰는 사람의 말일 수 있는 곳(자주 묻는 질문의 summary·dt, 버튼·탭·라벨)도 뺀다. 「배송은 얼마나 걸리나요」 질문에 합니다체 답을 다는 것은 섞인 게 아니다
+const talk = doc.body.cloneNode(true);
+talk.querySelectorAll('script, style, template, noscript, code, pre, kbd, samp, textarea, [hidden], [aria-hidden="true"], summary, dt, button, [role="button"], [role="tab"], label, legend, option').forEach(e => e.remove());
+const INLINE = new Set(['A', 'ABBR', 'B', 'BDI', 'BDO', 'CITE', 'DATA', 'DFN', 'EM', 'I', 'MARK', 'Q', 'S', 'SMALL', 'SPAN', 'STRONG', 'SUB', 'SUP', 'TIME', 'U', 'WBR', 'LABEL']);
+talk.querySelectorAll('*').forEach(e => { if (!INLINE.has(e.tagName)) { e.before('\n'); e.append('\n'); } });
+const SPEECH = [['해요체', /(?:(?<![필중개수주])요|죠)[.!?…~]*$/], ['합니다체', /(?:니다|니까)[.!?…]*$/], ['한다체', { test: x => { const m = x.match(/([가-힣])다\.$/); if (!m) return false; const j = (m[1].charCodeAt(0) - 0xac00) % 28; return j === 4 || j === 20 || /(는|없)다\.$/.test(x); } }]];
+const speech = SPEECH.map(([name]) => ({ name, n: 0, ex: '' }));
+for (const line of (talk.textContent || '').split('\n')) for (const s of line.replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/)) {
+  if (!/[가-힣]/.test(s) || s.replace(/\s/g, '').length < 6) continue;
+  const k = SPEECH.findIndex(([, re]) => re.test(s));
+  if (k >= 0) { speech[k].n++; speech[k].ex ||= s.length > 16 ? `…${s.slice(-16)}` : s; }
+}
+const mixed = speech.filter(x => x.n >= 2);
+if (mixed.length >= 2) add('확인', '말투가 섞임', `${mixed.map(x => `${x.name} ${x.n}문장(「${x.ex}」)`).join(', ')}이 한 화면에 섞였다. 한 화면은 한 말투로 두고, 오류는 같은 말투로 더 짧게 쓴다. 서비스가 정한 말투가 있으면 그쪽에 맞춘다`);
 
 // 11. 누를 곳 크기(CSS에 적힌 값만)
 // 조건의 최소 누를 곳(params.mjs, recommend.mjs DESIGN.md와 같은 값). 플랫폼을 안 주면 모바일 기준 44px

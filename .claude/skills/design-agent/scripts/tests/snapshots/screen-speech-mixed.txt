@@ -1,0 +1,5 @@
+$ check-screen.mjs scripts/fixtures/speech-mixed.html
+[exit 0]
+검사: .claude/skills/design-agent/scripts/fixtures/speech-mixed.html
+해당하는 실패: 헷갈림 1 (이름 뜻과 고치는 순서: references/failures.md)
+- [확인 · 헷갈림] 말투가 섞임: 해요체 2문장(「… 글이 올라오면 알려 드려요.」), 합니다체 2문장(「설정을 저장하지 못했습니다.」), 한다체 2문장(「… 내 글에 달린 것만 보낸다.」)이 한 화면에 섞였다. 한 화면은 한 말투로 두고, 오류는 같은 말투로 더 짧게 쓴다. 서비스가 정한 말투가 있으면 그쪽에 맞춘다

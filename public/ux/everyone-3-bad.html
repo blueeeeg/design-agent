@@ -48,7 +48,7 @@ dialog p { margin: 0 0 12px; }
       <span class="muted">12쪽 · 2026-10-02 고침</span>
       <div class="acts2">
         <button type="button" id="copy">링크 복사</button>
-        <span title="보기 권한만 있어 내보낼 수 없습니다. 관리자에게 편집 권한을 요청하세요."><button type="button" disabled>PDF로 내보내기</button></span>
+        <span title="보기 권한만 있어 내보낼 수 없어요. 관리자에게 편집 권한을 요청하세요."><button type="button" disabled>PDF로 내보내기</button></span>
       </div>
       
     </div>
@@ -128,6 +128,6 @@ document.addEventListener('keydown', function (e) {
 });
 Array.prototype.forEach.call(document.querySelectorAll('.reset'), function (b) { b.addEventListener('click', function () { location.reload(); }); });
 
-document.getElementById('copy').addEventListener('click', function () { document.querySelector('.result').textContent = '링크를 복사했습니다.'; });</script>
+document.getElementById('copy').addEventListener('click', function () { document.querySelector('.result').textContent = '링크를 복사했어요.'; });</script>
 </body>
 </html>

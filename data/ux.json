@@ -100,13 +100,13 @@
       "id": "interrupt",
       "name": "끼어들지 않기",
       "desc": "하려던 일을 창·광고·알림이 가로막지 않는 것.",
-      "fail": "할 일이 안 보임"
+      "fail": "방해"
     },
     {
       "id": "honest",
       "name": "속이지 않기",
       "desc": "고른 적 없는 것이 골라지지 않고, 낼 돈과 그만두는 길이 숨지 않는 것.",
-      "fail": "사고 위험"
+      "fail": "속임"
     },
     {
       "id": "words",
@@ -745,8 +745,9 @@
           "url": "https://www.krds.go.kr/html/site/global/global_summary.html"
         },
         {
-          "name": "WCAG 2.2 3.3.2",
-          "url": "https://www.w3.org/TR/WCAG22/"
+          "name": "W3C WAI 폼 튜토리얼(Form Instructions)",
+          "note": "placeholder는 레이블을 대신하지 못한다. 화면 읽기 프로그램이 레이블로 다루지 않고, 쓰기 시작하면 사라진다. WCAG 3.3.2 자체는 placeholder만 있는 칸을 실패로 정하지 않아 「권장」으로 둔다(2026-11-12 확인)",
+          "url": "https://www.w3.org/WAI/tutorials/forms/instructions/"
         },
         {
           "name": "Primer 디자이너 체크리스트",

@@ -131,7 +131,7 @@ var f = document.getElementById('f'), inp = document.getElementById('name'), ok 
 f.querySelector('button[type="submit"]').addEventListener('click', function (e) {
   e.preventDefault(); ok.textContent = '';
   var v = inp.value.trim();
-  if (v && v.length <= 20) { inp.removeAttribute('aria-invalid'); document.getElementById('err').hidden = true; ok.textContent = ro(v) + ' 저장했습니다.'; return; }
+  if (v && v.length <= 20) { inp.removeAttribute('aria-invalid'); document.getElementById('err').hidden = true; ok.textContent = ro(v) + ' 저장했어요.'; return; }
   var err = document.getElementById('err');
   err.textContent = v ? '이름은 20자까지 쓸 수 있습니다. 지금 ' + v.length + '자입니다. 줄인 뒤 다시 저장하면 됩니다.' : '모임 이름을 써야 저장할 수 있습니다.';
   err.hidden = false; inp.setAttribute('aria-invalid', 'true'); inp.focus();

@@ -354,15 +354,15 @@ pair('everyone-3', '누구나-3 꺼진 버튼의 이유', (bad, title) => page({
       <span class="muted">12쪽 · 2026-10-02 고침</span>
       <div class="acts2">
         <button type="button" id="copy">링크 복사</button>
-        ${bad ? '<span title="보기 권한만 있어 내보낼 수 없습니다. 관리자에게 편집 권한을 요청하세요."><button type="button" disabled>PDF로 내보내기</button></span>' : '<button type="button" disabled aria-describedby="why">PDF로 내보내기</button>'}
+        ${bad ? '<span title="보기 권한만 있어 내보낼 수 없어요. 관리자에게 편집 권한을 요청하세요."><button type="button" disabled>PDF로 내보내기</button></span>' : '<button type="button" disabled aria-describedby="why">PDF로 내보내기</button>'}
       </div>
-      ${bad ? '' : '<p id="why" class="muted">보기 권한만 있어 내보낼 수 없습니다. 관리자에게 편집 권한을 요청하면 내보낼 수 있습니다.</p>'}
+      ${bad ? '' : '<p id="why" class="muted">보기 권한만 있어 내보낼 수 없어요. 관리자에게 편집 권한을 요청하면 내보낼 수 있어요.</p>'}
     </div>
     <p class="result" role="status"></p>
   </div>
 </div>`,
   script: `
-document.getElementById('copy').addEventListener('click', function () { document.querySelector('.result').textContent = '링크를 복사했습니다.'; });`,
+document.getElementById('copy').addEventListener('click', function () { document.querySelector('.result').textContent = '링크를 복사했어요.'; });`,
 }));
 
 // ---------- 누구나-4(예전 키보드-4): Esc와 버튼 순서를 서비스 안에서 하나로 ----------
@@ -413,12 +413,12 @@ pair('visible-1', '할 일-1 첫 화면에 지금 상태', (bad, title) => page(
     ${FILES.map(f => `<div class="row" data-f="${f}"><span class="name">${f}</span>${FAILED.has(f) ? '<span class="fail">올리지 못함</span>' : '<span class="ok-t">올림</span>'}</div>`).join('\n    ')}
     ${bad ? '__STATE__' : ''}
   </div>
-</div>`.replace('__STATE__', `<div class="state" id="state"><span id="state-t"><b>10개 중 2개를 올리지 못했습니다.</b> 영상 파일이 20MB를 넘습니다. 줄인 파일로 다시 올리면 됩니다.</span><button type="button" id="retry">다시 올리기</button></div>`),
+</div>`.replace('__STATE__', `<div class="state" id="state"><span id="state-t"><b>10개 중 2개를 올리지 못했어요.</b> 영상 파일이 20MB를 넘어요. 줄인 파일로 다시 올리면 돼요.</span><button type="button" id="retry">다시 올리기</button></div>`),
   script: `
 document.getElementById('retry').addEventListener('click', function (e) {
   document.querySelectorAll('.fail').forEach(function (x) { x.className = 'ok-t'; x.textContent = '올림'; });
   var s = document.getElementById('state'); s.className = 'state ok';
-  document.getElementById('state-t').innerHTML = '<b>10개를 모두 올렸습니다.</b>';
+  document.getElementById('state-t').innerHTML = '<b>10개를 모두 올렸어요.</b>';
   e.currentTarget.remove();
 });`,
 }));
@@ -452,9 +452,9 @@ pair('visible-3', '할 일-3 상태에 따른 강조', (bad, title) => page({
 </div>`,
   script: `
 var BAD = ${bad}, S = {
-  run: { t: '11월 보고서를 만드는 중입니다. 3단계 중 2단계입니다.', prog: true, act: '멈추기', strong: false },
-  stuck: { t: '11월 보고서를 만들다 멈췄습니다.', why: '원본 표 ‘11월 매출’을 읽을 권한이 없습니다. 표 주인에게 권한을 요청하면 이어서 만듭니다.', act: '권한 요청하기', strong: true },
-  done: { t: '11월 보고서를 다 만들었습니다. 12쪽입니다.', act: '보고서 내려받기', strong: true }
+  run: { t: '11월 보고서를 만드는 중이에요. 3단계 중 2단계예요.', prog: true, act: '멈추기', strong: false },
+  stuck: { t: '11월 보고서를 만들다 멈췄어요.', why: '원본 표 ‘11월 매출’을 읽을 권한이 없어요. 표 주인에게 권한을 요청하면 이어서 만들어요.', act: '권한 요청하기', strong: true },
+  done: { t: '11월 보고서를 다 만들었어요. 12쪽이에요.', act: '보고서 내려받기', strong: true }
 };
 function draw(k) {
   var s = S[k], card = document.getElementById('card');
@@ -467,7 +467,7 @@ function draw(k) {
   document.querySelector('.result').textContent = '';
 }
 document.querySelector('.demo-ctl').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) draw(b.dataset.s); });
-document.getElementById('card').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) document.querySelector('.result').textContent = '「' + b.dataset.act + '」을 눌렀습니다.'; });
+document.getElementById('card').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) document.querySelector('.result').textContent = eul(b.dataset.act) + ' 눌렀어요.'; });
 draw('stuck');`,
 }));
 
@@ -481,7 +481,7 @@ pair('after-1', '누른 뒤-1 결과를 작업한 자리에서 알리기', (bad,
   ${bar('모임 글', '글 <span id="n1">4</span> · 보관함 <span id="n2">0</span>')}
   <div class="main" id="list">
     ${POSTS.map(p => `<div class="row" data-p="${p}"><span class="name">${p}</span><button type="button" class="arc">보관함으로</button></div>`).join('\n    ')}
-    <p class="muted empty" hidden>글이 없습니다.</p>
+    <p class="muted empty" hidden>글이 없어요.</p>
   </div>
 </div>`,
   script: `
@@ -491,7 +491,7 @@ list.addEventListener('click', function (e) {
   var row = b.closest('.row'), n = row.nextElementSibling;
   ${bad ? 'row.remove();' : `list.querySelectorAll('.note').forEach(function (x) { x.remove(); });
   var note = document.createElement('p'); note.className = 'note'; note.setAttribute('role', 'status');
-  note.textContent = eul(row.dataset.p) + ' 보관함으로 옮겼습니다. 보관함 ' + (+document.getElementById('n2').textContent + 1) + '개';
+  note.textContent = eul(row.dataset.p) + ' 보관함으로 옮겼어요. 보관함 ' + (+document.getElementById('n2').textContent + 1) + '개';
   row.replaceWith(note);`}
   document.getElementById('n1').textContent = list.querySelectorAll('.row').length;
   document.getElementById('n2').textContent = +document.getElementById('n2').textContent + 1;
@@ -519,14 +519,14 @@ pair('after-2', '누른 뒤-2 실패한 자리와 입력', (bad, title) => page(
     </form>
   </div>
 </div>
-${bad ? '<div class="toast" role="status" hidden>저장에 실패했습니다.</div>' : ''}`,
+${bad ? '<div class="toast" role="status" hidden>저장에 실패했어요.</div>' : ''}`,
   script: `
 // 데모 틀(sandbox)은 폼 제출을 막아 submit 이벤트가 오지 않는다. 저장 버튼 누름(칸에서 Enter로 누른 것 포함)을 받는다
 var f = document.getElementById('f'), inp = document.getElementById('name'), ok = document.querySelector('.ok');
 f.querySelector('button[type="submit"]').addEventListener('click', function (e) {
   e.preventDefault(); ok.textContent = '';
   var v = inp.value.trim();
-  if (v && v.length <= 20) { ${bad ? '' : "inp.removeAttribute('aria-invalid'); document.getElementById('err').hidden = true; "}ok.textContent = ro(v) + ' 저장했습니다.'; return; }
+  if (v && v.length <= 20) { ${bad ? '' : "inp.removeAttribute('aria-invalid'); document.getElementById('err').hidden = true; "}ok.textContent = ro(v) + ' 저장했어요.'; return; }
   ${bad ? `var t = document.querySelector('.toast'); t.hidden = false; clearTimeout(t._h); t._h = setTimeout(function () { t.hidden = true; }, 2500);` : `var err = document.getElementById('err');
   err.textContent = v ? '이름은 20자까지 쓸 수 있습니다. 지금 ' + v.length + '자입니다. 줄인 뒤 다시 저장하면 됩니다.' : '모임 이름을 써야 저장할 수 있습니다.';
   err.hidden = false; inp.setAttribute('aria-invalid', 'true'); inp.focus();`}
@@ -561,7 +561,7 @@ document.getElementById('yes').addEventListener('click', function () { st.textCo
 // ---------- 글-2: 한 화면 안의 말투 ----------
 const W2 = bad => bad
   ? ['모임 소식을 어떻게 받을지 고를 수 있어요.', '새 글이 올라오면 바로 알려 드립니다.', '매주 월요일 아침에 지난주 글을 모아 보낸다.', '모임 하루 전에 알려 드려요.', '알림을 모두 끄면 모임 일정만 메일로 받는다.', '바꾼 설정은 바로 저장됩니다.']
-  : ['모임 소식을 어떻게 받을지 고를 수 있습니다.', '새 글이 올라오면 바로 알려 드립니다.', '매주 월요일 아침에 지난주 글을 모아 보내 드립니다.', '모임 하루 전에 알려 드립니다.', '알림을 모두 끄면 모임 일정만 메일로 받습니다.', '바꾼 설정은 바로 저장됩니다.'];
+  : ['모임 소식을 어떻게 받을지 고를 수 있어요.', '새 글이 올라오면 바로 알려 드려요.', '매주 월요일 아침에 지난주 글을 모아 보내 드려요.', '모임 하루 전에 알려 드려요.', '알림을 모두 끄면 모임 일정만 메일로 받아요.', '바꾼 설정은 바로 저장돼요.'];
 pair('words-2', '글-2 한 화면 안의 말투', (bad, title) => page({
   title,
   style: `.opt { display: grid; grid-template-columns: auto 1fr; gap: 0 10px; align-items: start; padding: 6px 0; border-top: 1px solid #e3e8ec; } .opt input { margin-top: 4px; } .opt label { color: #14212b; font-size: 14px; display: block; } .opt p { grid-column: 2; margin: 0; }`,

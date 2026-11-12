@@ -83,7 +83,7 @@
       "why": "2026-11-11 더한 입력·동의·이동 검사. 이름표 없는 칸, 처음부터 체크된 선택 동의(감싼 label·label for·이름표 없이 옆 글), onpaste return false와 @paste.prevent, 버튼·role 단 div·span의 onclick 이동, maximum-scale 1.5를 잡는다. [필수] 동의는 체크돼 있어도 잡지 않는다",
       "run": ["check-screen.mjs", "scripts/fixtures/form-traps.html"],
       "exit": 1,
-      "has": ["[고치기 권함 · 헷갈림] placeholder만 있는 입력: 2칸(「이메일」, 「자기소개」)", "[꼭 고칠 것 · 헷갈림] 미리 체크된 동의", "「(선택) 마케팅 정보 수신 동의」", "「이벤트·혜택 알림 받기」", "「제3자 정보 제공 동의(선택)」", "[꼭 고칠 것 · 읽기·누르기 어려움] 붙여넣기 막기: 「비밀번호」, 「문자로 받은 인증번호」", "[고치기 권함 · 헷갈림] 링크가 아닌 이동: 3곳", "확대 막기: viewport에 「width=device-width, initial-scale=1, maximum-scale=1.5」"],
+      "has": ["[고치기 권함 · 헷갈림] placeholder만 있는 입력: 2칸(「이메일」, 「자기소개」)", "[꼭 고칠 것 · 속임] 미리 체크된 동의", "「(선택) 마케팅 정보 수신 동의」", "「이벤트·혜택 알림 받기」", "「제3자 정보 제공 동의(선택)」", "[꼭 고칠 것 · 읽기·누르기 어려움] 붙여넣기 막기: 「비밀번호」, 「문자로 받은 인증번호」", "[고치기 권함 · 헷갈림] 링크가 아닌 이동: 3곳", "확대 막기: viewport에 「width=device-width, initial-scale=1, maximum-scale=1.5」"],
       "not": ["이용약관 동의」", "키보드로 못 누르는 곳"]
     },
     {
@@ -91,7 +91,7 @@
       "why": "2026-11-11 더한 검사. 소리를 켠 채 자동 재생하는 video·audio, 처음부터 열린 dialog와 role=dialog 시트를 잡는다",
       "run": ["check-screen.mjs", "scripts/fixtures/load-interrupt.html"],
       "exit": 1,
-      "has": ["[꼭 고칠 것 · 읽기·누르기 어려움] 소리 나는 자동 재생: 2개(<video autoplay>, <audio autoplay>)", "[고치기 권함 · 헷갈림] 처음부터 열린 창: 2개 창", "위치: <dialog>, <div.sheet>"]
+      "has": ["[꼭 고칠 것 · 읽기·누르기 어려움] 소리 나는 자동 재생: 2개(<video autoplay>, <audio autoplay>)", "[고치기 권함 · 방해] 처음부터 열린 창: 2개 창", "위치: <dialog>, <div.sheet>"]
     },
     {
       "name": "screen-otp",

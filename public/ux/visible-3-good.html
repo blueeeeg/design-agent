@@ -120,9 +120,9 @@ document.addEventListener('keydown', function (e) {
 Array.prototype.forEach.call(document.querySelectorAll('.reset'), function (b) { b.addEventListener('click', function () { location.reload(); }); });
 
 var BAD = false, S = {
-  run: { t: '11월 보고서를 만드는 중입니다. 3단계 중 2단계입니다.', prog: true, act: '멈추기', strong: false },
-  stuck: { t: '11월 보고서를 만들다 멈췄습니다.', why: '원본 표 ‘11월 매출’을 읽을 권한이 없습니다. 표 주인에게 권한을 요청하면 이어서 만듭니다.', act: '권한 요청하기', strong: true },
-  done: { t: '11월 보고서를 다 만들었습니다. 12쪽입니다.', act: '보고서 내려받기', strong: true }
+  run: { t: '11월 보고서를 만드는 중이에요. 3단계 중 2단계예요.', prog: true, act: '멈추기', strong: false },
+  stuck: { t: '11월 보고서를 만들다 멈췄어요.', why: '원본 표 ‘11월 매출’을 읽을 권한이 없어요. 표 주인에게 권한을 요청하면 이어서 만들어요.', act: '권한 요청하기', strong: true },
+  done: { t: '11월 보고서를 다 만들었어요. 12쪽이에요.', act: '보고서 내려받기', strong: true }
 };
 function draw(k) {
   var s = S[k], card = document.getElementById('card');
@@ -135,7 +135,7 @@ function draw(k) {
   document.querySelector('.result').textContent = '';
 }
 document.querySelector('.demo-ctl').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) draw(b.dataset.s); });
-document.getElementById('card').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) document.querySelector('.result').textContent = '「' + b.dataset.act + '」을 눌렀습니다.'; });
+document.getElementById('card').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) document.querySelector('.result').textContent = eul(b.dataset.act) + ' 눌렀어요.'; });
 draw('stuck');</script>
 </body>
 </html>

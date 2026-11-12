@@ -1,8 +1,8 @@
 $ check-screen.mjs scripts/fixtures/load-interrupt.html
 [exit 1]
 검사: .claude/skills/design-agent/scripts/fixtures/load-interrupt.html
-해당하는 실패: 읽기·누르기 어려움 1 · 헷갈림 1 (이름 뜻과 고치는 순서: references/failures.md)
+해당하는 실패: 읽기·누르기 어려움 1 · 방해 1 (이름 뜻과 고치는 순서: references/failures.md)
 - [꼭 고칠 것 · 읽기·누르기 어려움] 소리 나는 자동 재생: 2개(<video autoplay>, <audio autoplay>)가 페이지를 열자마자 소리를 낸다. 화면 읽기 프로그램 소리를 덮고, 조용한 곳에서 갑자기 소리가 난다. autoplay를 빼거나 muted를 달고, 소리는 쓰는 사람이 켜게 한다 (KWCAG 2.2 자동 재생 금지, WCAG 2.2 · 1.4.2)
     위치: <video>, <audio>
-- [고치기 권함 · 헷갈림] 처음부터 열린 창: 2개 창이 페이지를 열 때부터 떠 있다. 들어오자마자 뜨는 창은 하던 일을 막고 닫기부터 찾게 한다. 창은 쓰는 사람이 무언가를 눌렀을 때 열고, 알릴 것은 화면 안 글이나 배너로 둔다. 눌러서 여는 창을 펼쳐 그린 시안이면 그대로 둔다 (앱인토스 소비자 UX 가이드: 들어오자마자 뜨는 광고·알림 시트, Built for Shopify 4.3.3)
+- [고치기 권함 · 방해] 처음부터 열린 창: 2개 창이 페이지를 열 때부터 떠 있다. 들어오자마자 뜨는 창은 하던 일을 막고 닫기부터 찾게 한다. 창은 쓰는 사람이 무언가를 눌렀을 때 열고, 알릴 것은 화면 안 글이나 배너로 둔다. 눌러서 여는 창을 펼쳐 그린 시안이면 그대로 둔다 (앱인토스 소비자 UX 가이드: 들어오자마자 뜨는 광고·알림 시트, Built for Shopify 4.3.3)
     위치: <dialog>, <div.sheet>

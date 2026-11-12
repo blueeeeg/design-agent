@@ -53,7 +53,7 @@ form { display: grid; gap: 8px; } .err { margin: 0; color: #b83a26; font-size: 1
     </form>
   </div>
 </div>
-<div class="toast" role="status" hidden>저장에 실패했습니다.</div>
+<div class="toast" role="status" hidden>저장에 실패했어요.</div>
 <script>
 // 내용 높이를 부모(UX 기준 페이지)에 알린다. 틀이 100vh라 문서 높이 대신 고정 위치가 아닌 내용의 아래 끝을 잰다. 부모는 한 쌍을 같은 높이로 맞춘다
 function uxContentHeight() {
@@ -132,7 +132,7 @@ var f = document.getElementById('f'), inp = document.getElementById('name'), ok 
 f.querySelector('button[type="submit"]').addEventListener('click', function (e) {
   e.preventDefault(); ok.textContent = '';
   var v = inp.value.trim();
-  if (v && v.length <= 20) { ok.textContent = ro(v) + ' 저장했습니다.'; return; }
+  if (v && v.length <= 20) { ok.textContent = ro(v) + ' 저장했어요.'; return; }
   var t = document.querySelector('.toast'); t.hidden = false; clearTimeout(t._h); t._h = setTimeout(function () { t.hidden = true; }, 2500);
 });</script>
 </body>

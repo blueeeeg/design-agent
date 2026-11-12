@@ -1154,7 +1154,7 @@ function visualJudge(r, cond) {
 
 // ---------- 실패 이름 ----------
 // 「밤티 같다」를 고칠 수 있는 말로 나눈 것(references/failures.md). 고치는 순서도 이 순서다
-const FAILS = { accident: '사고 위험', hard: '읽기·누르기 어려움', confusing: '헷갈림', missing: '빠진 상태', mismatch: '조건에 안 맞음', flat: '위계 없음', boxed: '상자 남발', uneven: '제각각', generic: '흔한 기본값' };
+const FAILS = { accident: '사고 위험', deceive: '속임', hard: '읽기·누르기 어려움', confusing: '헷갈림', interrupt: '방해', missing: '빠진 상태', mismatch: '조건에 안 맞음', flat: '위계 없음', boxed: '상자 남발', uneven: '제각각', generic: '흔한 기본값' };
 // 「해당하는 실패: 위계 없음 2 · 흔한 기본값 3」. 걸린 게 없으면 빈 문자열
 function failSummary(findings) {
   const n = {};

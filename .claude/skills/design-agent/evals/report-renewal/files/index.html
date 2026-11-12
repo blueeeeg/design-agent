@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>밀알 베이커리 · 픽업 주문 리포트</title>
+<!--
+  평가용 「고치기 전」 화면. 가상의 빵집 체인 픽업 주문 리포트(모바일 웹, 파트너 점주가 자기 폰으로 가끔 본다).
+  일부러 남긴 문제: 흐린 글자 대비 3.1:1, 9.5~11px 글자, 고른 탭이 흰 칸뿐(1.27:1), 작은 누를 곳,
+  요약 타일 4개 모두 초록 증감, 서랍에 닫기 버튼 없음, 만든 쪽 말(비활성·적재).
+  주문 경로 4색(--s1~--s4)은 이 서비스 디자인 원본(Figma)에서 정한 분류 색이다.
+  계산·데이터는 아래 <script>에 있고 바꾸면 안 된다.
+-->
+<style>
+  :root {
+    --page: #f1f3f5; --card: #ffffff; --ink: #0b0b0b; --muted: #8a8a86; --line: #e6e6e2;
+    --s1: #2a78d6; --s2: #e8692f; --s3: #1fae7a; --s4: #8b5cf6;
+    --up: #1d7a3e; --down: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0 auto; max-width: 420px; background: var(--page); color: var(--ink); font: 13px/1.5 -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; }
+  .menu { width: 22px; height: 26px; border: 0; background: none; font-size: 18px; padding: 0; }
+  header .t { flex: 1; }
+  header h1 { margin: 0; font-size: 17px; }
+  header small { font-size: 10px; color: var(--muted); }
+  .logout { border: 0; background: none; color: var(--muted); font-size: 11px; padding: 6px 2px; }
+  .seg { display: flex; margin: 0 16px; background: #e9ebee; border-radius: 10px; padding: 3px; }
+  .seg button { flex: 1; border: 0; background: none; padding: 8px 0; font-size: 12px; color: #555; border-radius: 8px; }
+  .seg button.on { background: #fff; color: var(--ink); font-weight: 700; }
+  .bar { display: flex; align-items: center; justify-content: space-between; margin: 10px 16px; }
+  .bar button { width: 36px; height: 34px; border: 1px solid var(--line); background: #fff; border-radius: 8px; }
+  .bar .mid { text-align: center; font-weight: 700; }
+  .bar .mid small { display: block; font-weight: 400; font-size: 10px; color: var(--muted); }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 16px; }
+  .tile { background: #fff; border-radius: 12px; padding: 10px 12px; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+  .tile .h { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
+  .tile .h b { color: var(--up); font-weight: 600; }
+  .tile .v { text-align: right; font-size: 17px; font-weight: 700; margin-top: 6px; }
+  .note { margin: 6px 16px 10px; font-size: 9.5px; color: var(--muted); }
+  .card { background: #fff; border-radius: 14px; margin: 10px 16px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+  .card h2 { margin: 0 0 10px; font-size: 13px; }
+  .stack { display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 10.5px; color: #555; }
+  .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { font-weight: 400; color: var(--muted); text-align: right; padding: 4px 0; }
+  td { text-align: right; padding: 6px 0; border-top: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  .cal-note { font-size: 9.5px; color: var(--muted); margin: 8px 16px; }
+  .drawer { position: fixed; inset: 0 auto 0 0; width: 260px; background: #fff; box-shadow: 4px 0 20px rgba(0,0,0,.15); padding: 16px; display: none; }
+  .drawer.open { display: block; }
+  .drawer h2 { font-size: 13px; margin: 0 0 8px; }
+  .drawer button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 8px 4px; font-size: 12px; }
+  .drawer button.cur { color: var(--s1); font-weight: 700; }
+</style>
+</head>
+<body>
+<header>
+  <button class="menu" id="menu" aria-label="메뉴">☰</button>
+  <div class="t"><h1 id="store"></h1><small>11/10 영업일까지 집계</small></div>
+  <button class="logout">로그아웃</button>
+</header>
+<div class="seg" role="tablist">
+  <button role="tab" data-p="day">일별</button>
+  <button role="tab" data-p="week" class="on">주별</button>
+  <button role="tab" data-p="month">월별</button>
+</div>
+<div class="bar"><button aria-label="이전">‹</button><div class="mid">11월 1주차 ▾<small>11.2 ~ 11.8</small></div><button aria-label="다음">›</button></div>
+<div class="tiles" id="tiles"></div>
+<p class="note">앱·웹·전화·메신저 주문 기준 · 증감은 전주 대비예요.</p>
+<section class="card"><h2>주문 경로</h2><div class="stack" id="stack"></div><div class="legend" id="legend"></div></section>
+<section class="card"><h2>경로별 상세</h2><table id="tbl"></table></section>
+<p class="cal-note">집계가 없는 날과 범위 밖 날짜는 비활성으로 표시되고 선택할 수 없어요. 문래점 매출은 데이터 적재 보완 후 제공될 예정이에요.</p>
+<nav class="drawer" id="drawer"><h2>매장</h2></nav>
+
+<script>
+// 계산·데이터: 고치지 않는다
+const DATA = {
+  store: '서촌점', stores: ['서촌점', '망원점', '연남점', '성수점', '문래점'],
+  week: { orders: 311, prev: 299, share: 21.4, prevShare: 21.0, guests: 265, prevGuests: 255, sales: 10180100, prevSales: 9883600 },
+  routes: [['앱', 118, 98, 3412000], ['웹', 81, 70, 2390400], ['전화', 62, 55, 2401300], ['메신저', 50, 42, 1976400]],
+};
+const pct = (a, b) => Math.round((a - b) / b * 100);
+const won = n => n.toLocaleString('ko-KR');
+document.getElementById('store').textContent = DATA.store;
+const w = DATA.week;
+const tiles = [
+  ['픽업 주문', w.orders + '건', '▲ ' + pct(w.orders, w.prev) + '%'],
+  ['전체 주문 중 비중', w.share + '%', '▲ ' + (w.share - w.prevShare).toFixed(1) + '%p'],
+  ['주문한 손님', w.guests + '명', '▲ ' + pct(w.guests, w.prevGuests) + '%'],
+  ['픽업 매출', won(w.sales) + '원', '▲ ' + pct(w.sales, w.prevSales) + '%'],
+];
+document.getElementById('tiles').innerHTML = tiles.map(([k, v, d]) => `<div class="tile"><div class="h">${k}<b>${d}</b></div><div class="v">${v}</div></div>`).join('');
+const total = DATA.routes.reduce((s, r) => s + r[1], 0);
+document.getElementById('stack').innerHTML = DATA.routes.map((r, i) => `<i style="flex:${r[1]};background:var(--s${i + 1})"></i>`).join('');
+document.getElementById('legend').innerHTML = DATA.routes.map((r, i) => `<span><i style="background:var(--s${i + 1})"></i>${r[0]} ${r[1]}건 (${Math.round(r[1] / total * 100)}%)</span>`).join('');
+document.getElementById('tbl').innerHTML = '<tr><th>경로</th><th>주문</th><th>손님</th><th>금액(원)</th></tr>' +
+  DATA.routes.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${won(r[3])}</td></tr>`).join('');
+const drawer = document.getElementById('drawer');
+drawer.innerHTML += DATA.stores.map(s => `<button class="${s === DATA.store ? 'cur' : ''}">${s}</button>`).join('');
+document.getElementById('menu').onclick = () => drawer.classList.toggle('open');
+document.addEventListener('keydown', e => { if (e.key === 'Escape') drawer.classList.remove('open'); });
+document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.seg button').forEach(o => o.classList.toggle('on', o === b));
+});
+</script>
+</body>
+</html>

@@ -1,13 +1,13 @@
 # 잘 만든 예시
 
-실패 이름(`references/failures.md`)과 검사 스크립트는 틀린 것을 잡는다. 빠진 것은 못 잡는다. 검사를 다 통과해도 화면이 비어 보이거나, 밋밋하거나, 어디서 본 듯할 수 있다. 그래서 손으로 만든 화면 세 개를 기준으로 둔다.
+실패 이름(`references/failures.md`)과 검사 스크립트는 틀린 것을 잡는다. 빠진 것은 못 잡는다. 검사를 다 통과해도 화면이 비어 보이거나, 밋밋하거나, 어디서 본 듯할 수 있다. 그래서 손으로 만든 화면 네 개를 기준으로 둔다.
 
 - 만들 때: 구조와 수준을 따라 할 출발점. 브랜드와 내용은 따라 하지 않는다
 - 다 만든 뒤: 내 화면을 옆에 놓고 「이것보다 비었나, 밋밋한가, 흔한가」를 묻는 기준
 
 생각은 Stageshow의 gold example(https://benji.org/stageshow)에서 얻었다. 그쪽 화면이나 글은 가져오지 않았다(2026-11-04).
 
-세 화면 모두 파일 하나(`index.html`)이고 밖으로 나가는 요청이 없다. 웹 글꼴·CDN·외부 이미지 없이 한글이 들어간 시스템 서체를 쓰고, 상품 그림은 인라인 SVG로 그렸다. 가게·도서관·회사·상품·회원증 번호는 모두 지어낸 것이다.
+네 화면 모두 파일 하나(`index.html`)이고 밖으로 나가는 요청이 없다. 웹 글꼴·CDN·외부 이미지 없이 한글이 들어간 시스템 서체를 쓰고, 상품 그림은 인라인 SVG로 그렸다. 가게·도서관·회사·상품·회원증 번호·매장·숫자는 모두 지어낸 것이다.
 
 ## 쓰는 법
 
@@ -114,6 +114,38 @@
 - 오른쪽 패널은 단계마다 역할이 있다. 1~3단계는 지금까지 고른 것, 4단계는 왼쪽 확인 목록과 겹치지 않게 「예약 전에 알아 두세요」로 바뀐다. 버튼 아래 한 줄은 다음에 무슨 일이 일어나는지 알린다
 - 고른 칸은 테두리 2px 강조색 + 옅은 바탕 + 체크 표시, 마감된 칸은 「마감」 글자와 꺼진 모양. 색만으로 구분하지 않는다
 
+## 4. mobile-report: 파트너 점주가 보는 숫자 리포트
+
+`mobile-report/index.html` · 모바일 390px · 가상의 빵집 체인 「밀알 베이커리」의 픽업 주문 리포트
+
+**조건**: platform=mobile, skill=occasional, device=personal, content=numbers, action=none(보기만)
+
+**기본값**(`--design-md`): target-min 44px, font-base 14px, row-height 44px, spacing 12px
+
+이미 있는 리포트 화면을 같은 요청으로 두 번 리뉴얼해 보고(2026-11-11), 두 결과에서 잘된 것만 모아 만들었다. 리뉴얼할 때 실행마다 갈리던 칸(고른 탭 표시, 첫 카드 구성, 글자 단계, 모서리, 단위 표기)을 이 예시 하나로 맞춘다. 숫자 리포트를 만들거나 리뉴얼하면 이 예시의 구조와 수준을 따른다. 서비스가 이미 정한 색·서체·구성이 있으면 그쪽이 먼저다.
+
+한 페이지에 다섯 상태를 위아래로 둔다. 주별, 일별, 한 카드만 실패, 집계 없는 날, 매장 서랍 열림.
+
+**고른 방식**
+- 기간 단위(일·주·월): 세그먼트. 고른 칸은 강조색 채움 + 흰 글자. 달력의 고른 날짜와 같은 표시다
+- 기간 옮기기: 이전·다음 버튼(44×44) + 가운데 기간 이름(누르면 고르기). 다음 기간이 없으면 다음 버튼을 끈다
+- 매장 바꾸기: 왼쪽 서랍. 머리에 보이는 「닫기」, 바깥 누르기·Esc로도 닫는다
+- 불러오는 동안: 카드 자리 스켈레톤(이 예시에는 그리지 않았다)
+- 실패했을 때: 한 카드만 실패하면 그 카드 자리에 이유와 「다시 불러오기」. 받아 둔 옛 숫자를 보여 주지 않는다
+- 비어 있을 때: 「0건」 대신 왜 없는지와 가장 가까운 영업일로 가는 버튼
+
+**무엇을 배울 것**
+- 글자 단계 28 / 20 / 16 / 14 / 12. 핵심 숫자 28, 매장 이름 20, 카드 제목·보조 지표 값 16, 본문 14, 보조 12. 굵게는 매장 이름·카드 제목·숫자·소계에만
+- **결과 카드 하나가 맨 앞이다**(새로 만들 때, 리뉴얼은 범위 ②부터. 범위 ①이면 타일 배치는 두고 안쪽 순서만 라벨 → 값 → 증감으로). 핵심 숫자 하나(28px) 옆에 비교 기준을 글자로 쓴 증감(「전주 대비 ▲ 4%」), 그 아래 선으로 나눈 보조 지표 줄(이름 왼쪽, 값 오른쪽, 증감은 값 아래). 같은 모양 타일 4개로 늘어놓지 않는다
+- 증감 색은 늘 기호(▲▼)와 부호를 같이 쓴다. 비교 기준이 없으면(전날이 휴무) 무엇과 견줬는지 문장으로 밝힌다
+- 구성 카드는 쌓은 막대 + 「이름 · 건수 · 비율」 세 열 목록. 아래 표에 건수가 있는 화면(일별)은 비율만 써서 같은 숫자를 두 번 보이지 않는다
+- 표의 숫자 열은 오른쪽 정렬 + 고정폭 숫자(tabular-nums), 단위는 열 제목에 「금액(원)」. 소계는 굵게 + 진한 선, 비교용 행(매장 방문)은 흐린 글자와 회색 점
+- 단위는 숫자에 붙여 쓴다(「311건」). 단위만 작게 따로 두지 않는다
+- 흰 글자를 올리는 강조색은 흰 글자와 7:1 넘는 진한 단계(`palette.mjs`의 700 쪽). 흐린 글자는 카드·바탕 모두 4.5:1 넘게
+- 모서리 2단계: 누르는 것·막대 8, 카드 12. 그림자 2가지: 카드, 떠 있는 서랍
+- 분류 색은 점·막대에만 쓰고 뜻은 늘 이름 글자가 전한다. 이 예시는 강조색 한 계열 4단계를 썼다. 서비스가 분류 색을 정해 두었으면 그 색을 그대로 쓴다
+- 데스크톱에서도 가운데 한 열(최대 420px 안팎)로 둔다. 모바일 우선 리포트다
+
 ## 검사
 
 저장소 맨 위에서 돌렸다(2026-11-04).
@@ -128,6 +160,9 @@ node .claude/skills/design-agent/scripts/check-visual.mjs .claude/skills/design-
 
 node .claude/skills/design-agent/scripts/check-screen.mjs .claude/skills/design-agent/examples/kiosk-booking/index.html --sel platform=tablet,skill=first,device=shared,content=text --action once
 node .claude/skills/design-agent/scripts/check-visual.mjs .claude/skills/design-agent/examples/kiosk-booking/index.html --run-scripts --sel platform=tablet,skill=first,device=shared,content=text
+
+node .claude/skills/design-agent/scripts/check-screen.mjs .claude/skills/design-agent/examples/mobile-report/index.html --sel platform=mobile,skill=occasional,device=personal,content=numbers --action none
+node .claude/skills/design-agent/scripts/check-visual.mjs .claude/skills/design-agent/examples/mobile-report/index.html --run-scripts --sel platform=mobile,skill=occasional,device=personal,content=numbers
 ```
 
 **결과**
@@ -135,7 +170,9 @@ node .claude/skills/design-agent/scripts/check-visual.mjs .claude/skills/design-
 - admin-table: check-screen 「걸린 것 없음」(light, irreversible 둘 다). check-visual은 대비 모두 통과, 크기 5단계(28·18·16·14·12px), 제목이 본문의 2.0배, 여백 7가지, 모서리 2가지(4·8px), 그림자 1가지
 - kiosk-booking: check-screen 「걸린 것 없음」. check-visual은 대비 모두 통과, 크기 4단계(36·22·18·16px), 제목이 본문의 2.0배, 여백 9가지, 모서리 2가지(12·16px), 그림자 0가지
 
-세 화면 모두 「꼭 고칠 것」「고치기 권함」「확인」 줄이 하나도 남지 않았다.
+- mobile-report(2026-11-11): check-screen 「걸린 것 없음」. check-visual은 대비 모두 통과(글자 131개), 크기 5단계(28·20·16·14·12px), 제목이 본문의 2.0배, 여백 8가지, 모서리 2가지(8·12px), 그림자 2가지. 390px에서 가로 넘침 없음(Chromium). 처음 돌렸을 때 걸린 것: 분류 점을 색만으로(점에 aria-hidden, 뜻은 이름 글자), 예시 띠 말투 섞임, 색 기운 4가지(분류 색을 강조색 한 계열 4단계로)
+
+네 화면 모두 「꼭 고칠 것」「고치기 권함」「확인」 줄이 하나도 남지 않았다.
 
 **한 번에 하나만 보이는 상태도 따로 쟀다.** 검사는 숨긴 것을 재지 않는다. 키오스크는 단계마다, 관리 화면은 삭제 대화상자를 연 상태와 결과 없음 상태를 복사본으로 만들어 같은 두 검사를 돌렸고, 모두 걸린 것이 없다. 이 과정에서 실제로 고친 것: 고른 시간 칸의 「비어 있음」 글자 대비(1.04:1), 숫자판 때문에 굵은 글자가 45%가 된 것, 예약이 끝난 뒤 회원증 번호가 숨은 칸에 남던 것.
 

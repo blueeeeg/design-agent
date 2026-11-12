@@ -24,6 +24,11 @@ export const ICONS = {
   trash: '<path d="M4 5.5h12M8 5.5V3.5h4v2M5.5 5.5l.8 11h7.4l.8-11"/>',
   filter: '<path d="M3 4.5h14l-5.5 6.5v5l-3 1.5v-6.5z"/>',
   photo: '<rect x="3" y="4" width="14" height="12" rx="2"/><circle cx="8" cy="8.5" r="1.5"/><path d="m3.5 14 4-4 3 3 2-2 4 4"/>',
+  camera: '<path d="M2.5 6.5h3l1.5-2h6l1.5 2h3v9.5h-15z"/><circle cx="10" cy="11" r="3"/>',
+  pin: '<path d="M10 17.5s-5.5-5-5.5-9a5.5 5.5 0 0 1 11 0c0 4-5.5 9-5.5 9z"/><circle cx="10" cy="8.5" r="2"/>',
+  chat: '<path d="M3 4h14v9.5H8.5L5 16.5v-3H3z"/>',
+  clock: '<circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.5l3 1.5"/>',
+  help: '<circle cx="10" cy="10" r="7.5"/><path d="M7.8 7.8a2.3 2.3 0 1 1 3.2 2.1c-.6.3-1 .8-1 1.5v.4M10 14.2v.3"/>',
 };
 export const icon = name => `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ICONS[name]}</svg>`;
 

@@ -6,6 +6,15 @@ import { ICONS, icon, esc, STATUS_CLASS, hueOf, FRAG_W, BTN_PX, PLAIN_WORDS, FRA
 const POP_ITEMS = [['user', '내 정보'], ['bell', '알림 설정'], ['gear', '설정'], ['list', '도움말']];
 const popMenu = x => `<div class="pop-head"><b>김하늘</b><span class="m-sub">haneul@example.com</span></div>${POP_ITEMS.map(([i, t]) => `<span class="pop-item" style="min-height:${Math.max(x.t, 36)}px">${icon(i)}<span>${t}</span></span>`).join('')}<span class="pop-sep"></span><span class="pop-item muted" style="min-height:${Math.max(x.t, 36)}px">로그아웃</span>`;
 
+/* 동의 항목 한 줄: 체크, [필수]·[선택], 「보기」. 미리 체크해 두지 않는다(UX 기준 속임-1) */
+const agreeRow = (x, label, on = false, view = true) => `<div class="m-kv" style="align-items:center;min-height:${Math.max(x.t, 36)}px"><span class="cbox-row"><i class="m-check ${on ? 'on' : ''}"></i><span>${label}</span></span>${view ? '<span class="more-link">보기</span>' : ''}</div>`;
+/* 운영체제·브라우저가 띄우는 창. 앱 화면과 다르게 가운데 작은 창으로 그린다 */
+const systemDialog = (x, title, body, no, yes) => `<div class="m-overlay fr-ov" style="align-items:center;padding:24px"><div class="m-dialog fr-dialog" style="width:84%;border-radius:14px;text-align:center;gap:10px"><b>${title}</b><span class="m-sub">${body}</span><div class="m-actions" style="grid-template-columns:1fr 1fr"><span class="m-btn ghost block" style="${btnStyle(x, 'sm')}">${no}</span><span class="m-btn ghost block" style="${btnStyle(x, 'sm')};font-weight:700">${yes}</span></div></div></div>`;
+const star = on => `<span style="color:${on ? 'var(--warn)' : 'var(--line)'}">${icon('star').replace('fill="none"', on ? 'fill="currentColor"' : 'fill="none"')}</span>`;
+const stars = (n, size = 28) => `<div style="display:flex;gap:6px;justify-content:center;font-size:${size}px">${[0, 1, 2, 3, 4].map(i => star(i < n)).join('')}</div>`;
+/* 신청 뒤 진행 상태 그림에 쓰는 샘플. 업종에 치우치지 않게 환불 신청으로 둔다 */
+const TRACK_STEPS = ['접수', '검토', '완료'];
+
 export const RENDERS = {
   loading: {
     none: x => `<div class="fr-pad fr-stack">${titleBar(x, '<span class="m-sub">고치면 바로 바뀌어요</span>')}${rowsHTML(x, 3)}</div>`,
@@ -41,10 +50,20 @@ export const RENDERS = {
     undo: x => `<div class="fr-confirm" style="height:210px"><div class="fr-pad">${rowsHTML(x, 3, 1)}</div><div class="toast">${esc(x.T.removed)}<span class="toast-act">되돌리기</span></div></div>`,
     screen: x => `<div class="fr-pad fr-empty" style="min-height:240px"><span class="done-mark">${icon('check')}</span><b style="font-size:1.2em">${esc(x.T.done[0])}</b><span class="m-sub">${esc(x.T.done[1])}</span><span class="m-btn" style="${btnStyle(x, 'lg')}">확인</span></div>`,
   },
+  tracking: {
+    steps: x => `<div class="fr-pad fr-stack"><b class="m-ptitle">환불 신청</b><div class="steps">${TRACK_STEPS.map((s, i) => `<span class="${i === 1 ? 'on' : ''}"><i>${i === 0 ? icon('check') : i + 1}</i>${s}</span>`).join('')}</div><div class="hint">${icon('clock')}<span>서류를 검토하고 있어요. 11월 15일까지 결과를 알려 드려요</span></div><div class="m-kv m-sub"><span>접수 번호</span><span class="num">R-20261110-0412</span></div></div>`,
+    timeline: x => `<div class="fr-pad fr-stack"><b class="m-ptitle">환불 신청 기록</b><div style="display:grid;gap:12px;border-left:2px solid var(--line);padding-left:14px">${[['11.12 14:20', '담당자가 서류를 검토하고 있어요', true], ['11.11 09:05', '보내 주신 서류를 받았어요'], ['11.10 18:31', '환불을 신청했어요']].map(([t, s, on]) => `<div style="display:grid;gap:2px"><span class="m-sub" style="font-variant-numeric:tabular-nums">${t}</span><span style="${on ? 'font-weight:600' : 'color:var(--muted)'}">${s}</span></div>`).join('')}</div></div>`,
+    line: x => `<div class="fr-pad fr-stack"><b class="m-ptitle">환불 신청</b><div class="hint">${icon('bell')}<span><b>서류 검토 중</b> · 11월 15일까지 결과를 알림으로 보내 드려요</span></div>${kvLines([['신청한 날', '11.10'], ['접수 번호', 'R-20261110-0412']])}</div>`,
+  },
   notify: {
     badge: x => `<div class="fr-pad fr-stack">${titleBar(x, `<span class="m-icobtn badge-wrap">${icon('bell')}<i class="count">2</i></span>`)}${rowsHTML(x, 3)}</div>`,
     banner: x => `<div class="notice-bar">${icon('bell')}<span>${esc(NOTIFY_TEXT[x.dom])}</span><b>보기</b></div><div class="fr-pad">${rowsHTML(x, 3)}</div>`,
     modal: x => `<div class="fr-confirm" style="min-height:240px"><div class="fr-pad">${rowsHTML(x, 4)}</div><div class="m-overlay fr-ov"><div class="fr-blockcard">${icon('bell')}<b style="font-size:1.2em">${esc(NOTIFY_TEXT[x.dom])}</b><span class="m-btn" style="${btnStyle(x, 'md')}">확인</span></div></div></div>`,
+  },
+  session: {
+    warn: x => `<div class="fr-confirm" style="min-height:260px"><div class="fr-pad">${rowsHTML(x, 4)}</div><div class="m-overlay fr-ov"><div class="m-dialog fr-dialog"><b>곧 로그아웃돼요</b><b class="num" style="font-size:1.6em">1:58</b><span class="m-sub">계속 쓰려면 연장해 주세요. 쓰던 내용은 그대로 있어요</span><div class="m-actions"><span class="m-btn ghost block" style="${btnStyle(x, 'sm')}">로그아웃</span><span class="m-btn block" style="${btnStyle(x, 'sm')}">연장하기</span></div></div></div></div>`,
+    auto: x => `<div class="fr-pad fr-stack"><span class="fr-label">${esc(x.D.inputText[0])}</span><div class="fr-input" style="min-height:${Math.max(x.t, 40)}px">${esc(x.D.inputText[1])}<span class="fr-caret"></span></div><span class="m-sub">${icon('clock')} 쓰는 동안은 로그인이 이어져요. 30분 동안 아무것도 안 하면 미리 알려 드려요</span></div>`,
+    resume: x => `<div class="fr-pad fr-empty" style="min-height:230px"><span class="big-ico">${icon('user')}</span><b>30분 동안 쓰지 않아 로그아웃했어요</b><span class="m-sub">다시 로그인하면 쓰던 화면으로 돌아가요</span><span class="m-btn" style="${btnStyle(x, 'lg')}">다시 로그인</span></div>`,
   },
   onboarding: {
     none: x => `<div class="fr-pad fr-stack">${titleBar(x)}${rowsHTML(x, 3)}</div>`,
@@ -127,6 +146,11 @@ export const RENDERS = {
     button: x => `<div class="fr-pad fr-stack"><span class="fr-label">파일 올리기</span><span class="m-btn ghost" style="${btnStyle(x, 'md')};align-self:flex-start">${icon('upload')}<span>파일 고르기</span></span><span class="m-sub">JPG·PNG·PDF · 10MB까지</span></div>`,
     result: x => `<div class="fr-pad fr-stack"><div class="hint">${icon('check')}<span><b>파일 3개</b>를 올렸어요 · 사진 2 · PDF 1</span></div><div class="hint warn">${icon('alert')}<span>menu.pdf는 이미 올렸어요. 그래도 더할까요?</span></div><div class="dropzone" style="padding:14px">${icon('upload')}<span class="m-sub">더 올리려면 끌어 놓거나 누르세요</span></div></div>`,
   },
+  consent: {
+    all: x => `<div class="fr-pad fr-stack" style="gap:4px"><b class="m-ptitle">약관에 동의해 주세요</b>${agreeRow(x, '<b>모두 동의</b>', false, false)}<div class="fr-line" style="padding:0;min-height:0"></div>${agreeRow(x, '[필수] 이용약관')}${agreeRow(x, '[필수] 개인정보 수집·이용')}${agreeRow(x, '[선택] 혜택 알림 받기')}<span class="m-btn block" style="${btnStyle(x, ctaSize(x))};margin-top:10px">동의하고 계속</span></div>`,
+    split: x => `<div class="fr-pad fr-stack" style="gap:4px"><b class="m-ptitle">약관에 동의해 주세요</b>${agreeRow(x, '[필수] 이용약관·개인정보 수집에 동의')}<span class="m-sub" style="margin-top:10px">선택 · 동의하지 않아도 가입할 수 있어요</span>${agreeRow(x, '[선택] 혜택 알림 받기')}<span class="m-btn block" style="${btnStyle(x, ctaSize(x))};margin-top:10px">가입하기</span></div>`,
+    jit: x => `<div class="fr-confirm" style="min-height:320px"><div class="fr-pad"><div class="m-kv fr-line" style="align-items:center;min-height:${Math.max(x.t, 48)}px"><span>혜택 알림</span><i class="switch on"></i></div><div class="m-kv fr-line" style="align-items:center;min-height:${Math.max(x.t, 48)}px"><span>주문 알림</span><i class="switch on"></i></div></div><div class="m-overlay fr-ov sheet"><div class="m-dialog fr-dialog sheet"><b>혜택 알림을 받으려면 동의가 필요해요</b><span class="m-sub">[선택] 광고성 정보 수신 · 할인과 행사 소식을 보내요. 설정에서 언제든 끌 수 있어요</span><div class="m-actions"><span class="m-btn ghost block" style="${btnStyle(x, 'md')}">받지 않기</span><span class="m-btn block" style="${btnStyle(x, 'md')}">동의하고 받기</span></div></div></div></div>`,
+  },
   delete: {
     confirm: x => `<div class="fr-confirm" style="height:230px"><div class="fr-pad">${rowsHTML(x)}</div><div class="m-overlay fr-ov"><div class="m-dialog fr-dialog"><b>지울까요?</b><span class="m-sub">지운 뒤에는 되돌릴 수 없어요</span><div class="m-actions"><span class="m-btn ghost block" style="${btnStyle(x, 'sm')}">취소</span><span class="m-btn danger block" style="${btnStyle(x, 'sm')}">지우기</span></div></div></div></div>`,
     undo: x => `<div class="fr-confirm" style="height:210px"><div class="fr-pad">${rowsHTML(x, 3, 1)}</div><div class="toast">${esc(x.T.removed)}<span class="toast-act">되돌리기</span></div></div>`,
@@ -163,6 +187,17 @@ export const RENDERS = {
     onepage: x => `<div class="fr-pad fr-stack">${['이름', '연락처', esc(x.D.inputText[0])].map((l, i) => `<span class="fr-label">${l}</span><div class="fr-input" style="min-height:${Math.max(x.t, 36)}px;border-color:var(--line)">${i === 2 ? esc(x.D.inputText[1]) : ''}</div>`).join('')}<span class="m-btn" style="${btnStyle(x, ctaSize(x))};align-self:flex-end">저장</span></div>`,
     wizard: x => `<div class="fr-pad fr-stack" style="min-height:260px"><span class="m-sub">1 / 3</span><b style="font-size:1.4em;line-height:1.3">${esc(x.D.choice[0])}</b><div class="fr-choices">${x.D.choice[1].map((o, i) => `<span class="${i === 1 ? 'on' : ''}" style="min-height:${Math.max(x.t, 56)}px">${esc(o)}</span>`).join('')}</div></div>`,
   },
+  permission: {
+    direct: x => `<div class="fr-confirm" style="min-height:280px"><div class="fr-pad fr-stack"><b class="m-ptitle">영수증 올리기</b><span class="m-btn" style="${btnStyle(x, 'md')};align-self:flex-start;outline:2px solid var(--accent);outline-offset:2px">${icon('camera')}<span>사진 찍기</span></span>${rowsHTML(x, 2)}</div>${systemDialog(x, '카메라에 접근하려고 해요', '영수증을 찍어 바로 올리려고 카메라를 써요', '허용 안 함', '허용')}</div>`,
+    primer: x => `<div class="fr-pad fr-empty" style="min-height:280px"><span class="big-ico">${icon('bell')}</span><b style="font-size:1.15em">신청 결과가 나오면 알림으로 알려 드려요</b><span class="m-sub">알림을 꺼도 앱 안 알림함에서는 볼 수 있어요</span><div class="m-actions" style="width:100%"><span class="m-btn ghost block" style="${btnStyle(x, 'md')}">나중에</span><span class="m-btn block" style="${btnStyle(x, 'md')}">계속</span></div></div>`,
+    settings: x => `<div class="fr-pad fr-stack"><b class="m-ptitle">가까운 곳 찾기</b><div class="hint warn">${icon('pin')}<span>위치 권한이 꺼져 있어 지금 위치로 찾을 수 없어요. <b class="more-link">설정에서 켜기</b></span></div><span class="m-btn ghost block" style="${btnStyle(x, 'md')}">주소를 직접 입력하기</span></div>`,
+  },
+  survey: {
+    inline: x => `<div class="fr-pad fr-stack">${rowsHTML(x, 2)}<div class="fr-stack" style="gap:8px;padding:12px;border:1px solid var(--line);border-radius:10px"><b>이 안내가 도움이 됐나요?</b><div class="fr-tools" style="justify-content:flex-start"><span class="m-btn ghost" style="${btnStyle(x, 'sm')}">도움이 됐어요</span><span class="m-btn ghost" style="${btnStyle(x, 'sm')}">아니요</span></div></div></div>`,
+    sheet: x => `<div class="fr-confirm" style="min-height:330px"><div class="fr-pad">${rowsHTML(x, 4)}</div><div class="m-overlay fr-ov sheet"><div class="m-dialog fr-dialog sheet" style="justify-items:center;text-align:center"><b>이용은 어땠나요?</b>${stars(4)}<div class="fr-input" style="width:100%;min-height:${Math.max(x.t, 44)}px;border-color:var(--line);color:var(--muted)">더 하고 싶은 말(선택)</div><div class="m-actions" style="width:100%"><span class="m-btn ghost block" style="${btnStyle(x, 'md')}">다음에</span><span class="m-btn block" style="${btnStyle(x, 'md')}">보내기</span></div></div></div></div>`,
+    store: x => `<div class="fr-confirm" style="min-height:280px"><div class="fr-pad">${rowsHTML(x, 4)}</div><div class="m-overlay fr-ov" style="align-items:center;padding:24px"><div class="m-dialog fr-dialog" style="width:84%;border-radius:14px;text-align:center;justify-items:center;gap:10px"><span class="big-ico" style="border-radius:12px">${icon('star')}</span><b>앱 스토어에 별점을 남겨 주세요</b>${stars(0, 26)}<span class="m-btn ghost block" style="${btnStyle(x, 'sm')}">나중에</span></div></div></div>`,
+    none: x => `<div class="fr-col" style="min-height:250px"><div class="fr-pad fr-stack">${titleBar(x)}${rowsHTML(x, 3)}</div><span class="m-spacer"></span><div class="fr-pad m-kv m-sub" style="border-top:1px solid var(--line)"><span>버전 2.4.1</span><span class="more-link">의견 보내기</span></div></div>`,
+  },
   longText: {
     ellipsis: x => `<div class="fr-pad fr-stack"><b>${esc(x.D.items[0].n)}</b><span class="clamp1">${esc(x.T.long)}</span></div>`,
     expand: x => `<div class="fr-pad fr-stack"><b>${esc(x.D.items[0].n)}</b><span class="clamp2">${esc(x.T.long)}</span><span class="more-link">더보기</span></div>`,
@@ -182,6 +217,12 @@ export const RENDERS = {
     relative: x => `<div class="fr-pad">${x.D.items.slice(0, 3).map((it, i) => `<div class="m-kv fr-line"><span>${esc(it.n)}</span><span class="m-sub">${['3분 전', '12분 전', '1시간 전'][i]}</span></div>`).join('')}</div>`,
     absolute: x => `<div class="fr-pad">${x.D.items.slice(0, 3).map((it, i) => `<div class="m-kv fr-line"><span>${esc(it.n)}</span><span class="m-sub num">${['10.26 14:32', '10.26 14:20', '10.26 13:31'][i]}</span></div>`).join('')}</div>`,
     both: x => `<div class="fr-pad">${x.D.items.slice(0, 3).map((it, i) => `<div class="m-kv fr-line"><span>${esc(it.n)}</span><span class="m-sub num">${['3분 전 · 14:32', '15분 전 · 14:20', '1시간 전 · 13:31'][i]}</span></div>`).join('')}</div>`,
+  },
+  help: {
+    text: x => `<div class="fr-pad fr-stack" style="gap:6px"><span class="fr-label">사업자 등록 번호</span><div class="fr-input" style="min-height:${Math.max(x.t, 44)}px">123-45-<span class="fr-caret"></span></div><span class="m-sub">숫자 10자리예요. 사업자 등록증 맨 위에 있어요</span></div>`,
+    expand: x => `<div class="fr-pad fr-stack" style="gap:6px"><span class="fr-label">통신판매업 신고 번호</span><div class="fr-input" style="min-height:${Math.max(x.t, 44)}px;border-color:var(--line)"></div><span class="more-link" style="display:flex;gap:4px;align-items:center;min-height:${Math.max(x.t, 32)}px">${icon('help')}이게 뭔가요?</span><div style="padding:12px;border-radius:8px;background:var(--bg);font-size:.92em">온라인으로 물건을 팔 때 구청에 신고하고 받는 번호예요. 아직 없으면 비워 두고 나중에 넣어도 돼요</div></div>`,
+    center: x => `<div class="fr-pad fr-stack">${titleBar(x, `<span class="more-link" style="display:flex;gap:4px;align-items:center;min-height:${Math.max(x.t, 32)}px">${icon('help')}도움말</span>`)}${rowsHTML(x, 3)}</div>`,
+    chat: x => `<div class="fr-confirm" style="min-height:300px"><div class="fr-pad fr-stack">${titleBar(x)}${rowsHTML(x, 3)}</div><div style="position:absolute;right:16px;bottom:16px;display:grid;gap:8px;justify-items:end"><div style="background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88em;box-shadow:0 6px 18px rgba(0,0,0,.12)"><b>상담원 연결까지 약 3분</b><br><span class="m-sub">평일 9시~18시</span></div><span class="m-btn" style="${btnStyle(x, 'md')};border-radius:999px">${icon('chat')}<span>상담하기</span></span></div></div>`,
   },
 };
 

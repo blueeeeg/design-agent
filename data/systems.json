@@ -651,6 +651,79 @@
           "seed": "https://seed-design.io/llms/components/content-placeholder.txt"
         }
       }
+    ],
+    "tracking": [
+      {
+        "text": "처리 단계 전체와 지금 단계를 보이고, 신청 내역과 이력을 남긴다",
+        "opt": null,
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/service/service_04_08.html"
+        }
+      }
+    ],
+    "session": [
+      {
+        "text": "로그인이 끝나기 전에 남은 시간을 알리고 연장·로그아웃을 고르게 한다",
+        "opt": "warn",
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/service/service_03_07.html"
+        }
+      }
+    ],
+    "consent": [
+      {
+        "text": "항목 제목에 [필수]·[선택]을 쓰고 필수를 위에 묶는다. 「동의 안 함」을 두고, 선택에 동의하지 않아도 쓸 수 있다고 알린다",
+        "opt": null,
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/global/global_03.html"
+        }
+      },
+      {
+        "text": "하나라도 풀면 「모두 동의」도 풀린다",
+        "opt": "all",
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/global/global_03.html"
+        }
+      }
+    ],
+    "survey": [
+      {
+        "text": "일을 마친 뒤 화면 아래쪽에 묻는다. 만족·불만족 두 가지로 시작하고, 더 묻는 질문은 세 개까지, 건너뛸 수 있게",
+        "opt": "inline",
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/global/global_05.html"
+        }
+      },
+      {
+        "text": "완료 화면에 의견 남기기 링크를 둔다",
+        "opt": null,
+        "refs": {
+          "govuk": "https://design-system.service.gov.uk/patterns/confirmation-pages/"
+        }
+      }
+    ],
+    "help": [
+      {
+        "text": "쉽고 익숙한 화면은 늘 보이는 도움말, 처음 쓰거나 복잡한 화면은 눌러서 여는 도움말, 막혔을 때 찾는 자주 묻는 질문은 따로 둔다",
+        "opt": null,
+        "refs": {
+          "krds": "https://www.krds.go.kr/html/site/global/global_02.html"
+        }
+      },
+      {
+        "text": "일부만 필요한 설명은 펼치게 두고, 대부분이 알아야 하는 것은 접어 두지 않는다",
+        "opt": "expand",
+        "refs": {
+          "govuk": "https://design-system.service.gov.uk/components/details/"
+        }
+      },
+      {
+        "text": "연락 방법마다 운영 시간과 기다릴 시간을 적고, 서비스 안에서 같은 순서로 둔다",
+        "opt": "chat",
+        "refs": {
+          "govuk": "https://design-system.service.gov.uk/patterns/contact-a-department-or-service-team/"
+        }
+      }
     ]
   },
   "numbers": [

@@ -1,0 +1,40 @@
+---
+// UX 기준 묶음마다 주소를 따로 만든다(/ux/accident/ 등). 링크로 바로 그 묶음을 연다
+// 이름이 바뀐 묶음의 예전 주소(oldIds, 예: /ux/keyboard/ → /ux/everyone/)는 새 주소로 보내는 페이지만 둔다. 예전 카드 주소(#keyboard-2)는 새 카드(#everyone-2)로
+import UxGroup from '../../components/UxGroup.astro';
+import ux from '../../../data/ux.json';
+
+type Group = (typeof ux.groups)[number] & { oldIds?: string[] };
+export function getStaticPaths() {
+  return (ux.groups as Group[]).flatMap(g => [
+    { params: { group: g.id }, props: { to: null } },
+    ...(g.oldIds || []).map(o => ({ params: { group: o }, props: { to: g.id } })),
+  ]);
+}
+const { group } = Astro.params;
+const { to } = Astro.props as { to: string | null };
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const target = to ? `${BASE}ux/${to}/` : '';
+// 예전 카드 이름 → 새 카드 이름(keyboard-2 → everyone-2)
+const slugs = to ? Object.fromEntries((ux.rules as { slug: string; oldSlugs?: string[] }[]).flatMap(r => (r.oldSlugs || []).map(o => [o, r.slug]))) : {};
+const name = to ? ux.groups.find(g => g.id === to)!.name : '';
+---
+{to ? (
+  <html lang="ko">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{name} · UX 기준 · UI 패턴 카탈로그</title>
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href={target}>
+  <meta http-equiv="refresh" content={`0; url=${target}`}>
+  <script is:inline define:vars={{ target, slugs }}>
+    var k = decodeURIComponent(location.hash.slice(1));
+    location.replace(target + (k ? '#' + (slugs[k] || k) : ''));
+  </script>
+  </head>
+  <body>
+  <p>이 묶음은 이름이 바뀌었습니다. 새 이름은 「{name}」입니다. <a href={target}>{name} 묶음으로 가기</a></p>
+  </body>
+  </html>
+) : <UxGroup group={group} />}

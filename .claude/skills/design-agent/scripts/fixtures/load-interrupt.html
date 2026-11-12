@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>동네 빵집</title>
+<!-- 소리 나는 자동 재생과 처음부터 열린 창이 걸리는 화면(2026-11-11). 지어낸 빵집 첫 화면이다 -->
+<style>
+  body { font-family: "Pretendard", sans-serif; font-size: 16px; line-height: 1.6; color: #1f2328; background: #fff; margin: 0; padding: 24px; }
+  h1 { font-size: 28px; margin: 0 0 16px; }
+  h2 { font-size: 20px; margin: 0 0 8px; }
+  button { min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #d0d7de; background: #fff; font: inherit; }
+  dialog, .sheet { border: 1px solid #d0d7de; border-radius: 12px; padding: 24px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16); }
+</style>
+</head>
+<body>
+<h1>오늘 구운 빵</h1>
+<p>아침 8시에 문을 열어요.</p>
+
+<!-- 소리가 켜진 채 저절로 재생 -->
+<video src="oven.mp4" autoplay loop controls width="320"></video>
+<audio src="shop-music.mp3" autoplay></audio>
+
+<!-- 들어오자마자 떠 있는 창 -->
+<dialog open aria-labelledby="coupon-title">
+  <h2 id="coupon-title">첫 방문 쿠폰을 드려요</h2>
+  <button type="button">쿠폰 받기</button>
+  <button type="button">닫기</button>
+</dialog>
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="noti-title">
+  <h2 id="noti-title">새 빵 소식을 알려 드릴까요?</h2>
+  <button type="button">알림 켜기</button>
+  <button type="button">나중에</button>
+</div>
+</body>
+</html>

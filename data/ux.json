@@ -1,0 +1,2255 @@
+{
+  "_about": "쓰는 흐름(UX) 기준. 2026-11-11 research/ux-rules.md 조사로 정했다. 이 파일 하나에서 세 곳이 나온다: 페이지 /ux/(src/pages/ux.astro), /llms.txt의 「UX 기준」, 스킬 문서 .claude/skills/design-agent/references/ux-basics.md(node tools/ux-doc.mjs로 다시 쓴다. npm run check가 어긋나면 실패한다). doc: 스킬 문서의 제목·머리말·「읽는 법」(read: 문단 text와 목록 items, items가 \"levels\"면 levels 목록)·「리뷰에 쓰는 법」(review). levels: 수준 꼭·권장·확인과 뜻. groups: 묶음(id, name, desc, fail = 실패 이름, oldIds = 예전 주소 이름. /ux/{예전 id}/는 새 묶음으로 보낸다). rules: 규칙. id(리뷰에서 부르는 이름), slug(주소·데모 파일 이름), group, level, rule(한 문장, 마침표 없이), detail(덧붙임, 없으면 뺀다), except(예외), see(눈으로), check(검사 글, 없으면 null), checkNote(check가 null일 때 「없음.」 뒤에 붙는 말), checks(check-screen.mjs 규칙 이름. 데모 나쁜 예는 모두 걸리고 좋은 예는 하나도 안 걸려야 한다), visualChecks(check-visual.mjs 출력에 나오는 말. 쓰는 법은 checks와 같다), oldSlugs(예전 slug. 예전 #주소로 들어오면 새 카드로 보낸다), sources([{name, note, url}] url은 research/ux-rules.md 「출처 주소」, research/ux-taxonomy.md, research/ux-flows.md 「출처」에 있는 것만. 원문을 못 열고 요약·기사로만 본 출처는 note 끝에 「간접」), sourcesBefore·sourcesAfter(근거 줄 앞뒤 글), ours(직접 다룬 출처가 없는 우리 규칙. 페이지는 「우리 규칙」 표시로, 스킬 문서는 근거 줄 앞 「우리 규칙이다.」로 생성기가 붙인다. 글에 따로 적지 않는다), demo({try: 해 볼 것, height: 처음 높이 px(그다음은 데모가 알린 내용 높이로 맞춘다), fixedHeight: true면 height 그대로(첫 화면 높이처럼 칸 크기가 규칙의 일부인 데모)}, 파일은 tools/ux-demos.mjs가 쓰는 public/ux/{slug}-bad.html과 -good.html, 데모로 못 보이면 null과 example {bad, good}). 말투: rule·detail·see 같은 설명은 한다체, try처럼 읽는 사람에게 하는 말은 합니다체",
+  "doc": {
+    "title": "쓰는 흐름 기준 (UX)",
+    "intro": [
+      "`visual-basics.md`가 화면의 값(색·글자·여백)을 다룬다면, 이 문서는 쓰는 흐름을 다룬다: 무엇을 누르면 무슨 일이 나고, 실수하면 어떻게 되고, 지금 무엇을 해야 하는지 보이는가. 화면을 만들 때 지키고, 리뷰할 때 7단계 「눌러 본다」에서 이 순서대로 본다.",
+      "규칙의 모양은 공개 기준과 디자인 시스템이 쓰는 방식을 따랐다(조사: `research/ux-rules.md`, 2026-11-11). 계기는 직접 만든 내부 도구 화면 비교에서 확인 창이 위험 버튼에 첫 초점을 두고 열리는 것을 값 검사도 사람 리뷰도 못 본 일이다."
+    ],
+    "read": [
+      {
+        "text": "**규칙마다 칸이 다섯이다.**",
+        "items": [
+          "규칙: 한 문장. 리뷰에서는 이름(`사고-1`)으로 부른다",
+          "예외: 이 규칙을 쓰지 않는 경우. 예외가 없으면 줄을 뺀다",
+          "눈으로: 리뷰하는 쪽이 화면에서 해 보는 것",
+          "검사: 스크립트가 잡는 것. 없으면 「없음」이고, 눈으로 본 것만 말한다",
+          "근거: 같은 말을 하는 공개 기준. 출처가 없는 우리 규칙은 그렇다고 적는다. 원문을 못 열고 요약·기사로만 본 출처는 「간접」을 붙인다"
+        ]
+      },
+      {
+        "text": "**수준은 규칙에 붙어 있다.** 스킬의 「꼭 / 권장 / 확인」을 KRDS 서비스 패턴의 정의에 맞춰 쓴다.",
+        "items": "levels"
+      },
+      {
+        "text": "**심각도는 리뷰에서 매긴다.** 같은 「권장」이라도 그 화면에서 얼마나 아픈지는 다르다. 「먼저 고칠 셋」을 고를 때는 세 가지를 본다: 과업을 못 끝내나, 얼마나 자주·많이 겪나, 되돌릴 수 있나(NN/g 심각도 기준과 같은 갈래)."
+      },
+      {
+        "text": "**서비스마다 갈리는 것은 「서비스 안에서 하나로」가 규칙이다.** 확인 창 버튼 순서, Esc로 닫히는지, 확인 창의 빨간 버튼은 회사마다 다르다. 한쪽을 정답으로 두지 않고, 한 서비스 안에서 섞여 있으면 짚는다."
+      },
+      {
+        "text": "**서비스가 정한 것이 먼저다.** 판단 순서는 SKILL.md 「서비스에서 정한 규칙」과 같다: 규격(WCAG, 되돌릴 수 없는 사고) > 서비스가 정한 것 > 이 문서의 권장."
+      }
+    ],
+    "review": [
+      "걸린 규칙은 「무엇이 / 왜(규칙 이름과 근거) / 어떻게」 한 줄로, 실패 이름 아래에 둔다",
+      "「검사: 없음」인 규칙은 눌러 보고 확인한 것만 쓴다. 못 해 본 것(로그인 뒤, 지우기처럼 남에게 영향이 가는 동작)은 「확인 못 한 것」에 적고 위반이라고 하지 않는다",
+      "「먼저 고칠 셋」은 값 검사와 이 문서를 같이 놓고 고른다. 「꼭」이 걸렸으면 대개 그것이 먼저다",
+      "화면을 만드는 쪽이면: 「꼭」은 모두 지키고, 「권장」은 계획에 어떻게 할지 한 줄씩 적는다"
+    ]
+  },
+  "levels": [
+    {
+      "id": "꼭",
+      "desc": "못 지키면 과업이 실패하거나, 되돌릴 수 없는 일이 사용자 뜻과 다르게 일어난다. 사용자가 스스로 피할 방법이 없다"
+    },
+    {
+      "id": "권장",
+      "desc": "못 지키면 어려워지거나 느려지지만 끝낼 수는 있다"
+    },
+    {
+      "id": "확인",
+      "desc": "맞고 틀림이 서비스마다 갈린다. 지적하지 말고 정한 건지 묻는다"
+    }
+  ],
+  "levelSource": {
+    "name": "KRDS 서비스 패턴 수준(필수·권장·우수)",
+    "url": "https://www.krds.go.kr/html/site/utility/utility_07.html"
+  },
+  "groups": [
+    {
+      "id": "accident",
+      "name": "사고 위험",
+      "desc": "되돌릴 수 없는 일이 사용자 뜻과 다르게 일어나는 것.",
+      "fail": "사고 위험"
+    },
+    {
+      "id": "visible",
+      "name": "할 일이 보이나",
+      "desc": "화면을 열었을 때 지금 상태와 해야 할 일이 바로 보이는 것.",
+      "fail": "할 일이 안 보임"
+    },
+    {
+      "id": "after",
+      "name": "누른 뒤",
+      "desc": "누른 다음 무엇이 바뀌었는지 알고, 실패하면 그 자리에서 고칠 수 있는 것.",
+      "fail": "빠진 상태"
+    },
+    {
+      "id": "input",
+      "name": "입력",
+      "desc": "칸마다 무엇을 쓰는지 알고, 쓰는 동안 막히지 않고, 틀려도 그 자리에서 고칠 수 있는 것.",
+      "fail": "헷갈림"
+    },
+    {
+      "id": "way",
+      "name": "길과 뒤로 가기",
+      "desc": "지금 어디 있는지 알고, 가려는 곳으로 가고, 어느 화면에서든 나올 수 있는 것.",
+      "fail": "헷갈림"
+    },
+    {
+      "id": "everyone",
+      "name": "누구나",
+      "desc": "마우스 없이, 화면을 키워서, 움직임과 소리 없이, 색을 못 가려도 쓸 수 있는 것.",
+      "fail": "읽기·누르기 어려움",
+      "oldIds": [
+        "keyboard"
+      ]
+    },
+    {
+      "id": "interrupt",
+      "name": "끼어들지 않기",
+      "desc": "하려던 일을 창·광고·알림이 가로막지 않는 것.",
+      "fail": "할 일이 안 보임"
+    },
+    {
+      "id": "honest",
+      "name": "속이지 않기",
+      "desc": "고른 적 없는 것이 골라지지 않고, 낼 돈과 그만두는 길이 숨지 않는 것.",
+      "fail": "사고 위험"
+    },
+    {
+      "id": "words",
+      "name": "화면 글",
+      "desc": "버튼과 안내 글이 하는 일을 정확히, 한 목소리로 말하는 것.",
+      "fail": "헷갈림"
+    }
+  ],
+  "rules": [
+    {
+      "id": "사고-1",
+      "slug": "accident-1",
+      "group": "accident",
+      "level": "꼭",
+      "rule": "위험한 확인 창은 안전한 쪽에 첫 초점을 둔다",
+      "see": "확인 창을 열고 바로 Tab이나 Enter를 누르면 어디가 눌리는지 본다. 창을 연 버튼으로 Enter를 쳐서 열면 그 다음 Enter가 곧 확정이 된다",
+      "check": "`check-screen.mjs` 「위험 버튼에 첫 초점」(스크립트로 초점을 옮기는 화면은 오판할 수 있다)",
+      "checks": [
+        "위험 버튼에 첫 초점"
+      ],
+      "sources": [
+        {
+          "name": "WAI-ARIA APG 모달 대화상자",
+          "note": "되돌릴 수 없으면 가장 덜 파괴적인 동작에",
+          "url": "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
+        },
+        {
+          "name": "Carbon 모달 접근성",
+          "url": "https://carbondesignsystem.com/components/modal/accessibility/"
+        },
+        {
+          "name": "Primer ConfirmationDialog",
+          "url": "https://primer.style/product/components/confirmation-dialog/guidelines"
+        },
+        {
+          "name": "NN/g 확인 창",
+          "note": "기본값을 「예」로 두지 않는다",
+          "url": "https://www.nngroup.com/articles/confirmation-dialog/"
+        }
+      ],
+      "ours": false,
+      "demo": {
+        "try": "아무 파일의 「지우기」를 눌러 창을 엽니다. 그대로 Enter를 누르면 무엇이 눌리는지 봅니다. 아래 「지금 초점」 줄이 초점 자리를 알려 줍니다.",
+        "height": 320
+      }
+    },
+    {
+      "id": "사고-2",
+      "slug": "accident-2",
+      "group": "accident",
+      "level": "꼭",
+      "rule": "확인 창은 무엇이 사라지고 되돌릴 수 있는지 말한다",
+      "detail": "「정말 하시겠어요?」만 있으면 안 된다. 대상의 이름과 결과를 쓴다. 양을 알 수 있으면 수로 쓴다(「결과 파일 12개」)",
+      "see": "확인 창 글만 읽고 무엇이 없어지는지 답할 수 있나",
+      "check": "「정말 ~하시겠어요?」 제목, 「확인·예」 버튼(`check-screen.mjs`)",
+      "checks": [
+        "「정말 ~하시겠어요?」 제목",
+        "대화상자 버튼이 「확인·예」"
+      ],
+      "sources": [
+        {
+          "name": "KRDS 모달",
+          "note": "기능·결과·위험을 반드시 설명",
+          "url": "https://www.krds.go.kr/html/site/component/component_04_05.html"
+        },
+        {
+          "name": "NN/g 확인 창",
+          "url": "https://www.nngroup.com/articles/confirmation-dialog/"
+        },
+        {
+          "name": "Primer·Shopify",
+          "note": "되돌릴 수 없다는 사실을 작은 글씨에 묻지 않는다"
+        },
+        {
+          "name": "Atlassian",
+          "note": "되돌릴 수 있는지 밝힌다",
+          "url": "https://atlassian.design/foundations/content/designing-messages/warning-messages"
+        }
+      ],
+      "sourcesAfter": "수로 쓰라는 것은 우리가 더했다",
+      "ours": false,
+      "demo": {
+        "try": "창의 글만 읽고 무엇이 사라지는지, 되돌릴 수 있는지 답해 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "id": "사고-3",
+      "slug": "accident-3",
+      "group": "accident",
+      "level": "권장",
+      "rule": "되돌릴 수 없는 동작을 화면에서 가장 눈에 띄는 버튼으로 두지 않는다",
+      "detail": "첫 입구는 보통 버튼으로 두고, 빨간 버튼·채운 버튼 같은 강한 신호는 마지막 확인 단계에만 쓴다",
+      "except": "그 화면이 오직 그 일을 하려고 있는 화면(탈퇴 화면의 「탈퇴」)",
+      "see": "화면에서 채운 버튼·색 버튼이 무엇인지 보고, 그것이 지우기·종료·보내기인지 본다",
+      "check": null,
+      "checks": [],
+      "sources": [
+        {
+          "name": "GOV.UK 버튼",
+          "note": "경고 버튼은 마지막 확인에만, 첫 동작은 일반 버튼. 주 버튼은 한 페이지에 하나",
+          "url": "https://design-system.service.gov.uk/components/button/"
+        }
+      ],
+      "ours": true,
+      "demo": {
+        "try": "처음 눈에 들어오는 버튼이 무엇인지 봅니다. 「프로젝트 지우기」를 눌러 마지막 확인 창의 빨간 버튼과도 견줘 봅니다.",
+        "height": 300
+      },
+      "sourcesBefore": "가까운 것은"
+    },
+    {
+      "id": "사고-4",
+      "slug": "accident-4",
+      "group": "accident",
+      "level": "권장",
+      "rule": "되돌리기 쉽거나 자주 하는 동작에는 확인 창 대신 되돌리기를 준다",
+      "detail": "확인 창이 잦으면 읽지 않고 누르게 되어, 정말 위험한 확인도 같이 무뎌진다",
+      "see": "하루에 여러 번 하는 동작마다 확인 창이 뜨나",
+      "check": null,
+      "checkNote": "방식 고르기는 `recommend.mjs --patterns delete --action light`",
+      "checks": [],
+      "sources": [
+        {
+          "name": "Primer ConfirmationDialog",
+          "note": "위험이 낮고 되돌리기 쉬우면 쓰지 않는다",
+          "url": "https://primer.style/product/components/confirmation-dialog/guidelines"
+        },
+        {
+          "name": "Apple 경고창",
+          "note": "흔하고 되돌릴 수 있는 삭제에는 띄우지 않는다",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/alerts"
+        }
+      ],
+      "ours": false,
+      "demo": {
+        "try": "책 세 권을 연달아 빼 봅니다. 몇 번 눌러야 하는지, 잘못 뺐을 때 어떻게 되돌리는지 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [
+        "두 번 눌림 방지 없음"
+      ],
+      "sources": [
+        {
+          "name": "GOV.UK 질문 페이지",
+          "note": "한 번만 일어나는 일은 뒤로 가기가 되풀이하지 않는다",
+          "url": "https://design-system.service.gov.uk/patterns/question-pages/"
+        },
+        {
+          "name": "GOV.UK 버튼",
+          "note": "두 번 보내는 실수",
+          "url": "https://design-system.service.gov.uk/components/button/"
+        },
+        {
+          "name": "Vercel Web Interface Guidelines",
+          "url": "https://vercel.com/design/guidelines"
+        },
+        {
+          "name": "Post/Redirect/Get",
+          "note": "간접",
+          "url": "https://en.wikipedia.org/wiki/Post/Redirect/Get"
+        }
+      ],
+      "ours": false,
+      "id": "사고-5",
+      "slug": "accident-5",
+      "group": "accident",
+      "level": "꼭",
+      "rule": "새로 고침·뒤로 가기·두 번 누르기로 같은 제출(결제·전송)이 다시 일어나지 않는다",
+      "detail": "누르면 요청이 끝날 때까지만 버튼을 잠그고 진행을 보인다. 미리 꺼 두지는 않는다(입력-4). 처리한 뒤에는 결과 주소로 옮겨(Post/Redirect/Get, 한 페이지 앱은 기록을 replace) 새로 고침이 같은 요청을 다시 보내지 않게 하고, 서버도 같은 요청을 한 번만 처리한다",
+      "see": "완료 화면에서 새로 고침을 눌러 브라우저가 「양식 다시 제출」을 물으면 위반이다. 완료 화면에서 뒤로 가기를 눌러 제출 화면이 다시 눌리는 상태로 열리는지 본다. 개발 도구로 요청을 붙잡은 채 버튼을 두 번 눌러 요청 수를 센다. 로그인·결제처럼 해 보면 부작용이 있는 경우는 코드에서 본다",
+      "check": "「두 번 눌림 방지 없음」(`check-screen.mjs`, 결제·주문·송금 버튼에 누른 뒤 잠그는 코드가 없을 때). 새로 고침·뒤로 가기는 없음",
+      "demo": {
+        "try": "「18,000원 결제하기」를 빠르게 두 번 눌러 봅니다. 완료 화면에서 위 「새로 고침」과 「← 뒤로」도 눌러 봅니다. 맨 위 줄이 서버가 받은 주문 수를 셉니다.",
+        "height": 270
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "web.dev bfcache",
+          "note": "돌아온 페이지는 헤더를 다시 보지 않는다",
+          "url": "https://web.dev/articles/bfcache"
+        },
+        {
+          "name": "Chrome bfcache와 no-store",
+          "url": "https://developer.chrome.com/docs/web-platform/bfcache-ccns"
+        },
+        {
+          "name": "OWASP 세션 관리",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"
+        }
+      ],
+      "ours": false,
+      "id": "사고-6",
+      "slug": "accident-6",
+      "group": "accident",
+      "level": "꼭",
+      "rule": "로그아웃한 뒤 뒤로 가기로 개인 화면이 다시 보이지 않는다",
+      "detail": "브라우저는 뒤로 가기로 돌아온 페이지를 저장해 둔 그대로 보이기도 한다(bfcache). 개인 화면은 `Cache-Control: no-store`를 주고, 돌아온 페이지(`pageshow`의 `persisted`)에서 로그인 상태를 다시 보고, 한 페이지 앱은 로그아웃할 때 메모리에 든 개인 정보를 비운다. 공용 기기에서 다음 사람이 본다",
+      "see": "로그인 → 내 정보 → 로그아웃 → 뒤로 가기를 눌러 이름·주소·주문 내역이 보이면 위반이다. 로그인할 수 없으면 코드에서 로그아웃 처리와 캐시 설정을 본다",
+      "check": null,
+      "demo": {
+        "try": "내 정보에서 「로그아웃」을 누른 뒤, 공용 기기의 다음 사람이라고 생각하고 위 「← 뒤로」를 눌러 봅니다.",
+        "height": 260
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "사고-7",
+      "slug": "accident-7",
+      "group": "accident",
+      "level": "확인",
+      "rule": "여럿이 같이 고치는 것은 나중에 저장하는 사람이 앞사람이 고친 것을 모르고 덮지 않게 알리고, 내 글은 남긴 채 고르게 한다",
+      "detail": "공지·문서·재고처럼 두 사람(또는 한 사람의 두 탭)이 같은 것을 동시에 고칠 수 있을 때다. 알리고 고르게 할지, 칸마다 합칠지, 고치는 동안 잠글지는 서비스가 정한다",
+      "see": "두 탭에서 같은 것을 열어 한쪽에서 먼저 저장하고, 다른 쪽에서 저장해 본다",
+      "sources": [
+        {
+          "name": "MediaWiki 편집 충돌",
+          "url": "https://www.mediawiki.org/wiki/Help:Edit_conflict"
+        }
+      ],
+      "demo": {
+        "try": "공지를 조금 고치고, 위 「다른 사람이 먼저 저장」을 누른 뒤 「저장」을 눌러 봅니다. 위 줄에서 저장된 공지를 봅니다.",
+        "height": 330
+      }
+    },
+    {
+      "id": "할 일-1",
+      "slug": "visible-1",
+      "group": "visible",
+      "level": "권장",
+      "rule": "스크롤하지 않은 첫 화면에서 지금 상태가 보인다",
+      "detail": "진행 중인지, 막혔는지, 끝났는지. 상태를 보려고 끝까지 내려가야 하면 안 된다",
+      "see": "스크롤하지 않은 첫 화면만 보고 「지금 어떤 상태고 내가 뭘 하면 되나」에 답해 본다",
+      "check": null,
+      "checks": [],
+      "sources": [
+        {
+          "name": "NN/g 1번 휴리스틱",
+          "note": "시스템 상태 보이기",
+          "url": "https://www.nngroup.com/articles/visibility-system-status/"
+        },
+        {
+          "name": "KRDS 신청 패턴 [필수] 현재 진행 상태 제공",
+          "url": "https://www.krds.go.kr/html/site/service/service_04_01.html"
+        },
+        {
+          "name": "Built for Shopify 4.2.3",
+          "note": "첫 화면에 잘 돌고 있는지",
+          "url": "https://shopify.dev/docs/apps/launch/built-for-shopify/requirements"
+        }
+      ],
+      "ours": false,
+      "demo": {
+        "try": "스크롤하지 말고 첫 화면만 보고 지금 어떤 상태인지, 무엇을 하면 되는지 말해 봅니다. 그다음 끝까지 내려 봅니다.",
+        "height": 280,
+        "fixedHeight": true
+      }
+    },
+    {
+      "id": "할 일-2",
+      "slug": "visible-2",
+      "group": "visible",
+      "level": "권장",
+      "rule": "화면 전체를 요약하는 것은 위쪽에 한 번만 둔다",
+      "detail": "결과 수·합계처럼 화면 전체를 요약하는 것은 맨 아래가 아니라 위에. 같은 상태 글(「진행 중 아님」)을 여러 곳에 되풀이하지 않는다",
+      "see": "요약 숫자가 어디 있는지, 같은 글이 몇 번 나오는지 센다",
+      "check": null,
+      "checks": [],
+      "sources": [
+        {
+          "name": "Fluent·Microsoft 글쓰기",
+          "note": "가장 중요한 것을 앞에",
+          "url": "https://learn.microsoft.com/en-us/style-guide/top-10-tips-style-voice"
+        },
+        {
+          "name": "토스 라이팅 원칙",
+          "note": "화면 속 잡초 제거",
+          "url": "https://toss.tech/article/8-writing-principles-of-toss"
+        },
+        {
+          "name": "Shopify",
+          "note": "같은 내용을 한 페이지에 두 번 보이지 않는다",
+          "url": "https://shopify.dev/docs/apps/design/content"
+        }
+      ],
+      "ours": false,
+      "demo": {
+        "try": "스크롤하지 말고 프로젝트가 모두 몇 개이고 몇 개가 진행 중인지 답해 봅니다. 「진행 중 아님」이 몇 번 나오는지도 셉니다.",
+        "height": 300
+      }
+    },
+    {
+      "id": "할 일-3",
+      "slug": "visible-3",
+      "group": "visible",
+      "level": "확인",
+      "rule": "상태가 바뀌면 가장 눈에 띄는 버튼도 따라 바뀐다",
+      "detail": "다 끝났으면 마무리 동작을, 막혔으면 막힌 이유를 앞에 둔다. 할 일이 없을 때 강조할 것도 없다",
+      "see": "상태를 바꿔 본다(`references/try-pages.md` 「상태 바꿔 보기」). 상태가 바뀌어도 같은 버튼이 늘 같은 세기로 눈에 띄면 짚는다",
+      "check": null,
+      "checks": [],
+      "sources": [
+        {
+          "name": "Built for Shopify 4.2.5",
+          "note": "가장 그럴듯한 버튼을 강조",
+          "url": "https://shopify.dev/docs/apps/launch/built-for-shopify/requirements"
+        },
+        {
+          "name": "GOV.UK",
+          "note": "주 버튼은 하나",
+          "url": "https://design-system.service.gov.uk/components/button/"
+        }
+      ],
+      "sourcesBefore": "직접 다룬 출처는 찾지 못했다. 가까운 것은",
+      "ours": true,
+      "demo": {
+        "try": "맨 위 「상태 바꿔 보기」로 상태를 바꿔 가며, 가장 눈에 띄는 버튼이 따라 바뀌는지 봅니다.",
+        "height": 280
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "할 일-4",
+      "slug": "visible-4",
+      "group": "visible",
+      "level": "꼭",
+      "rule": "검색 결과 화면은 찾은 말을 칸에 남기고, 결과가 없으면 없다고 말하며 조건을 풀 길을 준다",
+      "detail": "빈 목록만 두면 아직 불러오는 중인지, 정말 없는지, 무엇을 바꿔야 하는지 모른다. 어느 조건 때문에 없는지 말하고 그 조건을 빼는 버튼이나 다른 검색어를 함께 둔다. 빈 화면을 어떤 방식으로 그릴지는 패턴 「비어 있을 때」",
+      "see": "결과가 없을 말로 찾고 필터도 하나 걸어 본다. 찾은 말이 칸에 남는지, 왜 없는지와 다음에 할 일이 보이는지 본다",
+      "sources": [
+        {
+          "name": "KRDS 검색",
+          "note": "검색어 유지, 결과 없음 안내(필수)",
+          "url": "https://www.krds.go.kr/html/site/service/service_02_01.html"
+        },
+        {
+          "name": "NN/g 10가지 휴리스틱",
+          "note": "오류를 알아보고 빠져나오기",
+          "url": "https://www.nngroup.com/articles/ten-usability-heuristics/"
+        }
+      ],
+      "demo": {
+        "try": "「소금빵」에 「일요일에 여는 곳」을 건 채 결과가 없습니다. 무엇을 바꾸면 되는지 알 수 있는지 보고, 다른 말로도 찾아 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "id": "누른 뒤-1",
+      "slug": "after-1",
+      "group": "after",
+      "level": "권장",
+      "rule": "누른 결과를 누른 자리에서 알린다",
+      "detail": "무엇이 바뀌었는지, 다른 화면으로 옮겨졌으면 왜 거기 왔는지 알린다. 성공 알림은 보조기술도 읽게 한다(`role=\"status\"`, `aria-live`)",
+      "except": "결과가 화면에 그대로 보이는 가벼운 동작(체크 켜기)은 따로 알리지 않아도 된다",
+      "see": "눌러 보고 1초 안에 무엇이 달라졌는지 말할 수 있나. 다른 목록으로 넘어갔다면 방금 한 일이 어디 남았나",
+      "check": null,
+      "checks": [],
+      "sources": [
+        {
+          "name": "NN/g 1번 휴리스틱",
+          "url": "https://www.nngroup.com/articles/visibility-system-status/"
+        },
+        {
+          "name": "Carbon 알림 패턴",
+          "note": "작업한 영역에 바로",
+          "url": "https://carbondesignsystem.com/patterns/notification-pattern/"
+        },
+        {
+          "name": "Primer 저장 패턴",
+          "note": "페이지가 그대로면 인라인 메시지",
+          "url": "https://primer.style/product/ui-patterns/saving/"
+        },
+        {
+          "name": "GOV.UK 완료 페이지",
+          "url": "https://design-system.service.gov.uk/patterns/confirmation-pages/"
+        },
+        {
+          "name": "WCAG 2.2 4.1.3",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html"
+        }
+      ],
+      "ours": false,
+      "demo": {
+        "try": "아무 글의 「보관함으로」를 눌러 봅니다. 1초 안에 무엇이 달라졌는지, 글이 어디로 갔는지 말해 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "id": "누른 뒤-2",
+      "slug": "after-2",
+      "group": "after",
+      "level": "꼭",
+      "rule": "실패하면 그 자리에 이유와 고칠 방법이 남는다",
+      "detail": "사라지는 토스트로만 알리지 않는다. 무엇이 틀렸는지와 다시 할 방법을 그 칸 옆에 같이 쓴다. 적은 값을 지우지 않는 것은 입력-6",
+      "see": "빈 칸·틀린 값으로 제출하고, 무엇이 틀렸는지 그 자리에서 알 수 있는지 본다",
+      "check": "오류를 토스트로만 알림(`check-screen.mjs`)",
+      "checks": [
+        "오류를 토스트로만 알림"
+      ],
+      "sources": [
+        {
+          "name": "GOV.UK 오류 메시지",
+          "note": "필드 옆, 입력값 보존",
+          "url": "https://design-system.service.gov.uk/components/error-message/"
+        },
+        {
+          "name": "Carbon 모달",
+          "note": "닫지 않고 인라인",
+          "url": "https://carbondesignsystem.com/components/modal/usage/"
+        },
+        {
+          "name": "Built for Shopify 4.2.4",
+          "url": "https://shopify.dev/docs/apps/launch/built-for-shopify/requirements"
+        },
+        {
+          "name": "NN/g 오류 메시지 글",
+          "url": "https://www.nngroup.com/articles/error-message-guidelines/"
+        },
+        {
+          "name": "WCAG 2.2 3.3.1",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/error-identification.html"
+        },
+        {
+          "name": "3.3.3",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/error-suggestion.html"
+        }
+      ],
+      "ours": false,
+      "demo": {
+        "try": "들어 있는 이름 그대로 「저장」을 눌러 봅니다. 무엇이 틀렸는지, 어떻게 고치면 되는지 알 수 있는지 봅니다.",
+        "height": 260
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "앱인토스 블로그",
+          "note": "점수에는 뜻과 바뀐 이유를"
+        }
+      ],
+      "ours": false,
+      "id": "누른 뒤-3",
+      "slug": "after-3",
+      "group": "after",
+      "level": "권장",
+      "rule": "점수·등급 같은 결과에는 뜻과 바뀐 이유를 함께 보인다",
+      "detail": "「62점」「C 등급」만 두면 좋은 건지 나쁜 건지, 무엇을 하면 바뀌는지 모른다. 몇 점 중인지, 어느 구간인지, 지난번보다 왜 오르내렸는지를 같은 자리에 쓴다",
+      "see": "점수·등급·배지만 보고 좋은 건지 나쁜 건지, 왜 바뀌었는지 답해 본다",
+      "check": null,
+      "demo": {
+        "try": "점수만 보고 좋은 건지 나쁜 건지, 지난달보다 왜 바뀌었는지, 무엇을 하면 오르는지 답해 봅니다.",
+        "height": 260
+      }
+    },
+    {
+      "checks": [
+        "오류를 토스트로만 알림"
+      ],
+      "sources": [
+        {
+          "name": "앱인토스 출시 체크리스트",
+          "note": "결제 실패 사유를 알린다"
+        },
+        {
+          "name": "NN/g 오류 메시지 글",
+          "url": "https://www.nngroup.com/articles/error-message-guidelines/"
+        },
+        {
+          "name": "Built for Shopify 4.2.4",
+          "note": "사라지는 토스트로만 알리지 않는다",
+          "url": "https://shopify.dev/docs/apps/launch/built-for-shopify/requirements"
+        }
+      ],
+      "ours": false,
+      "id": "누른 뒤-4",
+      "slug": "after-4",
+      "group": "after",
+      "level": "꼭",
+      "rule": "결제·제출이 실패하면 이유와 다시 할 길을 그 자리에 보이고, 첫 화면으로 보내지 않는다",
+      "detail": "「결제에 실패했어요」 토스트만 띄우거나 첫 화면으로 보내지 않는다. 왜 실패했는지(카드 한도, 재고), 무엇을 하면 되는지를 실패한 자리에 남긴다. 담은 것과 적은 값을 지키는 것은 입력-6",
+      "see": "결제·제출이 실패하는 경우(카드 거절, 재고 없음, 연결 끊김)를 만들어 보고, 실패한 자리에 이유와 다시 할 길이 남는지 본다. 실제 결제는 하지 않고, 요청을 막거나(개발 도구 요청 차단) 코드에서 본다",
+      "check": "「오류를 토스트로만 알림」(`check-screen.mjs`). 첫 화면으로 보내는지는 없음",
+      "demo": {
+        "try": "「32,000원 결제하기」를 눌러 봅니다(첫 결제는 카드 한도로 실패하게 해 두었습니다). 왜 실패했는지, 어디서 다시 하면 되는지 봅니다.",
+        "height": 330
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "누른 뒤-5",
+      "slug": "after-5",
+      "group": "after",
+      "level": "권장",
+      "rule": "완료 화면은 접수 번호와 다음에 일어날 일을 보이고, 새로 고침하거나 다시 열어도 같다",
+      "detail": "끝나자마자 첫 화면으로 보내거나 금방 사라지는 알림으로만 알리면, 제대로 됐는지와 언제 무엇이 오는지를 다시 찾을 수 없다. 완료 화면에 고유 주소를 주면 새로 고침이나 즐겨찾기로 영수증처럼 다시 볼 수 있다. 알리는 방식은 패턴 「끝났다고 알릴 때」",
+      "see": "신청·주문을 마친 뒤 새로 고침하고, 주소를 복사해 새 탭에 열어 본다. 같은 완료 내용이 보여야 한다",
+      "sources": [
+        {
+          "name": "KRDS 신청 완료",
+          "note": "바로 첫 화면으로 보내지 않는다(필수)",
+          "url": "https://www.krds.go.kr/html/site/service/service_04_07.html"
+        },
+        {
+          "name": "GOV.UK 완료 페이지",
+          "note": "즐겨찾기를 영수증처럼 쓴다",
+          "url": "https://design-system.service.gov.uk/patterns/confirmation-pages/"
+        }
+      ],
+      "demo": {
+        "try": "「신청 보내기」를 누른 뒤 완료 화면에 무엇이 있는지 보고, 위 「새로 고침」을 눌러 봅니다.",
+        "height": 290
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "누른 뒤-6",
+      "slug": "after-6",
+      "group": "after",
+      "level": "권장",
+      "rule": "시간이 지났거나 이미 쓴 링크는 왜 안 되는지 말하고 다음 길을 준다",
+      "detail": "메일·문자로 보낸 확인 링크, 초대 링크, 비밀번호 바꾸기 링크가 해당한다. 「잘못된 요청」만 보이면 무엇을 해야 할지 모른다. 시간이 지났으면 새 링크 받기를, 이미 썼으면 로그인이나 내역으로 가는 길을 둔다",
+      "see": "확인 링크를 한 번 쓴 뒤 다시 열고, 시간이 지난 링크도 열어 본다",
+      "sources": [
+        {
+          "name": "GOV.UK 이메일 확인",
+          "url": "https://design-system.service.gov.uk/patterns/confirm-an-email-address/"
+        },
+        {
+          "name": "GOV.UK 페이지를 찾을 수 없을 때",
+          "url": "https://design-system.service.gov.uk/patterns/page-not-found-pages/"
+        }
+      ],
+      "demo": {
+        "try": "메일함(흉내)의 두 링크를 하나씩 눌러 봅니다. 하나는 시간이 지났고, 하나는 이미 쓴 링크입니다.",
+        "height": 290
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "누른 뒤-7",
+      "slug": "after-7",
+      "group": "after",
+      "level": "꼭",
+      "rule": "저장에 실패하면 먼저 바꿔 보인 것을 되돌리고, 무엇이 저장되지 않았는지 말하며 다시 할 길을 준다",
+      "detail": "누르자마자 화면부터 바꾸는 방식(낙관적 업데이트)은 빠르지만, 실패를 말없이 넘기면 저장된 줄 알고 떠난다. 적은 글은 지우지 않는다(입력-6). 연결이 끊긴 동안의 안내는 누른 뒤-9",
+      "see": "개발자 도구로 연결을 끊고(오프라인) 저장·체크를 눌러 본다. 화면이 저장된 척 남는지, 실패를 알리는지 본다",
+      "sources": [
+        {
+          "name": "Primer 저장",
+          "url": "https://primer.style/product/ui-patterns/saving/"
+        },
+        {
+          "name": "Vercel Web Interface Guidelines",
+          "url": "https://vercel.com/design/guidelines"
+        },
+        {
+          "name": "web.dev 오프라인 UX",
+          "url": "https://web.dev/articles/offline-ux-design-guidelines"
+        }
+      ],
+      "demo": {
+        "try": "위 「연결 끊어 보기」를 누른 뒤 「샀어요」를 눌러 봅니다. 그다음 「새로 고침」으로 실제로 저장된 것을 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": true,
+      "id": "누른 뒤-8",
+      "slug": "after-8",
+      "group": "after",
+      "level": "권장",
+      "rule": "「저장했어요」「지웠어요」처럼 한 번만 보일 안내는 새로 고침한 뒤 다시 나오지 않는다",
+      "detail": "안내를 주소(`?saved=1`)에 실어 두면 새로 고침·즐겨찾기·공유 때마다 같은 일이 또 일어난 것처럼 보인다. 안내는 한 번 보이고 지운다",
+      "see": "저장한 뒤 새로 고침하고, 그 주소를 새 탭에 열어 본다",
+      "sourcesBefore": "직접 다룬 출처는 찾지 못했다. 가까운 것은",
+      "sources": [
+        {
+          "name": "MDN replaceState",
+          "note": "기록을 쌓지 않고 주소 바꾸기",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState"
+        }
+      ],
+      "demo": {
+        "try": "이름을 고쳐 「저장」한 뒤 위 「새로 고침」을 몇 번 눌러 봅니다. 위 줄에서 안내가 보인 횟수를 셉니다.",
+        "height": 280
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "누른 뒤-9",
+      "slug": "after-9",
+      "group": "after",
+      "level": "확인",
+      "rule": "연결이 끊기면 알리고, 끊긴 동안 할 수 있는 것과 연결되면 보낼 것을 보인다",
+      "detail": "끊긴 동안 무엇까지 되게 할지(읽기만, 써 두었다 나중에 보내기)는 서비스가 정한다. 정했으면 그것을 화면에 말한다",
+      "see": "개발자 도구로 연결을 끊고 화면을 써 본다. 끊긴 줄 알 수 있는지, 보낸 것이 어떻게 되는지 본다",
+      "sources": [
+        {
+          "name": "web.dev 오프라인 UX",
+          "url": "https://web.dev/articles/offline-ux-design-guidelines"
+        }
+      ],
+      "demo": {
+        "try": "위 「연결 끊기」를 누르고 메시지를 보낸 뒤, 다시 「연결 잇기」를 눌러 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [
+        "placeholder만 있는 입력"
+      ],
+      "sources": [
+        {
+          "name": "KRDS 기본 패턴(입력폼·개인 식별 정보 입력)",
+          "note": "플레이스홀더를 레이블 대신 쓰지 않는다",
+          "url": "https://www.krds.go.kr/html/site/global/global_summary.html"
+        },
+        {
+          "name": "WCAG 2.2 3.3.2",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        },
+        {
+          "name": "Primer 디자이너 체크리스트",
+          "note": "폼",
+          "url": "https://primer.style/accessibility/tools-and-resources/checklists/designer-checklist/"
+        },
+        {
+          "name": "Vercel Web Interface Guidelines",
+          "note": "Forms",
+          "url": "https://vercel.com/design/guidelines"
+        }
+      ],
+      "ours": false,
+      "id": "입력-1",
+      "slug": "input-1",
+      "group": "input",
+      "level": "권장",
+      "rule": "입력 칸마다 보이는 레이블을 두고, placeholder로 대신하지 않는다",
+      "detail": "placeholder는 쓰기 시작하면 사라져서, 다 쓴 뒤 무엇을 쓰던 칸인지 확인할 수 없다. 옅은 글씨라 잘 안 보이고, 이미 쓴 값처럼 보여 빈 칸을 지나치기도 한다. 예시(「예: 010-1234-5678」)는 레이블 아래 도움말로 둔다",
+      "see": "칸에 글을 쓴 뒤에도 무엇을 쓰는 칸인지 보이나. 쓴 칸들을 훑어 맞게 썼는지 확인할 수 있나",
+      "check": "「placeholder만 있는 입력」(`check-screen.mjs`)",
+      "demo": {
+        "try": "빈 칸 하나에 글을 써 봅니다. 쓰는 도중에도 무엇을 쓰던 칸인지 보이는지, 다 쓴 뒤 칸 셋을 훑어 맞게 썼는지 확인할 수 있는지 봅니다.",
+        "height": 280
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "WCAG 2.2 1.3.5",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        },
+        {
+          "name": "KRDS 기본 패턴(개인 식별 정보 입력)",
+          "note": "autocomplete",
+          "url": "https://www.krds.go.kr/html/site/global/global_summary.html"
+        },
+        {
+          "name": "Vercel Web Interface Guidelines",
+          "note": "Forms",
+          "url": "https://vercel.com/design/guidelines"
+        }
+      ],
+      "ours": false,
+      "id": "입력-2",
+      "slug": "input-2",
+      "group": "input",
+      "level": "권장",
+      "rule": "칸마다 맞는 자판이 뜨고, 브라우저가 이름·연락처를 채울 수 있게 한다",
+      "detail": "전화번호는 `type=\"tel\"`, 이메일은 `type=\"email\"`, 숫자만 쓰는 칸은 `inputmode=\"numeric\"`이라야 휴대폰이 맞는 자판을 연다. 이름·전화번호·주소에는 `autocomplete`(name, tel, email, postal-code 등)를 달아 브라우저가 채우게 하고, 이미 받은 정보를 다시 쓰게 하지 않는다",
+      "see": "휴대폰에서 칸마다 눌러 맞는 자판이 열리나. 자동 채우기가 이름·연락처를 맞는 칸에 넣나",
+      "check": null,
+      "demo": {
+        "try": "칸을 하나씩 눌러 봅니다. 아래 검은 줄이 휴대폰이라면 열릴 자판과, 브라우저가 이 칸을 무엇으로 채울 수 있는지 알려 줍니다.",
+        "height": 290
+      }
+    },
+    {
+      "checks": [
+        "붙여넣기 막기"
+      ],
+      "sources": [
+        {
+          "name": "KRDS 기본 패턴(개인 식별 정보 입력)",
+          "note": "붙여넣기 허용",
+          "url": "https://www.krds.go.kr/html/site/global/global_summary.html"
+        },
+        {
+          "name": "WCAG 2.2 3.3.8",
+          "note": "인증에 기억·옮겨 적기를 요구하지 않는다",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        },
+        {
+          "name": "Vercel Web Interface Guidelines",
+          "note": "Forms",
+          "url": "https://vercel.com/design/guidelines"
+        }
+      ],
+      "ours": false,
+      "id": "입력-3",
+      "slug": "input-3",
+      "group": "input",
+      "level": "꼭",
+      "rule": "붙여넣기를 막지 않는다",
+      "detail": "비밀번호·인증번호·계좌번호·초대 코드도 붙여넣게 둔다. 막으면 비밀번호 관리 프로그램을 쓰는 사람과 긴 번호를 옮겨 적기 어려운 사람이 막히고, 옮겨 적다 틀리게 된다",
+      "see": "복사한 값을 칸마다 붙여넣어 본다(비밀번호, 인증번호, 계좌번호)",
+      "check": "「붙여넣기 막기」(`check-screen.mjs`)",
+      "demo": {
+        "try": "메일로 받은 초대 코드를 골라 복사한 뒤(「코드 복사」 버튼도 있습니다) 아래 칸에 붙여넣어 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [
+        "입력이 맞을 때까지 제출 잠금"
+      ],
+      "sources": [
+        {
+          "name": "Vercel Web Interface Guidelines",
+          "note": "Forms",
+          "url": "https://vercel.com/design/guidelines"
+        },
+        {
+          "name": "Carbon 비활성 상태",
+          "note": "막혔으면 풀 방법을 인라인으로",
+          "url": "https://carbondesignsystem.com/patterns/disabled-states/"
+        },
+        {
+          "name": "WCAG 2.2 3.3.1",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        }
+      ],
+      "ours": false,
+      "id": "입력-4",
+      "slug": "input-4",
+      "group": "input",
+      "level": "권장",
+      "rule": "입력이 다 맞을 때까지 제출 버튼을 꺼 두지 않는다",
+      "detail": "꺼진 버튼은 왜 못 누르는지 말하지 않는다. 버튼은 열어 두고, 누르면 검사해서 틀린 칸 아래에 고칠 말을 쓰고 첫 오류 칸으로 초점을 옮긴다. 두 번 눌림을 막는 잠금은 누른 뒤에 건다",
+      "see": "칸을 덜 채운 채로 제출 버튼을 눌러 본다. 눌리지 않으면 왜 그런지 화면에서 알 수 있나",
+      "check": "「입력이 맞을 때까지 제출 잠금」(`check-screen.mjs`, 처음부터 박힌 disabled나 `disabled = !valid` 같은 코드)",
+      "demo": {
+        "try": "그대로 「신청하기」를 눌러 봅니다. 눌리지 않으면 무엇이 틀렸는지 찾아봅니다.",
+        "height": 270
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "KRDS 기본 패턴(동의·입력폼)",
+          "note": "[필수]·[선택]",
+          "url": "https://www.krds.go.kr/html/site/global/global_summary.html"
+        },
+        {
+          "name": "WCAG 2.2 3.3.2",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        }
+      ],
+      "ours": false,
+      "id": "입력-5",
+      "slug": "input-5",
+      "group": "input",
+      "level": "권장",
+      "rule": "꼭 써야 하는 칸과 비워도 되는 칸을 글자로 나눠 보인다",
+      "detail": "「[필수]」「[선택]」처럼 글로 쓴다. 빨간 별표(*)만 두면 뜻을 모르는 사람이 있고 색에 기대게 된다. 거의 모두 필수면 비워도 되는 칸에만 「선택」을 붙여도 된다. 동의 항목도 같다",
+      "see": "제출하기 전에 비워도 되는 칸이 어느 것인지 화면만 보고 답할 수 있나",
+      "check": null,
+      "demo": {
+        "try": "신청하기 전에 비워도 되는 칸이 무엇인지 먼저 답해 봅니다. 그다음 모두 비운 채로 「신청하기」를 눌러 맞는지 봅니다.",
+        "height": 330
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "GOV.UK 질문 페이지",
+          "url": "https://design-system.service.gov.uk/patterns/question-pages/"
+        },
+        {
+          "name": "WCAG 2.2 3.3.7",
+          "note": "반복 입력",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/redundant-entry.html"
+        },
+        {
+          "name": "Baymard 로그인 흐름",
+          "url": "https://baymard.com/blog/account-sign-in-flows"
+        },
+        {
+          "name": "KRDS 로그인",
+          "note": "로그인을 모달로, 「로그인 안 함」",
+          "url": "https://www.krds.go.kr/html/site/service/service_03_01.html"
+        },
+        {
+          "name": "Baymard 카드 정보 유지",
+          "note": "간접",
+          "url": "https://baymard.com/blog/preserve-card-details-on-error"
+        }
+      ],
+      "ours": false,
+      "id": "입력-6",
+      "slug": "input-6",
+      "group": "input",
+      "level": "꼭",
+      "rule": "이전 단계로 돌아가도, 로그인·본인 확인·결제에 실패해도 적은 값이 남는다",
+      "detail": "여러 단계 폼에서 브라우저 뒤로 가기나 화면의 「이전」으로 돌아가도, 로그인하러 다녀와도, 본인 확인·결제가 실패하거나 취소돼도 적은 값과 담은 것을 지킨다. 같은 정보를 다시 쓰게 하지 않는다",
+      "except": "비밀번호 칸. 카드 번호는 카드가 거절됐을 때만 지운다",
+      "see": "여러 단계 폼에서 다음 단계로 간 뒤 뒤로 가기·「이전」으로 돌아와 본다. 비회원으로 담거나 쓴 뒤 로그인 버튼 → 뒤로·닫기로 돌아와 본다. 로그인·결제처럼 해 보면 부작용이 있는 경우는 코드에서 본다",
+      "check": null,
+      "demo": {
+        "try": "1단계에 이름과 번호를 쓰고 「다음」을 누른 뒤, 위 「← 뒤로」나 화면의 「이전」으로 돌아가 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "MDN beforeunload",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event"
+        },
+        {
+          "name": "호주 정부 디자인 시스템 「떠나기 전 경고」",
+          "url": "https://design-system.agriculture.gov.au/patterns/warn-before-leaving"
+        },
+        {
+          "name": "Primer 저장 패턴",
+          "url": "https://primer.style/product/ui-patterns/saving/"
+        },
+        {
+          "name": "앱인토스 화면 이벤트",
+          "url": "https://developers-apps-in-toss.toss.im/documentation/common/screen/event"
+        }
+      ],
+      "ours": false,
+      "id": "입력-7",
+      "slug": "input-7",
+      "group": "input",
+      "level": "권장",
+      "rule": "떠나기 전에 묻는 창은 잃을 입력이 있을 때만 띄운다",
+      "detail": "아무것도 안 썼거나 이미 저장했으면 묻지 않고 바로 나간다. 늘 물으면 읽지 않고 「나가기」를 누르게 되어 정말 잃을 때도 무뎌진다. 제출한 뒤에는 `beforeunload`를 뗀다",
+      "see": "쓰는 화면에 들어가 아무것도 안 쓴 채로, 쓰고 저장한 뒤에, 쓰고 저장하지 않은 채로 각각 뒤로 가기를 눌러 본다. 마지막만 물어야 한다",
+      "check": null,
+      "demo": {
+        "try": "아무것도 쓰지 않고 위 「← 뒤로」를 눌러 봅니다. 그다음 글을 쓰고 저장한 뒤, 또 고친 뒤 각각 눌러 봅니다.",
+        "height": 290
+      }
+    },
+    {
+      "checks": [
+        "인증번호 칸 설정 빠짐"
+      ],
+      "check": "인증번호 칸 설정 빠짐(`check-screen.mjs`)",
+      "ours": false,
+      "id": "입력-8",
+      "slug": "input-8",
+      "group": "input",
+      "level": "권장",
+      "rule": "인증번호 칸은 숫자 자판이 뜨고, 문자로 온 번호를 자동 채우기와 붙여넣기로 넣을 수 있게 한다",
+      "detail": "`type=\"text\" inputmode=\"numeric\" autocomplete=\"one-time-code\"`로 만든다. `type=\"number\"`는 앞자리 0이 빠지거나, 띄어 쓴 번호를 붙여넣으면 칸이 비어 버린다. 붙여넣은 번호의 띄어쓰기·줄표는 지우고 받는다",
+      "see": "휴대폰에서 인증번호 칸을 눌러 숫자 자판과 자판 위 번호 제안이 뜨는지, 「012 345」를 붙여넣어 그대로 들어가는지 본다",
+      "sources": [
+        {
+          "name": "web.dev SMS OTP 폼",
+          "note": "type=number는 앞자리 0이 빠질 수 있다",
+          "url": "https://web.dev/articles/sms-otp-form"
+        },
+        {
+          "name": "GOV.UK 전화번호 확인",
+          "url": "https://design-system.service.gov.uk/patterns/confirm-a-phone-number/"
+        },
+        {
+          "name": "KRDS 로그인",
+          "note": "붙여넣기 허용(필수)",
+          "url": "https://www.krds.go.kr/html/site/service/service_03_01.html"
+        }
+      ],
+      "demo": {
+        "try": "위 「문자 붙여넣기」를 누르거나, 칸을 눌러 자판 위 제안(흉내)이 뜨는지 봅니다. 그다음 「확인」을 누릅니다.",
+        "height": 280
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "입력-9",
+      "slug": "input-9",
+      "group": "input",
+      "level": "권장",
+      "rule": "인증번호를 보냈으면 쓸 수 있는 시간과, 번호가 안 왔을 때 할 일(다시 받기, 번호 고치기)을 보인다",
+      "detail": "시간이 지난 번호를 넣었을 때 「번호가 맞지 않아요」라고만 하면 잘못 친 줄 알고 같은 번호를 다시 넣는다. 시간이 지났다고 말하고 새 번호를 받게 한다",
+      "see": "번호를 받고 몇 분 기다린 뒤 넣어 본다. 어디로 보냈는지, 언제까지인지, 안 왔을 때 무엇을 누르는지 보이는지 본다",
+      "sources": [
+        {
+          "name": "GOV.UK 전화번호 확인",
+          "note": "받지 못했나요?",
+          "url": "https://design-system.service.gov.uk/patterns/confirm-a-phone-number/"
+        },
+        {
+          "name": "GOV.UK 이메일 확인",
+          "note": "쓸 수 있는 시간",
+          "url": "https://design-system.service.gov.uk/patterns/confirm-an-email-address/"
+        }
+      ],
+      "demo": {
+        "try": "위 「1분 기다리기」를 세 번 누른 뒤 「012345」를 넣고 「확인」을 눌러 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "입력-10",
+      "slug": "input-10",
+      "group": "input",
+      "level": "권장",
+      "rule": "길거나 나눠 쓰는 신청서는 임시 저장하고, 마지막 저장 시각을 보이고, 다시 열면 이어 쓰게 한다",
+      "detail": "자동 저장과 「임시 저장」 버튼을 한 폼에 섞지 않는다. 섞으면 무엇이 저장됐는지 모른다. 개인정보가 많은 신청서는 얼마 동안 보관하는지 함께 알린다",
+      "see": "반쯤 쓰고 새로 고침하거나 닫았다 다시 연다. 쓴 것이 남고, 언제 저장된 것인지 보이는지 본다",
+      "sources": [
+        {
+          "name": "KRDS 신청",
+          "note": "임시 저장(권장)",
+          "url": "https://www.krds.go.kr/html/site/service/service_04_01.html"
+        },
+        {
+          "name": "MOJ 나중에 이어 쓰기",
+          "note": "2023-10-26",
+          "url": "https://mojdigital.blog.gov.uk/2023/10/26/balancing-security-and-usability-to-add-save-for-later-to-moj-forms/"
+        },
+        {
+          "name": "Primer 저장",
+          "url": "https://primer.style/product/ui-patterns/saving/"
+        }
+      ],
+      "demo": {
+        "try": "칸을 채운 뒤 위 「새로 고침」을 눌러 봅니다. 「← 뒤로」로 나갔다가 「신청서 쓰기」로 다시 들어와도 봅니다.",
+        "height": 340
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "입력-11",
+      "slug": "input-11",
+      "group": "input",
+      "level": "꼭",
+      "rule": "앞 단계의 답을 바꿔 뒤 단계가 달라지면 무엇이 바뀌는지 알린다",
+      "detail": "말없이 뒤 단계를 건너뛰거나 예전 답을 그대로 두면, 맞지 않는 내용으로 제출된다. 다시 답해야 할 단계로 데려가 이유를 말하고, 예전 답은 지우지 않고 둔다",
+      "see": "확인 화면에서 앞쪽 답(받는 방법, 신청 대상 등)을 바꿔 본다. 뒤쪽에서 다시 답할 것이 있다고 알려 주는지 본다",
+      "sources": [
+        {
+          "name": "KRDS 신청서 작성",
+          "note": "앞 답이 바뀌면 알린다(필수)",
+          "url": "https://www.krds.go.kr/html/site/service/service_04_05.html"
+        },
+        {
+          "name": "GOV.UK 답 확인",
+          "url": "https://design-system.service.gov.uk/patterns/check-answers/"
+        }
+      ],
+      "demo": {
+        "try": "적은 내용에서 받는 방법 「변경」을 눌러 「가게에서 받기」로 바꾸고 「다음」을 눌러 봅니다.",
+        "height": 330
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "입력-12",
+      "slug": "input-12",
+      "group": "input",
+      "level": "꼭",
+      "rule": "되돌릴 수 없는 제출 앞에는 적은 것을 모아 보이고, 「변경」으로 고친 뒤 이 확인 화면으로 바로 돌아온다",
+      "detail": "고친 뒤 뒤 단계를 처음부터 다시 지나게 하면 고치기를 포기하거나 다른 칸을 잘못 건드린다. 확인 화면의 모양은 패턴 「확인 단계 모양」",
+      "except": "나중에 고치거나 취소할 수 있는 제출. 이때는 확인 화면 대신 완료 화면에 고칠 길을 둔다",
+      "see": "확인 화면에서 「변경」을 눌러 하나를 고친 뒤, 확인 화면까지 몇 번 눌러야 돌아오는지 센다",
+      "sources": [
+        {
+          "name": "GOV.UK 답 확인",
+          "url": "https://design-system.service.gov.uk/patterns/check-answers/"
+        },
+        {
+          "name": "KRDS 신청",
+          "note": "신청 내용 확인(필수)",
+          "url": "https://www.krds.go.kr/html/site/service/service_04_01.html"
+        }
+      ],
+      "demo": {
+        "try": "적은 내용에서 이름 「변경」을 눌러 고친 뒤, 확인 화면으로 돌아올 때까지 몇 번 누르는지 위 줄에서 셉니다.",
+        "height": 330
+      }
+    },
+    {
+      "checks": [
+        "링크가 아닌 이동"
+      ],
+      "sources": [
+        {
+          "name": "Vercel Web Interface Guidelines",
+          "note": "이동은 링크로",
+          "url": "https://vercel.com/design/guidelines"
+        }
+      ],
+      "ours": false,
+      "id": "길-1",
+      "slug": "way-1",
+      "group": "way",
+      "level": "권장",
+      "rule": "다른 화면으로 가는 것은 버튼이 아니라 링크로 만든다",
+      "detail": "`<a href>`라야 새 탭으로 열기, 주소 복사, 뒤로 가기, 화면 읽기 프로그램의 링크 목록이 된다. 버튼에 누르면 주소를 바꾸는 코드를 달면 이것이 모두 안 된다. 반대로 화면 안에서 무엇을 하는 것(저장, 열고 닫기)은 버튼이다",
+      "see": "목록의 항목·메뉴를 오른쪽 단추로 눌러 「새 탭에서 열기」가 나오나. 열고 나서 뒤로 가기로 돌아오나",
+      "check": "「링크가 아닌 이동」(`check-screen.mjs`)",
+      "demo": {
+        "try": "글 제목을 눌러 열어 봅니다. 그다음 제목을 오른쪽 단추로 눌러 「새 탭에서 열기」「링크 주소 복사」가 나오는지, 마우스를 올리면 브라우저 아래에 주소가 보이는지 봅니다.",
+        "height": 270
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "NN/g 1번 휴리스틱",
+          "note": "시스템 상태 보이기",
+          "url": "https://www.nngroup.com/articles/visibility-system-status/"
+        },
+        {
+          "name": "W3C COGA",
+          "note": "필요한 것을 찾게",
+          "url": "https://www.w3.org/TR/coga-usable/"
+        }
+      ],
+      "ours": true,
+      "id": "길-2",
+      "slug": "way-2",
+      "group": "way",
+      "level": "권장",
+      "rule": "메뉴와 탭에서 지금 있는 곳을 표시한다",
+      "detail": "눈에는 굵기·밑줄·바탕처럼 색 말고도 보이는 표시로, 화면 읽기 프로그램에는 `aria-current=\"page\"`로 알린다",
+      "see": "메뉴만 보고 지금 어느 화면인지 말할 수 있나. 색을 빼고 봐도 알 수 있나",
+      "check": null,
+      "sourcesBefore": "가까운 것은",
+      "demo": {
+        "try": "메뉴를 눌러 옮겨 다니며, 메뉴만 보고 지금 어느 화면인지 말해 봅니다. Tab으로 메뉴를 지나며 아래 검은 줄의 「읽는 말」도 봅니다.",
+        "height": 260
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "WCAG 2.2 2.4.2",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        }
+      ],
+      "ours": false,
+      "id": "길-3",
+      "slug": "way-3",
+      "group": "way",
+      "level": "권장",
+      "rule": "화면마다 무슨 화면인지 알 수 있는 페이지 제목을 단다",
+      "detail": "브라우저 탭, 방문 기록, 북마크, 화면 읽기 프로그램이 처음 읽는 것이 페이지 제목(`<title>`)이다. 모든 화면이 서비스 이름뿐이면 탭 여럿을 구분하지 못한다. 「지금 화면 – 서비스 이름」 순서로 쓴다",
+      "see": "화면 두세 개를 탭으로 열어 탭 제목만으로 구분되나",
+      "check": null,
+      "demo": {
+        "try": "위 탭 셋의 제목만 보고 「일정」 화면이 어느 탭인지 찾아봅니다. 탭을 눌러 맞는지 봅니다.",
+        "height": 250
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "앱인토스 소비자 UX 가이드",
+          "note": "다크패턴 방지: 나갈 선택지 없음",
+          "url": "https://developers-apps-in-toss.toss.im/design/consumer-ux-guide.html"
+        },
+        {
+          "name": "NN/g 10가지 휴리스틱",
+          "note": "사용자 통제와 자유",
+          "url": "https://www.nngroup.com/articles/ten-usability-heuristics/"
+        }
+      ],
+      "ours": false,
+      "id": "길-4",
+      "slug": "way-4",
+      "group": "way",
+      "level": "꼭",
+      "rule": "막다른 화면 없이 어디서든 나갈 길을 둔다",
+      "detail": "완료·결과 화면, 전체 화면 안내, 오류 화면에도 닫기·뒤로·처음으로 중 하나는 보인다. 다음에 할 일이 있으면 그것을 앞에 둔다",
+      "see": "끝까지 해 본 뒤 마지막 화면에서 나갈 버튼이 있나. 휴대폰 뒤로 가기 말고도 화면 안에 길이 있나",
+      "check": null,
+      "demo": {
+        "try": "「신청하기」를 누른 뒤 그 화면에서 나가 봅니다. 위 점선 줄의 「처음으로」는 데모를 되돌리는 버튼이라 빼고 봅니다.",
+        "height": 260
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "GOV.UK 질문 페이지",
+          "url": "https://design-system.service.gov.uk/patterns/question-pages/"
+        },
+        {
+          "name": "DfE 디자인 기록",
+          "note": "끝난 뒤 뒤로 가기",
+          "url": "https://design-histories.education.gov.uk/dfe-identity-account/returning-after-completion-using-back-button"
+        },
+        {
+          "name": "Baymard 뒤로 가기 기대",
+          "url": "https://baymard.com/blog/back-button-expectations"
+        }
+      ],
+      "ours": false,
+      "id": "길-5",
+      "slug": "way-5",
+      "group": "way",
+      "level": "꼭",
+      "rule": "끝낸 흐름(로그인·본인 확인·결제·신청)은 뒤로 가기로 다시 열리지 않는다",
+      "detail": "끝낸 단계로 돌아오면 같은 양식을 다시 보이지 않고 「이미 끝났다」는 안내나 다음 화면으로 보낸다. 끝낸 화면은 기록을 replace로 바꿔 두면 뒤로 가기가 그 앞 화면으로 간다. 로그인 화면을 기록에 남기지 않는 것도 같다",
+      "except": "모달로 띄운 로그인",
+      "see": "신청·결제를 끝낸 뒤 뒤로 가기를 눌러 제출 화면이 다시 눌리는 상태로 열리나 본다. 로그인한 뒤 뒤로 가기를 눌러 로그인 화면이 다시 나오나 본다. 로그인·결제처럼 해 보면 부작용이 있는 경우는 코드에서 본다",
+      "check": null,
+      "sourcesAfter": "로그인에 그대로 적은 1차 출처는 없다(로그인은 우리 판단)",
+      "demo": {
+        "try": "「신청하기」 → 「신청 보내기」로 신청을 끝낸 뒤 위 「← 뒤로」를 눌러 봅니다. 맨 위 줄이 받은 신청 수를 셉니다.",
+        "height": 270
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "KRDS 로그인 완료",
+          "url": "https://www.krds.go.kr/html/site/service/service_03_06.html"
+        },
+        {
+          "name": "Baymard 로그인 흐름",
+          "note": "34%가 가려던 곳으로 보내지 않는다",
+          "url": "https://baymard.com/blog/account-sign-in-flows"
+        },
+        {
+          "name": "OWASP 리다이렉트",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html"
+        }
+      ],
+      "ours": false,
+      "id": "길-6",
+      "slug": "way-6",
+      "group": "way",
+      "level": "권장",
+      "rule": "로그인을 마치면 하려던 곳으로 돌아간다",
+      "detail": "로그인을 요구한 화면 주소를 로그인 주소에 실어(`?next=/meet/12`) 마친 뒤 그리로 보낸다. 돌아갈 주소는 같은 사이트 경로만 받는다(열린 리다이렉트 막기). 초대·한 번 쓰는 링크처럼 다시 찾을 길이 없으면 꼭이다",
+      "see": "로그아웃 상태로 로그인이 필요한 주소를 열어 로그인 주소에 `returnTo`·`next`·`redirect`가 실리는지 본다. 로그인할 수 없으면 코드에서 로그인 뒤 이동을 본다",
+      "check": null,
+      "demo": {
+        "try": "「참여하기」를 눌러 로그인한 뒤 어디로 오는지 봅니다. 위 주소 줄도 봅니다.",
+        "height": 250
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "Vercel Web Interface Guidelines",
+          "note": "주소에 상태",
+          "url": "https://vercel.com/design/guidelines"
+        },
+        {
+          "name": "KRDS 검색",
+          "note": "조건 유지(필수)",
+          "url": "https://www.krds.go.kr/html/site/service/service_02_01.html"
+        },
+        {
+          "name": "Baymard 뒤로 가기 기대",
+          "url": "https://baymard.com/blog/back-button-expectations"
+        },
+        {
+          "name": "Smashing 뒤로 가기 UX",
+          "url": "https://www.smashingmagazine.com/2022/08/designing-better-back-button-ux/"
+        }
+      ],
+      "ours": false,
+      "id": "길-7",
+      "slug": "way-7",
+      "group": "way",
+      "level": "권장",
+      "rule": "검색어·필터·정렬·페이지·탭을 주소에 담아, 새로 고침·공유·뒤로 가기 뒤에도 같게 한다",
+      "detail": "화면 상태로만 두면 새로 고침하거나 상세에서 돌아올 때 처음 값으로 돌아간다. KRDS 검색 패턴은 조건 유지를 필수로 둔다. 조건을 바꿀 때마다 기록을 쌓을지는 갈린다(Baymard는 쌓으라고, Smashing은 작은 변화는 쌓지 말라고 한다). 서비스 안에서 하나로 정하고, 입력하는 동안 바뀌는 자동 검색은 replace로",
+      "see": "필터를 고르고 새로 고침한다. 상세에 들어갔다 뒤로 온다. 주소를 복사해 새 탭에 연다. 셋 다 같은 조건이 남아야 한다",
+      "check": null,
+      "demo": {
+        "try": "「꽃길동」과 「새로 연 순」을 고른 뒤 위 「새로 고침」을 눌러 봅니다. 다시 고르고 빵집 하나를 「보기」 한 뒤 「← 뒤로」도 눌러 봅니다.",
+        "height": 330
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "Baymard 같은 자리로 돌아오기",
+          "note": "13%가 맨 위로 보낸다",
+          "url": "https://baymard.com/research-articles/return-same-place"
+        },
+        {
+          "name": "NN/g 무한 스크롤",
+          "url": "https://www.nngroup.com/articles/infinite-scrolling-tips/"
+        },
+        {
+          "name": "MDN scrollRestoration",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration"
+        },
+        {
+          "name": "Chrome 스크롤 복원",
+          "url": "https://developer.chrome.com/blog/history-api-scroll-restoration"
+        }
+      ],
+      "ours": false,
+      "id": "길-8",
+      "slug": "way-8",
+      "group": "way",
+      "level": "권장",
+      "rule": "상세에서 돌아오면 같은 조건과 누른 항목 근처 자리로 돌아간다",
+      "detail": "「더 보기」나 무한 스크롤로 불러온 만큼도 지킨다. 맨 위로 보내거나 처음 몇 개만 다시 보이면 찾던 자리를 다시 찾아야 한다",
+      "see": "목록을 내리고 「더 보기」를 한두 번 누른 뒤 아래쪽 항목에 들어갔다 뒤로 온다. 같은 자리, 같은 개수로 돌아와야 한다",
+      "check": null,
+      "demo": {
+        "try": "「더 보기」를 눌러 8개를 불러오고 아래로 내려 7번째 글을 「읽기」 한 뒤, 위 「← 뒤로」를 눌러 봅니다.",
+        "height": 330
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "NN/g 실수로 닫히는 오버레이",
+          "url": "https://www.nngroup.com/articles/accidental-overlay-dismissal/"
+        },
+        {
+          "name": "Baymard 뒤로 가기 기대",
+          "note": "37%가 틀렸다",
+          "url": "https://baymard.com/blog/back-button-expectations"
+        },
+        {
+          "name": "Apple HIG 모달"
+        },
+        {
+          "name": "MDN CloseWatcher",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/CloseWatcher"
+        }
+      ],
+      "ours": false,
+      "id": "길-9",
+      "slug": "way-9",
+      "group": "way",
+      "level": "권장",
+      "rule": "페이지처럼 보이는 시트·창이 열려 있으면 뒤로 가기는 그것만 닫는다",
+      "detail": "열 때 기록을 한 칸 쌓고, ✕로 닫으면 그 칸도 걷어 다음 뒤로 가기가 한 번에 앞 페이지로 가게 한다. 창이 겹쳤으면 뒤로 가기 한 번에 맨 위 하나만 닫는다. 화면 상태로만 열면 뒤로 가기가 아래 페이지까지 떠나 버린다",
+      "except": "작은 팝오버·툴팁·드롭다운은 기록을 쌓지 않는다",
+      "see": "휴대폰 폭에서 바텀 시트·전체 화면 창을 열고 뒤로 가기(안드로이드 뒤로, 브라우저 뒤로)를 누른다. 창만 닫히고 아래 페이지는 남아야 한다. ✕로 닫은 뒤 뒤로 가기가 한 번에 앞 페이지로 가는지도 본다",
+      "check": null,
+      "sourcesAfter": "✕로 닫을 때 쌓은 기록도 걷는 것은 우리 판단이다",
+      "demo": {
+        "try": "「날짜 고르기」로 시트를 연 뒤 위 「← 뒤로」를 눌러 봅니다. 다시 열고 ✕로 닫은 뒤 「← 뒤로」도 눌러 봅니다. 「이 탭의 기록」 줄을 같이 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "Android 내비게이션 원칙",
+          "note": "딥 링크도 가상 기록",
+          "url": "https://developer.android.com/guide/navigation/principles"
+        },
+        {
+          "name": "당근 Stackflow history-sync",
+          "url": "https://12809f49-stackflow-docs.karrot.workers.dev/docs/advanced/history-sync"
+        }
+      ],
+      "ours": false,
+      "id": "길-10",
+      "slug": "way-10",
+      "group": "way",
+      "level": "권장",
+      "rule": "링크·알림으로 상세에 바로 들어와도 화면 안의 「뒤로」는 서비스 안(목록·홈)으로 간다",
+      "detail": "앞 기록이 서비스 안이면 기록을 되돌리고, 없으면(검색·공유 링크·알림으로 바로 들어왔으면) 위 단계 화면으로 보낸다. `history.back()`만 쓰면 빈 화면이나 다른 사이트로 나간다. 알림을 누르면 그 항목에 바로 닿고, 로그인이 필요하면 로그인 뒤 그 항목으로 간다(길-6)",
+      "see": "상세 주소를 새 탭에 바로 열고 화면 안 「뒤로」를 눌러 본다. 서비스 목록이나 홈으로 가야 한다",
+      "check": null,
+      "sourcesAfter": "웹에 그대로 적은 1차 출처는 없다",
+      "demo": {
+        "try": "검색 결과에서 링크로 바로 들어온 상세입니다. 화면 안 「‹ 뒤로」를 눌러 어디로 가는지 봅니다. 위 브라우저 「← 뒤로」와 견줘 봅니다.",
+        "height": 240
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "길-11",
+      "slug": "way-11",
+      "group": "way",
+      "level": "권장",
+      "rule": "여러 단계 폼은 단계마다 기록을 한 칸씩 쌓아, 브라우저 뒤로 가기와 화면의 「이전」이 같은 곳으로 간다",
+      "detail": "단계를 화면 상태로만 바꾸면 브라우저 뒤로 가기가 폼 전체를 떠나 앞 페이지로 간다. 휴대폰에서는 화면 버튼보다 뒤로 가기 동작을 더 자주 쓴다. 단계를 나누는 방식은 패턴 「여러 단계 흐름」",
+      "see": "두세 단계 들어간 뒤 브라우저 뒤로 가기를 눌러 한 단계 앞으로 가는지 본다",
+      "sources": [
+        {
+          "name": "Baymard 뒤로 가기 기대",
+          "url": "https://baymard.com/blog/back-button-expectations"
+        },
+        {
+          "name": "Android 내비게이션 원칙",
+          "url": "https://developer.android.com/guide/navigation/principles"
+        },
+        {
+          "name": "GOV.UK 뒤로 링크",
+          "url": "https://design-system.service.gov.uk/components/back-link/"
+        },
+        {
+          "name": "NN/g 사용자 통제",
+          "url": "https://www.nngroup.com/articles/user-control-and-freedom/"
+        }
+      ],
+      "demo": {
+        "try": "「다음」으로 3단계까지 간 뒤 위 「← 뒤로」를 눌러 봅니다. 화면 아래 「이전」과 같은 곳으로 가는지 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "길-12",
+      "slug": "way-12",
+      "group": "way",
+      "level": "권장",
+      "rule": "한 탭에서 로그아웃하면 다른 탭도 늦어도 다음 동작 때 알고, 그 탭에 쓰던 것은 다시 로그인한 뒤 이어 쓴다",
+      "detail": "다른 탭이 로그인된 척 남아 있다가 누르는 순간 로그인 화면으로 넘어가면 쓰던 글을 잃는다. 탭끼리 알리는 방법(BroadcastChannel)으로 바로 알리거나, 적어도 다음 요청 때 알린다",
+      "see": "두 탭을 열고 한 탭에서 로그아웃한 뒤, 다른 탭에서 쓰던 것을 보내 본다",
+      "sources": [
+        {
+          "name": "MDN BroadcastChannel",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API"
+        },
+        {
+          "name": "OWASP 세션 관리",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"
+        }
+      ],
+      "demo": {
+        "try": "「탭 2」에서 후기를 조금 쓰고 「탭 1」로 가서 로그아웃합니다. 다시 「탭 2」로 와서 「올리기」를 눌러 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "id": "누구나-1",
+      "slug": "everyone-1",
+      "group": "everyone",
+      "level": "꼭",
+      "rule": "모든 기능을 키보드로 쓸 수 있고, 초점이 갇히지 않는다",
+      "see": "Tab만으로 주요 동작을 끝까지 해 본다. 들어간 곳에서 Tab·Shift+Tab·Esc로 빠져나올 수 있나",
+      "check": "「키보드로 못 누르는 곳」(`check-screen.mjs`, onclick·@click만 단 div·span·li·img. 스크립트에서 붙인 클릭은 못 본다), 이름 없는 버튼. 흐름 전체는 없음",
+      "checks": [
+        "키보드로 못 누르는 곳",
+        "이름 없는 버튼"
+      ],
+      "sources": [
+        {
+          "name": "WCAG 2.2 2.1.1",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html"
+        },
+        {
+          "name": "2.1.2",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/no-keyboard-trap.html"
+        }
+      ],
+      "ours": false,
+      "demo": {
+        "try": "데모 맨 위 「공유 문서함」 글자를 한 번 누른 뒤 Tab과 Enter만으로 파일을 열어 봅니다. 「지금 초점」 줄이 어디를 가리키는지 봅니다.",
+        "height": 320
+      },
+      "oldSlugs": [
+        "keyboard-1"
+      ]
+    },
+    {
+      "id": "누구나-2",
+      "slug": "everyone-2",
+      "group": "everyone",
+      "level": "권장",
+      "rule": "대화상자는 안에서 초점이 돌고, 닫으면 연 자리로 돌아간다",
+      "detail": "연 버튼이 사라졌으면(지운 행) 흐름상 다음 자리(이웃 행)로 보낸다. 페이지 맨 위로 떨어지게 두지 않는다",
+      "see": "창을 열고 Tab을 여러 번 눌러 창 밖으로 나가지 않는지, 닫은 뒤 초점이 어디 있는지 본다",
+      "check": null,
+      "checks": [],
+      "sources": [
+        {
+          "name": "WAI-ARIA APG 모달 대화상자",
+          "url": "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
+        },
+        {
+          "name": "Primer 초점 관리",
+          "url": "https://primer.style/accessibility/design-guidance/focus-management/"
+        },
+        {
+          "name": "Fluent Dialog",
+          "url": "https://fluent2.microsoft.design/components/web/react/core/dialog/usage"
+        },
+        {
+          "name": "Carbon 대화상자 패턴",
+          "url": "https://carbondesignsystem.com/patterns/dialog-pattern/"
+        }
+      ],
+      "ours": false,
+      "demo": {
+        "try": "Tab으로 「지우기」까지 가서 Enter로 창을 엽니다. Tab을 여러 번 눌러 초점이 창 밖으로 나가는지 보고, 「지우기」로 닫은 뒤 초점이 어디 있는지 봅니다.",
+        "height": 340
+      },
+      "oldSlugs": [
+        "keyboard-2"
+      ]
+    },
+    {
+      "id": "누구나-3",
+      "slug": "everyone-3",
+      "group": "everyone",
+      "level": "권장",
+      "rule": "꼭 필요한 정보를 마우스를 올려야 보이는 설명(툴팁)에만 두지 않는다",
+      "detail": "키보드·터치로는 볼 수 없다. 꺼진 버튼의 이유, 위험 안내는 화면에 글로 둔다",
+      "see": "`title`이 달린 꺼진 버튼, 아이콘에만 붙은 설명을 찾는다",
+      "check": "「꺼진 이유가 title에만 있음」(`check-screen.mjs`, 꺼진 버튼이나 감싼 span의 title. 툴팁 라이브러리는 못 본다)",
+      "checks": [
+        "꺼진 이유가 title에만 있음"
+      ],
+      "sources": [
+        {
+          "name": "WCAG 2.2 1.4.13",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html"
+        },
+        {
+          "name": "NN/g 툴팁 글",
+          "note": "과업에 필요한 정보는 화면에",
+          "url": "https://www.nngroup.com/articles/tooltip-guidelines/"
+        },
+        {
+          "name": "Primer 툴팁",
+          "url": "https://primer.style/product/components/tooltip/guidelines"
+        },
+        {
+          "name": "Primer 디자이너 체크리스트",
+          "url": "https://primer.style/accessibility/tools-and-resources/checklists/designer-checklist/"
+        },
+        {
+          "name": "Carbon 비활성 상태",
+          "note": "막혔으면 풀 방법을 인라인으로",
+          "url": "https://carbondesignsystem.com/patterns/disabled-states/"
+        }
+      ],
+      "ours": false,
+      "demo": {
+        "try": "「내보내기」가 왜 안 눌리는지 찾아봅니다. 마우스 없이, 또는 손가락으로 쓴다고 생각하고 봅니다.",
+        "height": 260
+      },
+      "oldSlugs": [
+        "keyboard-3"
+      ]
+    },
+    {
+      "id": "누구나-4",
+      "slug": "everyone-4",
+      "group": "everyone",
+      "level": "확인",
+      "rule": "Esc로 닫히는지와 확인 창 버튼 순서를 서비스 안에서 하나로 맞춘다",
+      "detail": "갈리는 기준이다. Primer·Carbon은 Esc로 닫히고 Fluent의 경고 창은 닫히지 않는다. 버튼 순서는 Carbon·Apple이 「취소 왼쪽, 확정 오른쪽」, GOV.UK는 주 동작이 먼저다",
+      "see": "확인 창 두세 개를 열어 순서와 Esc 동작이 같은지 본다",
+      "check": null,
+      "checks": [],
+      "sources": [],
+      "ours": false,
+      "demo": {
+        "try": "두 버튼으로 창을 하나씩 열어 버튼 순서를 견주고, 창마다 Esc를 눌러 봅니다.",
+        "height": 320
+      },
+      "oldSlugs": [
+        "keyboard-4"
+      ]
+    },
+    {
+      "checks": [
+        "확대 막기"
+      ],
+      "sources": [
+        {
+          "name": "WCAG 2.2 1.4.4",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        },
+        {
+          "name": "KRDS 디지털 포용"
+        },
+        {
+          "name": "당근 SEED 포용 디자인",
+          "note": "시스템 글자 크기를 따른다",
+          "url": "https://seed-design.io/llms.txt"
+        }
+      ],
+      "ours": false,
+      "id": "누구나-5",
+      "slug": "everyone-5",
+      "group": "everyone",
+      "level": "꼭",
+      "rule": "화면 확대를 막지 않는다",
+      "detail": "viewport에 `user-scalable=no`나 `maximum-scale=1`을 넣지 않는다. 글자를 200%로 키워도 잘리거나 겹치지 않고 줄이 바뀌게 만든다",
+      "see": "휴대폰에서 두 손가락으로 벌려 키워 본다. 기기 글자 크기를 가장 크게 하고 다시 본다",
+      "check": "「확대 막기」(`check-screen.mjs`, viewport의 user-scalable=no·maximum-scale=1)",
+      "demo": {
+        "try": "데모 틀 안에서는 휴대폰처럼 두 손가락으로 키울 수 없어, 위 「두 손가락으로 벌리기」 버튼으로 흉내 냅니다. 나쁜 예는 화면 설정(viewport)에 확대 막기가 들어 있습니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [
+        "저절로 움직이는데 멈춤 없음"
+      ],
+      "sources": [
+        {
+          "name": "당근 SEED 포용 디자인",
+          "note": "애니메이션 끄기, 2초 넘으면 건너뛰기",
+          "url": "https://seed-design.io/llms.txt"
+        },
+        {
+          "name": "WCAG 2.2 2.3.3",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        },
+        {
+          "name": "WCAG 2.2 2.2.2",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        }
+      ],
+      "ours": false,
+      "id": "누구나-6",
+      "slug": "everyone-6",
+      "group": "everyone",
+      "level": "권장",
+      "rule": "기기의 「움직임 줄이기」 설정을 따르고, 오래 움직이는 것은 멈추거나 건너뛰게 한다",
+      "detail": "기기에서 움직임 줄이기를 켠 사람에게는 등장·반복 움직임을 끈다(`prefers-reduced-motion`). 저절로 넘어가는 배너처럼 계속 움직이는 것에는 멈춤을, 2초 넘는 움직임에는 건너뛰기를 둔다",
+      "see": "기기의 움직임 줄이기를 켜고 다시 본다. 저절로 넘어가는 것을 멈출 수 있나",
+      "check": "「저절로 움직이는데 멈춤 없음」(`check-screen.mjs`), 움직임 줄이기 설정을 따르는 CSS가 없음(`check-visual.mjs`). 2초 넘는 한 번짜리 움직임은 없음",
+      "visualChecks": [
+        "움직임 줄이기 설정(prefers-reduced-motion)을 따르는 CSS가 없다"
+      ],
+      "demo": {
+        "try": "배너가 저절로 넘어가는 것을 지켜봅니다. 읽는 도중 멈출 수 있는지 봅니다. 기기에서 움직임 줄이기를 켜고 이 페이지를 다시 열어 봐도 됩니다.",
+        "height": 270
+      }
+    },
+    {
+      "checks": [
+        "소리 나는 자동 재생"
+      ],
+      "sources": [
+        {
+          "name": "WCAG 2.2 1.4.2",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        },
+        {
+          "name": "KWCAG 2.2",
+          "note": "자동 재생 금지"
+        },
+        {
+          "name": "당근 SEED 포용 디자인",
+          "note": "자동 재생은 기본으로 끈다",
+          "url": "https://seed-design.io/llms.txt"
+        }
+      ],
+      "ours": false,
+      "id": "누구나-7",
+      "slug": "everyone-7",
+      "group": "everyone",
+      "level": "꼭",
+      "rule": "소리 나는 것을 저절로 틀지 않는다",
+      "detail": "영상·소리는 사용자가 눌러서 튼다. 저절로 틀어야 하면 소리를 끈 채로(`muted`) 틀고 멈춤을 둔다. 저절로 나는 소리는 화면 읽기 프로그램의 말소리를 덮고, 조용한 곳에서 쓰는 사람을 놀라게 한다",
+      "see": "화면을 열자마자 소리가 나는 것이 있나. 있으면 바로 끌 수 있나",
+      "check": "「소리 나는 자동 재생」(`check-screen.mjs`)",
+      "demo": {
+        "try": "데모라 실제 소리는 나지 않습니다. 페이지를 열자마자 소리가 켜진 채 영상이 돌기 시작한다고 생각하고, 두 화면을 견줘 봅니다.",
+        "height": 290
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "KRDS 서비스 패턴(로그인)",
+          "note": "만료 20초 전에 연장·로그아웃",
+          "url": "https://www.krds.go.kr/html/site/service/service_summary.html"
+        },
+        {
+          "name": "WCAG 2.2 2.2.1",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        },
+        {
+          "name": "DWP 세션 만료",
+          "note": "끝나기 2분 전에 알림",
+          "url": "https://design-system.dwp.gov.uk/patterns/manage-a-session-timeout"
+        },
+        {
+          "name": "WCAG 2.2 2.2.5",
+          "note": "다시 인증해도 잃지 않기",
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/re-authenticating.html"
+        }
+      ],
+      "ours": false,
+      "id": "누구나-8",
+      "slug": "everyone-8",
+      "group": "everyone",
+      "level": "꼭",
+      "rule": "시간 제한은 끝나기 전에 알리고 늘릴 수 있게 한다",
+      "detail": "로그인 유지, 좌석·재고 잡아 두기처럼 시간이 정해진 것은 남은 시간을 보이고, 끝나기 전에 늘릴지 묻는다(KRDS 로그인 패턴은 만료 20초 전). 시간이 끝나 로그아웃됐어도 다시 로그인하면 고른 것과 쓴 것을 이어 쓰게 한다",
+      "except": "실시간 경매·시험처럼 시간이 일의 일부인 것. 이때는 남은 시간을 처음부터 보인다",
+      "see": "시간 제한이 있는 화면에서 끝나기 전에 알림이 오는지, 늘릴 수 있는지 기다려 본다",
+      "check": "시간이 지나면 저절로 바뀌는데 끄거나 늘릴 방법이 없음(`check-visual.mjs`, 「30초 동안」「사라져요」처럼 화면에 적힌 글로만 본다)",
+      "visualChecks": [
+        "시간이 지나면 저절로 바뀌는데 끄거나 늘릴 방법이 없다"
+      ],
+      "demo": {
+        "try": "좌석을 잡아 둔 채 기다려 봅니다(데모라 30초로 줄였습니다. 위 「10초 보내기」로 당길 수 있습니다). 시간이 다 되기 전에 무엇을 할 수 있는지 봅니다.",
+        "height": 290
+      }
+    },
+    {
+      "checks": [
+        "상태를 색만으로 표시"
+      ],
+      "sources": [
+        {
+          "name": "WCAG 2.2 1.4.1",
+          "url": "https://www.w3.org/TR/WCAG22/"
+        },
+        {
+          "name": "Primer 디자이너 체크리스트",
+          "note": "색",
+          "url": "https://primer.style/accessibility/tools-and-resources/checklists/designer-checklist/"
+        }
+      ],
+      "ours": false,
+      "id": "누구나-9",
+      "slug": "everyone-9",
+      "group": "everyone",
+      "level": "꼭",
+      "rule": "뜻을 색만으로 전하지 않는다",
+      "detail": "상태 점에는 글자를, 오류 칸에는 빨간 테두리와 함께 고칠 말을, 그래프에는 색과 함께 이름표를 둔다. 색을 못 가리는 사람, 흑백 인쇄, 햇빛 아래 화면에서도 뜻이 남게",
+      "see": "화면을 흑백으로 바꿔 보고(브라우저 개발 도구의 색각 흉내) 상태와 오류를 그대로 읽을 수 있나",
+      "check": "「상태를 색만으로 표시」(`check-screen.mjs`, 글자·aria-label이 없는 status·badge·dot 표시)",
+      "demo": {
+        "try": "위 「흑백으로 보기」를 눌러 봅니다. 어느 주문이 배송 중인지 그대로 알 수 있는지 봅니다.",
+        "height": 260
+      }
+    },
+    {
+      "checks": [
+        "처음부터 열린 창"
+      ],
+      "sources": [
+        {
+          "name": "앱인토스 소비자 UX 가이드",
+          "note": "다크패턴 방지: 들어오자마자 광고·알림 시트",
+          "url": "https://developers-apps-in-toss.toss.im/design/consumer-ux-guide.html"
+        },
+        {
+          "name": "Built for Shopify 4.3.3·4.3.4",
+          "url": "https://shopify.dev/docs/apps/launch/built-for-shopify/requirements"
+        }
+      ],
+      "ours": false,
+      "id": "방해-1",
+      "slug": "interrupt-1",
+      "group": "interrupt",
+      "level": "권장",
+      "rule": "들어오자마자 창·광고·알림 동의를 띄우지 않는다",
+      "detail": "먼저 하려던 화면을 보인다. 알림 허용·앱 설치·이벤트는 그것이 쓸모 있는 순간에 그 자리에서 묻는다(알림은 상품을 담은 뒤, 예약을 마친 뒤)",
+      "see": "처음 들어왔을 때 본 화면보다 먼저 뜨는 것이 있나",
+      "check": "「처음부터 열린 창」(`check-screen.mjs`)",
+      "demo": {
+        "try": "들어오자마자 무엇이 먼저 보이는지 봅니다. 그다음 빵 하나를 「담기」 해 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "공정위 전자상거래법 개정 다크패턴 6유형",
+          "note": "반복간섭, 2025-02-14 시행, 간접"
+        },
+        {
+          "name": "공정위 다크패턴 운영 가이드라인",
+          "note": "2026-10-06, 13유형, 간접"
+        },
+        {
+          "name": "deceptive.design",
+          "note": "Nagging",
+          "url": "https://www.deceptive.design/types"
+        }
+      ],
+      "ours": false,
+      "id": "방해-2",
+      "slug": "interrupt-2",
+      "group": "interrupt",
+      "level": "권장",
+      "rule": "이미 거절한 것을 다시 묻지 않는다",
+      "detail": "닫은 창을 다음 화면에서 또 띄우지 않는다. 다시 물어야 하면 「7일간 보지 않기」처럼 언제 다시 묻는지 고르게 하고 그 기간을 지킨다",
+      "see": "띄운 창을 닫고 화면을 몇 번 옮겨 다니며 같은 창이 또 뜨는지 센다",
+      "check": null,
+      "demo": {
+        "try": "아래 탭을 몇 번 옮겨 다닙니다. 창이 뜨면 닫고, 같은 창이 몇 번 뜨는지 위 줄에서 셉니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "앱인토스 소비자 UX 가이드",
+          "note": "다크패턴 방지: 뒤로 가기를 막는 시트",
+          "url": "https://developers-apps-in-toss.toss.im/design/consumer-ux-guide.html"
+        },
+        {
+          "name": "Google 검색 「뒤로 가기 가로채기」 스팸 정책",
+          "note": "2026-04-13 발표",
+          "url": "https://developers.google.com/search/blog/2026/04/back-button-hijacking"
+        },
+        {
+          "name": "NN/g 사용자 통제와 자유",
+          "url": "https://www.nngroup.com/articles/user-control-and-freedom/"
+        }
+      ],
+      "ours": false,
+      "id": "방해-3",
+      "slug": "interrupt-3",
+      "group": "interrupt",
+      "level": "꼭",
+      "rule": "뒤로 가기를 붙잡거나 가로채지 않는다",
+      "detail": "뒤로 가기는 앞 화면으로 간다. 「지금 나가면 쿠폰이 사라져요」처럼 나가려는 사람을 붙잡는 창을 끼우거나, 혜택·알림 동의·광고 화면이나 가 본 적 없는 페이지를 기록에 끼워 넣지 않는다. 광고·라이브러리가 넣은 것이어도 그 서비스 책임이다(Google 검색은 2026-06-15부터 이것을 스팸으로 본다). 쓰는 사람을 속여 붙잡는 일이라 「속이지 않기」와도 닿는다",
+      "except": "쓰던 글·입력이 사라질 때 저장하지 않고 나갈지 묻는 것",
+      "see": "여러 화면을 들어간 뒤 뒤로 가기를 눌러 한 번에 앞 화면으로 가는지 본다. 처음 들어온 페이지에서 뒤로 가기를 눌러 들어오기 전 사이트로 나가는지 본다",
+      "check": null,
+      "demo": {
+        "try": "빵 상세 화면에서 왼쪽 위 뒤로(‹)를 눌러 목록으로 돌아가 봅니다.",
+        "height": 290
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "KRDS 기본 패턴(모바일 알림)",
+          "note": "급한 정도로 채널을 나눈다",
+          "url": "https://www.krds.go.kr/html/site/global/global_summary.html"
+        },
+        {
+          "name": "Built for Shopify 4.3.3·4.3.4",
+          "url": "https://shopify.dev/docs/apps/launch/built-for-shopify/requirements"
+        }
+      ],
+      "ours": false,
+      "id": "방해-4",
+      "slug": "interrupt-4",
+      "group": "interrupt",
+      "level": "권장",
+      "rule": "알림·배너를 한 화면에 쌓지 않는다",
+      "detail": "띠 배너·토스트·창이 여럿 겹치면 정작 처리할 알림을 놓친다. 급한 정도로 자리를 나누고(지금 고쳐야 하는 것은 그 자리에, 소식은 알림함에) 한 번에 하나만 앞에 둔다",
+      "see": "처음 열었을 때 보이는 알림·배너·토스트를 센다. 그중 지금 해야 하는 것이 가장 앞에 있나",
+      "check": null,
+      "demo": {
+        "try": "첫 화면에서 지금 꼭 해야 하는 일이 무엇인지 찾아봅니다.",
+        "height": 330
+      }
+    },
+    {
+      "checks": [],
+      "check": null,
+      "ours": false,
+      "id": "방해-5",
+      "slug": "interrupt-5",
+      "group": "interrupt",
+      "level": "권장",
+      "rule": "로그인은 꼭 필요한 순간에 묻고, 로그인하면 무엇이 좋은지 말하며 「로그인 안 함」을 둔다",
+      "detail": "들어오자마자 로그인부터 요구하면 무엇을 하는 서비스인지 보기도 전에 떠난다. 둘러보기는 로그인 없이 되게 하고, 저장·결제처럼 계정이 필요한 순간에 묻는다. 로그인 바로 뒤에 알림 동의를 잇지 않는다",
+      "see": "로그아웃 상태로 처음 들어가 무엇까지 로그인 없이 볼 수 있는지, 언제 왜 로그인을 묻는지 본다",
+      "sources": [
+        {
+          "name": "KRDS 로그인",
+          "note": "「로그인 안 함」",
+          "url": "https://www.krds.go.kr/html/site/service/service_03_01.html"
+        },
+        {
+          "name": "앱인토스 로그인·알림 시점 글",
+          "note": "들어오자마자 로그인을 요청하면 완료율 49.6%, 2026-10-15",
+          "url": "https://toss.im/apps-in-toss/blog/mini-app-login-notification-timing"
+        }
+      ],
+      "demo": {
+        "try": "처음 화면에서 빵을 볼 수 있는지 보고, 마음에 드는 빵을 「찜」해 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [
+        "미리 체크된 동의"
+      ],
+      "sources": [
+        {
+          "name": "공정위 전자상거래법 개정 다크패턴 6유형",
+          "note": "사전선택: 돈 드는 추가 상품을 미리 고름, 2025-02-14 시행, 간접"
+        },
+        {
+          "name": "공정위 다크패턴 운영 가이드라인",
+          "note": "2026-10-06, 13유형, 간접"
+        },
+        {
+          "name": "KRDS 기본 패턴(동의)",
+          "note": "[필수]·[선택], 동의 안 함",
+          "url": "https://www.krds.go.kr/html/site/global/global_summary.html"
+        },
+        {
+          "name": "deceptive.design",
+          "note": "Preselection",
+          "url": "https://www.deceptive.design/types"
+        }
+      ],
+      "ours": false,
+      "id": "속임-1",
+      "slug": "honest-1",
+      "group": "honest",
+      "level": "꼭",
+      "rule": "동의와 추가 상품을 미리 골라 두지 않는다",
+      "detail": "마케팅 수신 동의, 보장·보험 같은 추가 상품, 정기 결제 전환은 비운 채로 시작한다. 사용자가 고른 것만 넣는다. 필수와 선택은 글로 나눈다(입력-5)",
+      "see": "결제·가입 화면에서 처음부터 켜진 체크와 골라진 선택지를 찾고, 그것이 돈이나 동의와 이어지는지 본다",
+      "check": "「미리 체크된 동의」(`check-screen.mjs`)",
+      "demo": {
+        "try": "[필수] 동의 하나만 켜고 「결제하기」를 눌러 봅니다. 무엇에 동의했고 얼마가 결제되는지 봅니다.",
+        "height": 340
+      },
+      "sourcesAfter": "돈 드는 추가 상품은 전자상거래법이, 마케팅 수신 동의는 KRDS 동의 패턴과 deceptive.design이 근거다"
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "공정위 전자상거래법 개정 다크패턴 6유형",
+          "note": "잘못된 계층구조, 2025-02-14 시행, 간접"
+        },
+        {
+          "name": "공정위 다크패턴 운영 가이드라인",
+          "note": "2026-10-06, 13유형, 간접"
+        },
+        {
+          "name": "deceptive.design",
+          "note": "Visual interference",
+          "url": "https://www.deceptive.design/types"
+        }
+      ],
+      "ours": false,
+      "id": "속임-2",
+      "slug": "honest-2",
+      "group": "honest",
+      "level": "권장",
+      "rule": "거절 쪽을 흐리게 만들어 한쪽으로 몰지 않는다",
+      "detail": "받기와 거절은 둘 다 누를 것으로 보이게 둔다. 거절을 옅고 작은 글씨나 멀리 떨어진 링크로 숨기면 못 찾거나 잘못 누른다(잘못된 계층구조)",
+      "except": "주 동작과 닫기처럼 무게가 다른 선택지는 다르게 강조해도 된다. 문제는 사용자에게 손해인 쪽만 키우고 다른 쪽을 숨길 때다",
+      "see": "돈이 드는 쪽과 거절 쪽 버튼을 견준다. 거절 쪽 글자가 옅거나 작아 찾기 어렵나",
+      "check": null,
+      "demo": {
+        "try": "「사진 올리기」를 눌러 창을 엽니다. 저장 공간을 늘리지 않고 올리려면 무엇을 눌러야 하는지 찾아봅니다.",
+        "height": 320
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "deceptive.design",
+          "note": "Confirmshaming",
+          "url": "https://www.deceptive.design/types"
+        }
+      ],
+      "ours": false,
+      "id": "속임-3",
+      "slug": "honest-3",
+      "group": "honest",
+      "level": "권장",
+      "rule": "거절하는 말로 죄책감을 주지 않는다",
+      "detail": "「아니요, 할인은 필요 없어요」「혜택을 포기할게요」처럼 거절하는 사람을 깎는 말을 버튼에 쓰지 않는다. 「받지 않기」「닫기」처럼 하는 일만 말한다(글-1)",
+      "see": "거절·닫기 버튼 글만 소리 내어 읽어 본다. 누르는 사람을 탓하는 말인가",
+      "check": null,
+      "demo": {
+        "try": "레시피 하나를 저장한 뒤 뜨는 창의 두 버튼 글을 읽어 봅니다.",
+        "height": 290
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "공정위 전자상거래법 개정 다크패턴 6유형",
+          "note": "순차공개 가격, 2025-02-14 시행, 간접"
+        },
+        {
+          "name": "공정위 다크패턴 운영 가이드라인",
+          "note": "2026-10-06, 13유형, 간접"
+        },
+        {
+          "name": "deceptive.design",
+          "note": "Hidden costs",
+          "url": "https://www.deceptive.design/types"
+        },
+        {
+          "name": "FTC 「Bringing Dark Patterns to Light」",
+          "url": "https://www.ftc.gov/reports/bringing-dark-patterns-light"
+        }
+      ],
+      "ours": false,
+      "id": "속임-4",
+      "slug": "honest-4",
+      "group": "honest",
+      "level": "꼭",
+      "rule": "처음 보인 가격이 낼 가격이다",
+      "detail": "청소비·수수료·필수 옵션을 결제 마지막에 더하지 않는다. 목록과 상세에서 낼 돈 전체를 보이고, 나눈 내역은 그 옆에 둔다(순차공개 가격). 배송비처럼 조건에 따라 바뀌면 처음부터 같은 자리에 쓴다",
+      "see": "목록에서 본 가격과 결제 직전 금액을 견준다. 늘었다면 늘어난 것이 처음부터 보였나",
+      "check": null,
+      "demo": {
+        "try": "목록에서 숙소 하나의 가격을 기억하고 「예약하기」를 눌러 결제 금액과 견줘 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "공정위 전자상거래법 개정 다크패턴 6유형",
+          "note": "취소·탈퇴 방해, 2025-02-14 시행, 간접"
+        },
+        {
+          "name": "공정위 다크패턴 운영 가이드라인",
+          "note": "2026-10-06, 13유형, 간접"
+        },
+        {
+          "name": "deceptive.design",
+          "note": "Hard to cancel",
+          "url": "https://www.deceptive.design/types"
+        },
+        {
+          "name": "FTC 「Bringing Dark Patterns to Light」",
+          "url": "https://www.ftc.gov/reports/bringing-dark-patterns-light"
+        }
+      ],
+      "ours": false,
+      "id": "속임-5",
+      "slug": "honest-5",
+      "group": "honest",
+      "level": "꼭",
+      "rule": "해지·탈퇴를 가입보다 어렵게 만들지 않는다",
+      "detail": "가입을 한 화면에서 했으면 해지도 그만큼이다. 메뉴 깊이 숨기거나, 전화·상담으로만 받거나, 붙잡는 화면을 여러 번 끼우지 않는다. 해지 뒤에 무엇이 언제 끝나는지 알린다",
+      "see": "가입할 때와 해지할 때 누르는 횟수와 화면 수를 센다",
+      "check": null,
+      "demo": {
+        "try": "구독을 끝까지 해지해 봅니다. 위 줄이 가입할 때와 해지할 때 누른 횟수를 셉니다.",
+        "height": 290
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "앱인토스 출시 체크리스트",
+          "note": "권한을 거부해도 나머지 기능이 돌아가야 한다"
+        },
+        {
+          "name": "KRDS 기본 패턴(동의)",
+          "url": "https://www.krds.go.kr/html/site/global/global_summary.html"
+        }
+      ],
+      "ours": false,
+      "id": "속임-6",
+      "slug": "honest-6",
+      "group": "honest",
+      "level": "꼭",
+      "rule": "권한은 쓰는 순간에 이유와 함께 묻고, 거부해도 나머지는 쓸 수 있게 한다",
+      "detail": "위치·사진·알림 권한을 앱을 열자마자 한꺼번에 묻지 않는다. 그 기능을 누른 순간에 왜 필요한지 먼저 말하고 묻는다. 거부하면 그 기능만 다른 길(직접 고르기)로 두고 나머지는 그대로 쓰게 한다",
+      "see": "권한 창에서 모두 「허용 안 함」을 고른 뒤 앱을 어디까지 쓸 수 있는지 본다",
+      "check": null,
+      "demo": {
+        "try": "권한을 묻는 창(흉내)에서 「허용 안 함」을 골라 봅니다. 그다음 가게 목록을 볼 수 있는지 봅니다.",
+        "height": 300
+      }
+    },
+    {
+      "id": "글-1",
+      "slug": "words-1",
+      "group": "words",
+      "level": "권장",
+      "rule": "버튼 이름은 하는 일을 말한다",
+      "detail": "「확인」「예」「완료」 대신 「삭제」「종료」「보내기」. 확인 창 제목의 동사와 버튼 이름을 맞춘다. 닫기만 하는 쪽은 「취소」보다 「닫기」가 오해가 적을 때가 있다(「QA 취소」로 읽히는 경우)",
+      "except": "알리기만 하는 창의 「확인」",
+      "see": "버튼 글만 읽고 누른 뒤 무슨 일이 나는지 답할 수 있나",
+      "check": "버튼이 둘인데 「확인·예」인 대화상자(`check-screen.mjs`)",
+      "checks": [
+        "대화상자 버튼이 「확인·예」"
+      ],
+      "sources": [
+        {
+          "name": "Apple",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/alerts"
+        },
+        {
+          "name": "Carbon",
+          "url": "https://carbondesignsystem.com/components/modal/usage/"
+        },
+        {
+          "name": "Shopify",
+          "url": "https://shopify.dev/docs/apps/design/content"
+        },
+        {
+          "name": "Primer",
+          "url": "https://primer.style/product/components/confirmation-dialog/guidelines"
+        },
+        {
+          "name": "Atlassian",
+          "url": "https://atlassian.design/foundations/content/designing-messages/warning-messages"
+        },
+        {
+          "name": "Fluent",
+          "url": "https://fluent2.microsoft.design/components/web/react/core/dialog/usage"
+        },
+        {
+          "name": "GOV.UK",
+          "url": "https://design-system.service.gov.uk/components/button/"
+        },
+        {
+          "name": "KRDS",
+          "url": "https://www.krds.go.kr/html/site/component/component_04_05.html"
+        },
+        {
+          "name": "토스"
+        },
+        {
+          "name": "앱인토스 소비자 UX 가이드",
+          "note": "「닫기」",
+          "url": "https://developers-apps-in-toss.toss.im/design/consumer-ux-guide.html"
+        }
+      ],
+      "sourcesBefore": "조사한 모든 곳이 같은 말을 한다.",
+      "ours": false,
+      "demo": {
+        "try": "버튼 글만 읽고 각 버튼을 누르면 무슨 일이 나는지 먼저 답해 본 뒤, 눌러서 맞는지 봅니다.",
+        "height": 280
+      }
+    },
+    {
+      "id": "글-2",
+      "slug": "words-2",
+      "group": "words",
+      "level": "확인",
+      "rule": "한 화면 안에서 말투가 섞이지 않는다",
+      "detail": "「~해요」「~합니다」「~다」가 한 화면에 섞이면 여러 사람이 만든 화면처럼 읽힌다. 상황에 따라 바뀌어도 되는 것은 어조(오류는 더 짧고 직접)이고, 말투는 하나로 둔다",
+      "except": "사용자에게 하는 말(안내·상태·오류)과 사전식 설명(컴포넌트 정의, 목록의 짧은 설명)을 다른 말투로 정해 둔 서비스. 그 경우는 갈래마다 하나로 맞는지를 본다(이 카탈로그 사이트가 그렇다. 2026-11-11)",
+      "see": "안내 글·빈 화면·오류·확인 창 글의 끝맺음을 모아 본다",
+      "check": "「말투가 섞임」(`check-screen.mjs`, 끝맺음이 있는 문장에서 해요체·합니다체·한다체 중 두 가지 이상이 각각 2문장 이상 나오면. 자주 묻는 질문(summary·dt)과 버튼·라벨 글은 세지 않는다. 서비스가 직접 묻는 확인 창 질문(「~할까요?」)은 그 서비스의 말이라 센다. `--rules`·`--house`에서는 「정한 건지 확인」으로 간다)",
+      "checks": [
+        "말투가 섞임"
+      ],
+      "sources": [
+        {
+          "name": "Shopify 콘텐츠",
+          "note": "목소리는 같게, 어조는 상황에 맞게",
+          "url": "https://shopify.dev/docs/apps/design/content"
+        },
+        {
+          "name": "토스",
+          "note": "해요체 필수"
+        },
+        {
+          "name": "NN/g 일관성 글",
+          "url": "https://www.nngroup.com/articles/consistency-and-standards/"
+        }
+      ],
+      "sourcesAfter": "글투는 서비스가 정하는 것이라 「확인」이다",
+      "ours": false,
+      "demo": {
+        "try": "문장 끝맺음만 이어서 읽어 봅니다. 한 사람이 쓴 글처럼 들리는지 봅니다.",
+        "height": 280
+      }
+    },
+    {
+      "checks": [],
+      "sources": [
+        {
+          "name": "Vercel Web Interface Guidelines",
+          "note": "Locale-aware formats",
+          "url": "https://vercel.com/design/guidelines"
+        }
+      ],
+      "ours": false,
+      "id": "글-3",
+      "slug": "words-3",
+      "group": "words",
+      "level": "권장",
+      "rule": "숫자·금액·날짜 형식을 한 화면에서 하나로 쓴다",
+      "detail": "「12,000원」「₩8500」「1.5만 원」, 「2026-11-02」「11/5」「11월 9일」이 섞이면 견주기 어렵다. 사용자 지역에 맞는 형식(`Intl.NumberFormat`, `Intl.DateTimeFormat`)으로 한 곳에서 만들어 쓴다",
+      "see": "금액·날짜·수가 나오는 곳을 모아 쓰는 형식이 몇 가지인지 센다",
+      "check": null,
+      "demo": {
+        "try": "주문 내역에서 가장 비싼 주문과 가장 최근 주문을 찾아봅니다.",
+        "height": 270
+      }
+    }
+  ]
+}

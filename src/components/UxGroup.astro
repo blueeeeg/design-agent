@@ -1,0 +1,134 @@
+---
+// UX 기준의 묶음 하나(사고 위험, 할 일이 보이나 …)를 그린다. 패턴 페이지처럼 묶음마다 주소가 있고(/ux/accident/), /ux/는 첫 묶음을 연다.
+// 데이터는 data/ux.json 하나. 스킬 문서 ux-basics.md(tools/ux-doc.mjs)와 /llms.txt도 같은 데이터에서 나온다. 데모는 public/ux/(tools/ux-demos.mjs)
+import '../styles/catalog.css';
+import TopNav from './TopNav.astro';
+import ux from '../../data/ux.json';
+
+interface Props { group: string; index?: boolean }
+const { group, index = false } = Astro.props;
+const BASE = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+type Source = { name: string; note?: string; url?: string };
+type Rule = (typeof ux.rules)[number] & { detail?: string; except?: string; sourcesBefore?: string; sourcesAfter?: string; sources: Source[]; visualChecks?: string[]; oldSlugs?: string[] };
+const rules = ux.rules as Rule[];
+const rulesOf = (g: string) => rules.filter(r => r.group === g);
+const gi = ux.groups.findIndex(g => g.id === group);
+const g = ux.groups[gi];
+const prev = ux.groups[gi - 1], next = ux.groups[gi + 1];
+const mine = rulesOf(g.id);
+const LEVEL_CLASS: Record<string, string> = { 꼭: 'must', 권장: 'should', 확인: 'ask' };
+// 데이터 글의 `코드`를 <code>로. 스킬 안 파일 경로(`references/…`)는 읽는 사람이 알 필요가 없어 뺀다
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const inline = (s: string) => esc(s.replace(/\(`references\/[^)]*\)/g, '')).replace(/`([^`]+)`/g, '<code>$1</code>');
+// 다른 묶음의 카드 주소(#everyone-2), 예전 카드 주소(#keyboard-2 → #everyone-2), 예전 한 페이지 시절 묶음 주소(#g-keyboard)로 들어오면 그 묶음 페이지의 그 카드로 보낸다. 값은 [묶음, 카드]
+type Group = (typeof ux.groups)[number] & { oldIds?: string[] };
+const where: Record<string, [string, string]> = Object.fromEntries([
+  ...rules.flatMap(r => [r.slug, ...(r.oldSlugs || [])].map(k => [k, [r.group, r.slug]])),
+  ...(ux.groups as Group[]).flatMap(x => [x.id, ...(x.oldIds || [])].map(k => [`g-${k}`, [x.id, '']])),
+]);
+---
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{g.name} · UX 기준 · UI 패턴 카탈로그</title>
+<meta name="description" content={`UX 기준 「${g.name}」 규칙 ${mine.length}개. ${g.desc} 규칙마다 잘못 만든 화면과 고친 화면을 눌러 보며 견줄 수 있습니다.`}>
+{index && <link rel="canonical" href={`${BASE}ux/${g.id}/`}>}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<script is:inline define:vars={{ where, here: g.id, base: BASE }}>
+  var key = decodeURIComponent(location.hash.slice(1)), to = where[key];
+  if (to && (to[0] !== here || (to[1] && to[1] !== key))) location.replace(base + 'ux/' + to[0] + '/' + (to[1] ? '#' + to[1] : ''));
+</script>
+</head>
+<body>
+<TopNav current="ux" />
+<aside class="side">
+  <div class="tools">
+    <p class="lede">무엇을 누르면 무슨 일이 나는지, 실수하면 어떻게 되는지를 다루는 규칙 {rules.length}개입니다. 규칙마다 잘못 만든 화면과 고친 화면을 눌러 보며 견줄 수 있습니다.</p>
+  </div>
+  <nav aria-label="UX 기준 묶음">
+    {ux.groups.map(x => <a href={`${BASE}ux/${x.id}/`} aria-current={x.id === g.id ? 'true' : undefined}><span>{x.name}</span><small>{rulesOf(x.id).length}</small></a>)}
+  </nav>
+</aside>
+<main class="dict ux">
+  <header class="el-head"><h1 class="dict-title">{g.name}</h1><span class="sub">UX 기준 · 규칙 {mine.length}개</span></header>
+  <p class="q">{g.desc}</p>
+
+  <details class="ux-legend">
+    <summary>꼭 · 권장 · 확인 · 우리 규칙 표시의 뜻</summary>
+    <ul>
+      {ux.levels.map(l => <li><span class={`lv lv-${LEVEL_CLASS[l.id]}`}>{l.id}</span><span>{l.desc}</span></li>)}
+      <li><span class="ours">우리 규칙</span><span>같은 말을 하는 공개 기준을 찾지 못해 이 사이트가 정한 규칙이다. 가까운 근거를 함께 단다</span></li>
+    </ul>
+    <p class="ux-levels-src">꼭·권장·확인은 <a href={ux.levelSource.url} target="_blank" rel="noopener">{ux.levelSource.name}</a>의 정의에 맞췄습니다.</p>
+  </details>
+
+  {mine.map(r => (
+    <article class="ux-card" id={r.slug} aria-labelledby={`${r.slug}-t`}>
+      <div class="ux-head">
+        <span class="ux-id">{r.id}</span>
+        <span class={`lv lv-${LEVEL_CLASS[r.level]}`}>{r.level}</span>
+        {r.ours && <span class="ours">우리 규칙</span>}
+      </div>
+      <h2 class="ux-rule" id={`${r.slug}-t`}>{r.rule}.</h2>
+      {r.detail && <p class="ux-detail" set:html={inline(r.detail)} />}
+      {r.demo ? (
+        <>
+          <div class="ux-pair">
+            {[['bad', '이렇게 하면 안 된다'], ['good', '이렇게 한다']].map(([k, label]) => (
+              <figure class={`ux-demo ${k}`}>
+                <figcaption>{label}</figcaption>
+                <iframe src={`${BASE}ux/${r.slug}-${k}.html`} title={`${r.id} ${label}: ${r.rule} 데모`} loading="lazy" sandbox="allow-scripts" data-fixed={r.demo.fixedHeight ? 'true' : undefined} style={`height:${r.demo.height}px`}></iframe>
+              </figure>
+            ))}
+          </div>
+          <p class="ux-try"><b>해 볼 것</b><span>{r.demo.try}</span></p>
+        </>
+      ) : null}
+      <div class="ux-kv">
+        {r.except && <p class="kv"><span class="fl">예외</span><span set:html={inline(r.except)} /></p>}
+        <p class="kv"><span class="fl">내 화면에서</span><span set:html={inline(r.see)} /></p>
+        {(r.checks.length > 0 || r.visualChecks?.length) && <p class="kv"><span class="fl">자동 검사</span><span>{[...r.checks, ...(r.visualChecks || []).map(v => `${v}(색·글자·여백 검사)`)].join(' · ')}</span></p>}
+        {(r.sources.length > 0 || r.sourcesBefore) && (
+          <p class="kv src"><span class="fl">근거</span><span>
+            {r.sourcesBefore && `${r.sourcesBefore} `}
+            {r.sources.map((s, i) => (
+              <>{i > 0 && ', '}{s.url ? <a href={s.url} target="_blank" rel="noopener">{s.name}</a> : s.name}{s.note && `(${s.note})`}</>
+            ))}
+            {r.sourcesAfter && `. ${r.sourcesAfter}`}
+          </span></p>
+        )}
+      </div>
+    </article>
+  ))}
+
+  <nav class="detail-nav" aria-label="이전·다음 묶음">
+    {prev ? <a class="pnav prev" href={`${BASE}ux/${prev.id}/`}><span class="pnav-k">이전 묶음</span><span class="pnav-n">‹ {prev.name}</span></a> : <span></span>}
+    {next ? <a class="pnav next" href={`${BASE}ux/${next.id}/`}><span class="pnav-k">다음 묶음</span><span class="pnav-n">{next.name} ›</span></a> : <span></span>}
+  </nav>
+
+  <footer class="dict-foot">
+    규칙은 공개 기준(NN/g, GOV.UK, KRDS, WCAG·WAI-ARIA APG), 디자인 시스템 문서, 다크패턴 기준(공정위, deceptive.design, FTC)을 읽고 우리 말로 정리했습니다. 근거 이름을 누르면 원문으로 갑니다. 원문 주소를 확인하지 못한 근거는 이름만 적었습니다. 「간접」은 원문을 열지 못하고 요약이나 기사로만 확인한 근거입니다.
+    데모 속 서비스와 이름은 지어낸 것입니다. 「자동 검사」는 이 저장소의 design-agent 스킬이 화면 파일에서 그 규칙을 찾을 때 쓰는 이름입니다.
+    같은 규칙을 AI 에이전트가 읽는 <a href={`${BASE}llms.txt`}>llms.txt</a>에도 두었습니다.
+  </footer>
+</main>
+<script is:inline>
+  // 데모가 알려 준 내용 높이로 iframe을 맞춘다. 한 쌍은 둘 중 큰 쪽에 맞춰 같은 틀로 둔다(비교하는 것만 다르게)
+  addEventListener('message', function (e) {
+    var h = e.data && e.data.uxDemoHeight;
+    if (!h) return;
+    document.querySelectorAll('.ux-pair iframe').forEach(function (f) {
+      if (f.contentWindow !== e.source || f.dataset.fixed) return;
+      f.dataset.h = h;
+      var fs = f.closest('.ux-pair').querySelectorAll('iframe'), m = 0;
+      fs.forEach(function (x) { m = Math.max(m, +x.dataset.h || 0); });
+      fs.forEach(function (x) { x.style.height = m + 'px'; });
+    });
+  });
+</script>
+</body>
+</html>

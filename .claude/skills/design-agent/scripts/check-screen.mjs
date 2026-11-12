@@ -58,11 +58,14 @@ const drawnByJs = !runScripts && thin;
 const notDrawn = runScripts && (thin || scriptErrors.length > 0);
 // 확대 막기: 글자가 작아 보이는 사람이 손가락으로 키울 수 없다 — WCAG 2.2 1.4.4. 빈 껍데기 index.html에도 있으니 먼저 본다
 const viewport = doc.querySelector('meta[name="viewport"]')?.getAttribute('content') || '';
-const badViewport = /user-scalable\s*=\s*(no|0)|maximum-scale\s*=\s*1(\.0*)?(\s|,|$)/i.test(viewport);
+// maximum-scale이 2보다 작아도 200%까지 못 키운다(1.5 같은 값, 2026-11-11)
+const maxScale = Number((viewport.match(/maximum-scale\s*=\s*([\d.]+)/i) || [])[1]);
+const badViewport = /user-scalable\s*=\s*(no|0)(\s|,|;|$)/i.test(viewport) || (Number.isFinite(maxScale) && maxScale < 2);
+const zoomWhy = `viewport에 「${viewport.trim()}」. 글자가 작아 보이는 사람이 손가락으로 200%까지 키울 수 없다. user-scalable=no를 지우고 maximum-scale은 빼거나 2 이상으로 둔다(WCAG 2.2 1.4.4)`;
 // React·Vue 앱의 index.html은 빈 <div id="root">뿐이다. 여기에 「걸린 것 없음」이라고 하면 통과로 읽힌다(2026-11-02 실제 서비스 시험)
 if (!text(doc.body) && doc.querySelector('script[src], script[type="module"]')) {
   console.log(`검사: ${file}\n화면이 JS로 그려지는 빈 껍데기라 검사할 것이 없다(통과가 아니다). 띄운 페이지를 브라우저에서 재거나(SKILL.md 7단계) 화면을 그리는 소스를 읽는다`);
-  if (badViewport) console.log(`- [꼭 고칠 것] 확대 막기: viewport에 「${viewport.trim()}」. user-scalable=no와 maximum-scale=1을 지운다(WCAG 2.2 1.4.4)`);
+  if (badViewport) console.log(`- [꼭 고칠 것] 확대 막기: ${zoomWhy}`);
   process.exit(badViewport ? 1 : 2);
 }
 
@@ -71,10 +74,10 @@ const found = [];
 // 서비스가 일부러 정했을 수 있는 항목(visual-audit.js HOUSE_TOPICS와 같은 주제 이름)
 const TOPIC = { '사진 목록에 스피너': 'pattern.loading', '굵은 글자가 너무 많음': 'weight', '보라·파랑 그라데이션': 'palette', 'Inter 한 가지 서체': 'font', '이모지 제목 표시': 'decor', '과장 문구': 'copy', '「A가 아니라 B」 문장': 'copy', '대시(—) 남발': 'copy', '말투가 섞임': 'copy' };
 // 실패 이름(references/failures.md, visual-audit.js FAILS)
-const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '기호만 있는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '위험 버튼에 첫 초점': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard', '번호가 두 번 붙음': 'confusing', '브라우저 기본 확인창': 'confusing', '대화상자 버튼이 「확인·예」': 'confusing', '「정말 ~하시겠어요?」 제목': 'confusing', '입력이 맞을 때까지 제출 잠금': 'confusing', '저절로 움직이는데 멈춤 없음': 'hard', '끌기로만 하는 동작': 'hard', '키보드로 못 누르는 곳': 'hard', '꺼진 이유가 title에만 있음': 'confusing', '말투가 섞임': 'confusing' };
+const FAIL = { '확대 막기': 'hard', '이름 없는 버튼': 'confusing', '기호만 있는 버튼': 'confusing', '처음 쓰는 사람에게 아이콘만 있는 버튼': 'confusing', '두 번 눌림 방지 없음': 'accident', '오류를 토스트로만 알림': 'accident', '위험 버튼에 첫 초점': 'accident', '사진 목록에 스피너': 'mismatch', '빈 화면 없음': 'missing', '같은 목록 안 항목 구조가 다름': 'uneven', '경계가 없는 띄운 층': 'confusing', '굵은 글자가 너무 많음': 'flat', '상태를 색만으로 표시': 'confusing', '보라·파랑 그라데이션': 'generic', 'Inter 한 가지 서체': 'generic', '이모지 제목 표시': 'generic', 'hover로만 보이는 것': 'confusing', '과장 문구': 'generic', '「A가 아니라 B」 문장': 'generic', '근거를 밝히지 않은 큰 숫자': 'generic', '대시(—) 남발': 'generic', '누를 곳이 작음': 'hard', '번호가 두 번 붙음': 'confusing', '브라우저 기본 확인창': 'confusing', '대화상자 버튼이 「확인·예」': 'confusing', '「정말 ~하시겠어요?」 제목': 'confusing', '입력이 맞을 때까지 제출 잠금': 'confusing', '저절로 움직이는데 멈춤 없음': 'hard', '끌기로만 하는 동작': 'hard', '키보드로 못 누르는 곳': 'hard', '꺼진 이유가 title에만 있음': 'confusing', '말투가 섞임': 'confusing', 'placeholder만 있는 입력': 'confusing', '미리 체크된 동의': 'confusing', '붙여넣기 막기': 'hard', '인증번호 칸 설정 빠짐': 'hard', '소리 나는 자동 재생': 'hard', '처음부터 열린 창': 'confusing', '링크가 아닌 이동': 'confusing' };
 const add = (level, rule, why, els = []) => found.push({ level, rule, why, at: els.slice(0, 3).map(where), fail: FAIL[rule], ...(TOPIC[rule] && { topic: TOPIC[rule] }) });
 
-if (badViewport) add('꼭', '확대 막기', `viewport에 「${viewport.trim()}」. user-scalable=no와 maximum-scale=1을 지운다(WCAG 2.2 1.4.4)`, [doc.querySelector('meta[name="viewport"]')]);
+if (badViewport) add('꼭', '확대 막기', zoomWhy, [doc.querySelector('meta[name="viewport"]')]);
 
 
 // 1. 이름 없는 버튼: 글자도 aria-label도 없으면 스크린리더가 읽을 게 없다. 처음 쓰는 사람에게는 아이콘만 있는 버튼도 피한다
@@ -203,7 +206,7 @@ const dragJs = /addEventListener\(\s*['"](dragstart|drop)['"]|ondragstart|Sortab
 const moveBtn = buttons.some(b => /위로|아래로|올리기|내리기|이동|옮기기|순서|\b(move|up|down)\b/i.test(`${text(b)} ${b.getAttribute('aria-label') || ''}`));
 if ((dragEls.length || dragJs) && !moveBtn) add('권장', '끌기로만 하는 동작', '끌기가 어려운 사람(떨림, 한 손가락, 스위치 기기)은 못 한다(WCAG 2.2 2.5.7). 「위로·아래로」 버튼이나 옮길 곳을 고르는 메뉴를 같이 둔다', dragEls);
 
-// 10-3. 키보드와 말투(references/ux-basics.md 키보드-1·키보드-3·말-2, 2026-11-11)
+// 10-3. 키보드와 말투(references/ux-basics.md 누구나-1·누구나-3·글-2, 2026-11-11)
 const short = (s, n = 16) => (s.length > n ? `${s.slice(0, n)}…` : s);
 // 키보드-1: 클릭은 받는데 키보드로 갈 수도 누를 수도 없는 곳(div·span·li·td·img에 onclick)
 // HTML 속성(onclick, @click, v-on:click, x-on:click)만 본다. 스크립트에서 addEventListener로 붙인 클릭은 이 정적 검사에 안 보인다
@@ -225,7 +228,7 @@ const describedShown = e => (e.getAttribute('aria-describedby') || '').split(/\s
 const tipOf = e => (e.getAttribute('title') || '').trim() || (e.parentElement?.matches('span, div') ? (e.parentElement.getAttribute('title') || '').trim() : '');
 const titleOnly = [...doc.querySelectorAll(DISABLED)].filter(e => visible(e) && tipOf(e) && !describedShown(e));
 if (titleOnly.length) add('권장', '꺼진 이유가 title에만 있음', `꺼진 ${titleOnly.slice(0, 3).map(e => `「${short(text(e) || e.value || e.getAttribute('aria-label') || e.tagName.toLowerCase())}」`).join(', ')}의 이유가 마우스를 올려야 보이는 설명(title 「${short(tipOf(titleOnly[0]), 24)}」)에만 있다. 키보드·터치로는 볼 수 없다. 이유를 버튼 옆 글로 두고 aria-describedby로 잇는다`, titleOnly);
-// 말-2: 한 화면에 해요체·합니다체·한다체가 섞임. 끝맺음이 있는 문장만 센다(라벨·제목은 끝맺음이 없어 세지 않는다)
+// 글-2: 한 화면에 해요체·합니다체·한다체가 섞임. 끝맺음이 있는 문장만 센다(라벨·제목은 끝맺음이 없어 세지 않는다)
 // 한다체는 마침표로 끝나는 동사 끝(받침 ㄴ·ㅆ + 다: 한다·보낸다·했다·있다, 는다, 없다)만 센다. 「좋다.」「책이다.」 같은 형용사·이다는 세지 않는다
 // 「필요」「중요」로 끝나는 라벨은 해요체로 치지 않는다
 // 「」 안에 든 예시 글은 끝이 「」라 세지 않는다. 코드·입력값·숨긴 글은 뺀다
@@ -243,6 +246,80 @@ for (const line of (talk.textContent || '').split('\n')) for (const s of line.re
 }
 const mixed = speech.filter(x => x.n >= 2);
 if (mixed.length >= 2) add('확인', '말투가 섞임', `${mixed.map(x => `${x.name} ${x.n}문장(「${x.ex}」)`).join(', ')}이 한 화면에 섞였다. 한 화면은 한 말투로 두고, 오류는 같은 말투로 더 짧게 쓴다. 서비스가 정한 말투가 있으면 그쪽에 맞춘다`);
+
+// 10-4. 입력칸 이름표·동의·붙여넣기·저절로 나는 소리·열자마자 뜨는 창·이동(2026-11-11)
+// HTML에 적힌 속성만 본다. 스크립트에서 addEventListener로 붙인 것, 나중에 바꾼 속성은 안 보인다
+// 칸의 이름표 글: <label for>, 감싼 label(안의 입력칸은 뺀다), aria-label, aria-labelledby
+const labelText = e => {
+  const parts = [(e.getAttribute('aria-label') || '').trim()];
+  for (const id of (e.getAttribute('aria-labelledby') || '').split(/\s+/).filter(Boolean)) { const t = doc.getElementById(id); if (t) parts.push(text(t)); }
+  const ls = [...(e.id ? [...doc.querySelectorAll('label[for]')].filter(l => l.getAttribute('for') === e.id) : []), ...(e.closest('label') ? [e.closest('label')] : [])];
+  for (const l of ls) { const c = l.cloneNode(true); c.querySelectorAll('input, textarea, select').forEach(x => x.remove()); parts.push(text(c)); }
+  return parts.filter(Boolean).join(' ');
+};
+// placeholder는 적기 시작하면 사라지고 옅은 회색이다. 이름표 대신 쓰면 무슨 칸인지 잊는다 — WCAG 2.2 3.3.2, KRDS 도움 패턴
+const NO_LABEL_TYPE = /^(hidden|submit|button|reset|image|checkbox|radio|range|color|file)$/i;
+// for 없이 칸 옆에 둔 <label>도 보이는 이름표는 있는 것이라 넘긴다(같은 묶음에 칸이 하나일 때). 이어지지 않은 것은 이 검사가 잡지 않는다
+const looseLabel = e => { const p = e.parentElement, l = p?.querySelector(':scope > label:not([for])'); return l && p.querySelectorAll('input:not([type="hidden"]), textarea, select').length === 1 ? text(l) : ''; };
+const phOnly = [...doc.querySelectorAll('input[placeholder], textarea[placeholder]')].filter(e => visible(e) && (e.getAttribute('placeholder') || '').trim() && !NO_LABEL_TYPE.test(e.getAttribute('type') || 'text') && !labelText(e) && !looseLabel(e));
+if (phOnly.length) add('권장', 'placeholder만 있는 입력', `${phOnly.length}칸(${phOnly.slice(0, 3).map(e => `「${short(e.getAttribute('placeholder').trim())}」`).join(', ')})에 placeholder만 있고 이름표(label)가 없다. 적기 시작하면 placeholder가 사라져 무슨 칸인지 잊고, 옅은 회색이라 잘 안 읽힌다. 칸 위에 보이는 label을 두고(<label for>) placeholder는 「예: 010-1234-5678」 같은 예시로만 쓴다 (WCAG 2.2 · 3.3.2, KRDS 도움 패턴)`, phOnly);
+// 선택 동의(마케팅·광고 수신, 제3자 제공)가 처음부터 체크돼 있으면 읽지 않고 넘긴 사람도 동의한 것이 된다
+// 「혜택 있는 상품만」 같은 거르기 칸을 빼려고 동의·받기 말이 같이 있을 때만 센다. 이름표가 없으면 바로 위 요소의 짧은 글을 본다
+const OPT_CONSENT = /마케팅|광고|수신|이벤트|혜택|제3자|선택\s*동의|\(선택\)|newsletter|marketing|promotional/i;
+const CONSENT_WORD = /동의|수신|받기|받을|받겠|구독|허용|제공|agree|consent|subscribe|newsletter|opt.?in|send me/i;
+const consentText = e => labelText(e) || (e.parentElement && text(e.parentElement).length <= 80 ? text(e.parentElement) : '');
+const preChecked = [...doc.querySelectorAll('input[type="checkbox"][checked]')].filter(e => { const t = consentText(e); return visible(e) && OPT_CONSENT.test(t) && CONSENT_WORD.test(t) && !/필수|required/i.test(t); });
+if (preChecked.length) add('꼭', '미리 체크된 동의', `${preChecked.slice(0, 3).map(e => `「${short(consentText(e), 24)}」`).join(', ')}가 처음부터 체크돼 있다. 읽지 않고 넘긴 사람도 동의한 것이 된다. 선택 동의는 비워 두고 쓰는 사람이 직접 고르게 하고, [필수]·[선택]을 나눠 적는다 (전자상거래법 사전선택 금지, 2025-02-14 시행 · KRDS 동의 패턴)`, preChecked);
+// 붙여넣기·복사를 막으면 비밀번호 관리자·인증 문자에서 옮기지 못한다 — KRDS 개인 식별 정보 입력·로그인(붙여넣기 허용), WCAG 2.2 3.3.8
+const PASTE_ATTR = /^(on(paste|copy|cut)|(@|v-on:|x-on:)(paste|copy|cut))(\.|$)/i;
+const blocksPaste = a => PASTE_ATTR.test(a.name) && (/\.prevent(\.|$)/i.test(a.name) || /return\s+false|preventDefault/.test(a.value));
+const pasteBlocked = [doc.documentElement, ...doc.documentElement.querySelectorAll('*')].filter(e => [...e.attributes].some(blocksPaste));
+if (pasteBlocked.length) add('꼭', '붙여넣기 막기', `${pasteBlocked.slice(0, 3).map(e => `「${short(labelText(e) || e.getAttribute('placeholder') || e.tagName.toLowerCase())}」`).join(', ')}에서 붙여넣기·복사를 막았다(onpaste·oncopy의 return false·preventDefault). 비밀번호 관리자나 인증 문자에서 옮기지 못해 손으로 다시 치다 틀린다. 막는 코드를 지운다. 확인하려고 한 번 더 적게 하는 칸이면 그 칸을 없앤다 (KRDS 개인 식별 정보 입력·로그인 패턴(붙여넣기 허용), WCAG 2.2 · 3.3.8)`, pasteBlocked);
+	// 인증번호 칸 설정 빠짐: OTP 입력칸에 type=number, autocomplete 없음, 숫자 자판 없음
+	// web.dev SMS OTP 폼 모범 사례, GOV.UK 전화번호 확인 패턴, KRDS 로그인(붙여넣기 허용)
+	// 비밀번호·전화번호 칸은 잡지 않는다
+	const OTP_KW = /인증\s*번호|확인\s*번호|인증\s*코드|\botp\b|one[-_\s]?time|verification[-_\s]?code/i;
+	const isOtpField = e => {
+	  if ((e.getAttribute('type') || '').toLowerCase() === 'password') return false;
+	  const ac = (e.getAttribute('autocomplete') || '').trim();
+	  if (ac === 'one-time-code') return true;
+	  const str = `${labelText(e)} ${e.getAttribute('name') || ''} ${e.getAttribute('id') || ''} ${e.getAttribute('placeholder') || ''}`;
+	  return OTP_KW.test(str);
+	};
+	const otpInputs = [...doc.querySelectorAll('input')].filter(e => visible(e) && isOtpField(e));
+	const otpBad = otpInputs.filter(e => {
+	  const type = (e.getAttribute('type') || 'text').toLowerCase();
+	  const ac = (e.getAttribute('autocomplete') || '').trim();
+	  const im = (e.getAttribute('inputmode') || '').toLowerCase();
+	  return type === 'number' || ac !== 'one-time-code' || (im !== 'numeric' && type !== 'tel');
+	});
+	if (otpBad.length) {
+	  const details = otpBad.slice(0, 3).map(e => {
+	    const type = (e.getAttribute('type') || 'text').toLowerCase();
+	    const ac = (e.getAttribute('autocomplete') || '').trim();
+	    const im = (e.getAttribute('inputmode') || '').toLowerCase();
+	    const lbl = short(labelText(e) || e.getAttribute('placeholder') || e.getAttribute('name') || e.getAttribute('id') || 'OTP 칸');
+	    const issues = [];
+	    if (type === 'number') issues.push('type="number"(앞자리 0 소실, 붙여넣기·자동 채움 오류)');
+	    if (ac !== 'one-time-code') issues.push('autocomplete="one-time-code" 없음(SMS 자동 채움 불가)');
+	    if (im !== 'numeric' && type !== 'tel' && type !== 'number') issues.push('inputmode="numeric" 없음(숫자 자판 미표시)');
+	    return `「${lbl}」 ${issues.join(', ')}`;
+	  }).join(' / ');
+	  add('권장', '인증번호 칸 설정 빠짐', `${details}. type="text" inputmode="numeric" autocomplete="one-time-code"로 두고 붙여넣기와 띄어쓰기를 막지 않는다(web.dev SMS OTP 폼 모범 사례, GOV.UK 전화번호 확인 패턴, KRDS 로그인)`, otpBad);
+	}
+// 열자마자 소리 나는 영상·소리 — KWCAG 2.2 자동 재생 금지, WCAG 2.2 1.4.2. muted면 소리가 없으니 넘긴다(멈춤은 「저절로 움직이는데 멈춤 없음」)
+const loud = [...doc.querySelectorAll('video[autoplay]:not([muted]), audio[autoplay]:not([muted])')];
+if (loud.length) add('꼭', '소리 나는 자동 재생', `${loud.length}개(${[...new Set(loud.map(e => `<${e.tagName.toLowerCase()} autoplay>`))].join(', ')})가 페이지를 열자마자 소리를 낸다. 화면 읽기 프로그램 소리를 덮고, 조용한 곳에서 갑자기 소리가 난다. autoplay를 빼거나 muted를 달고, 소리는 쓰는 사람이 켜게 한다 (KWCAG 2.2 자동 재생 금지, WCAG 2.2 · 1.4.2)`, loud);
+// 열자마자 떠 있는 창(대화상자·시트) — 앱인토스 소비자 UX 가이드(들어오자마자 뜨는 광고·알림 시트), Built for Shopify 4.3.3
+// hidden·aria-hidden·display:none·visibility:hidden(인라인이나 <style>)이면 닫힌 것으로 본다. 스크립트가 여는 것(showModal)은 안 보인다
+const hiddenByStyle = e => { for (let n = e; n && n !== doc.documentElement; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden') return true; } return false; };
+const OPEN_DLG = 'dialog[open], [role="dialog"], [role="alertdialog"], [aria-modal="true"]';
+const openAtLoad = [...doc.querySelectorAll(OPEN_DLG)].filter(e => (e.tagName !== 'DIALOG' || e.hasAttribute('open')) && visible(e) && !hiddenByStyle(e) && !e.parentElement?.closest(OPEN_DLG));
+if (openAtLoad.length) add('권장', '처음부터 열린 창', `${openAtLoad.length}개 창이 페이지를 열 때부터 떠 있다. 들어오자마자 뜨는 창은 하던 일을 막고 닫기부터 찾게 한다. 창은 쓰는 사람이 무언가를 눌렀을 때 열고, 알릴 것은 화면 안 글이나 배너로 둔다. 눌러서 여는 창을 펼쳐 그린 시안이면 그대로 둔다 (앱인토스 소비자 UX 가이드: 들어오자마자 뜨는 광고·알림 시트, Built for Shopify 4.3.3)`, openAtLoad);
+// 버튼·div의 onclick으로 다른 페이지로 간다. 링크가 아니라 새 탭으로 열기·주소 복사가 안 된다 — Vercel Web Interface Guidelines 「Links are links」
+const NAV_JS = /\blocation(\.href)?\s*=(?!=)|\blocation\.(assign|replace)\s*\(|\bwindow\.open\s*\(|\bnavigate\s*\(|router\.push\s*\(/;
+const fakeLinks = [...doc.body.querySelectorAll('*')].filter(e => visible(e) && !e.matches('a[href], area[href]') && [...e.attributes].some(a => CLICK_ATTR.test(a.name) && NAV_JS.test(a.value)));
+if (fakeLinks.length) add('권장', '링크가 아닌 이동', `${fakeLinks.length}곳(${fakeLinks.slice(0, 3).map(e => `「${short(text(e) || e.getAttribute('aria-label') || e.tagName.toLowerCase())}」`).join(', ')})이 onclick으로 다른 페이지로 간다. 링크가 아니라 새 탭으로 열기·주소 복사·가운데 클릭이 안 되고, 화면 읽기 프로그램은 버튼으로 읽어 이동인 줄 모른다. 다른 페이지로 가는 것은 <a href>로 만든다. 저장·결제처럼 일을 한 뒤 넘어가는 버튼은 그대로 둔다 (Vercel Web Interface Guidelines 「Links are links」)`, fakeLinks);
 
 // 11. 누를 곳 크기(CSS에 적힌 값만)
 // 조건의 최소 누를 곳(params.mjs, recommend.mjs DESIGN.md와 같은 값). 플랫폼을 안 주면 모바일 기준 44px

@@ -87,3 +87,45 @@ design-agent에 화면 값(색·글자·여백) 말고 UX 확인 목록을 넣�
 - 예전 Polaris 콘텐츠 페이지(shopify.dev로 넘어가 사라짐), Atlassian 파괴 동작 글(404)
 - Baymard 가이드라인 본문(유료)
 - 우아한형제들·카카오·네이버의 공개 UX 규칙 문서(찾지 못함)
+
+## 출처 주소
+
+2026-11-11 조사한 서브에이전트들이 연 주소다. `data/ux.json` `sources[].url`은 이 목록에 있는 주소만 쓴다. 여기 없는 출처(Primer·Shopify를 묶어 부른 것, 토스 「해요체 필수」)는 이름만 둔다.
+
+- WAI-ARIA APG 모달 대화상자: https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/
+- Carbon
+  - 모달 접근성: https://carbondesignsystem.com/components/modal/accessibility/
+  - 모달 사용법: https://carbondesignsystem.com/components/modal/usage/
+  - 대화상자 패턴: https://carbondesignsystem.com/patterns/dialog-pattern/
+  - 비활성 상태: https://carbondesignsystem.com/patterns/disabled-states/
+  - 알림 패턴: https://carbondesignsystem.com/patterns/notification-pattern/
+- Primer
+  - ConfirmationDialog: https://primer.style/product/components/confirmation-dialog/guidelines (접근성 https://primer.style/product/components/confirmation-dialog/accessibility)
+  - 초점 관리: https://primer.style/accessibility/design-guidance/focus-management/
+  - 툴팁: https://primer.style/product/components/tooltip/guidelines
+  - 디자이너 체크리스트: https://primer.style/accessibility/tools-and-resources/checklists/designer-checklist/
+  - 저장 패턴: https://primer.style/product/ui-patterns/saving/
+- NN/g
+  - 확인 창: https://www.nngroup.com/articles/confirmation-dialog/
+  - 10가지 휴리스틱: https://www.nngroup.com/articles/ten-usability-heuristics/
+  - 시스템 상태: https://www.nngroup.com/articles/visibility-system-status/
+  - 툴팁: https://www.nngroup.com/articles/tooltip-guidelines/
+  - 오류 메시지: https://www.nngroup.com/articles/error-message-guidelines/
+  - 일관성: https://www.nngroup.com/articles/consistency-and-standards/
+- KRDS
+  - 모달: https://www.krds.go.kr/html/site/component/component_04_05.html
+  - 신청 패턴: https://www.krds.go.kr/html/site/service/service_04_01.html
+  - 서비스 패턴 수준(필수·권장·우수): https://www.krds.go.kr/html/site/utility/utility_07.html
+- GOV.UK
+  - 버튼: https://design-system.service.gov.uk/components/button/
+  - 오류 메시지: https://design-system.service.gov.uk/components/error-message/
+  - 완료 페이지: https://design-system.service.gov.uk/patterns/confirmation-pages/
+- Apple 경고창: https://developer.apple.com/design/human-interface-guidelines/alerts
+- WCAG 2.2: https://www.w3.org/TR/WCAG22/. 기준마다 Understanding 페이지(https://www.w3.org/WAI/WCAG22/Understanding/ 아래 keyboard, no-keyboard-trap, content-on-hover-or-focus, status-messages, error-identification, error-suggestion)
+- Fluent Dialog: https://fluent2.microsoft.design/components/web/react/core/dialog/usage
+- Microsoft 글쓰기 Top 10: https://learn.microsoft.com/en-us/style-guide/top-10-tips-style-voice
+- Built for Shopify 요구사항: https://shopify.dev/docs/apps/launch/built-for-shopify/requirements
+- Shopify 콘텐츠: https://shopify.dev/docs/apps/design/content
+- Atlassian 경고 메시지: https://atlassian.design/foundations/content/designing-messages/warning-messages
+- 앱인토스 소비자 UX 가이드: https://developers-apps-in-toss.toss.im/design/consumer-ux-guide.html
+- 토스 라이팅 원칙: https://toss.tech/article/8-writing-principles-of-toss

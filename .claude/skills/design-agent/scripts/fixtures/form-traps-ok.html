@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes">
+<title>동네 모임 가입(맞게 만든 것)</title>
+<!-- form-traps.html·load-interrupt.html의 맞게 만든 짝(2026-11-11). 이름표 있는 칸, 비워 둔 선택 동의, 막지 않은 붙여넣기, 소리 끈 자동 재생, 닫혀 있는 창, a href 이동. 지어낸 가입 화면이다 -->
+<style>
+  body { font-family: "Pretendard", sans-serif; font-size: 16px; line-height: 1.6; color: #1f2328; background: #fff; margin: 0; padding: 24px; }
+  h1 { font-size: 28px; margin: 0 0 16px; }
+  h2 { font-size: 20px; margin: 24px 0 8px; }
+  input, textarea { display: block; width: 100%; font: inherit; padding: 10px 12px; border: 1px solid #8c959f; border-radius: 8px; margin-bottom: 12px; }
+  input[type="checkbox"] { display: inline; width: auto; margin: 0 8px 0 0; }
+  button { min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #d0d7de; background: #fff; font: inherit; }
+  dialog, [role="dialog"] { border: 1px solid #d0d7de; border-radius: 12px; padding: 24px; }
+  .sheet.closed { display: none; }
+</style>
+</head>
+<body>
+<h1>모임에 가입해요</h1>
+
+<!-- 이름표가 있고 placeholder는 예시 -->
+<label for="mail">이메일</label>
+<input type="email" id="mail" placeholder="예: hong@example.com">
+<label>자기소개 <textarea placeholder="예: 주말마다 산책해요"></textarea></label>
+<input type="search" aria-label="모임 찾기" placeholder="예: 독서">
+<p id="nick-label">별명</p>
+<input aria-labelledby="nick-label" placeholder="예: 산책러">
+<div><label>사는 동네</label><input placeholder="예: 망원동"></div>
+<input type="hidden" name="from" placeholder="숨긴 칸">
+
+<!-- 붙여넣기를 막지 않는다(세기만 한다) -->
+<label for="pw">비밀번호</label>
+<input type="password" id="pw" onpaste="countPaste()">
+
+<h2>약관</h2>
+<label><input type="checkbox" checked> [필수] 이용약관 동의</label>
+<label><input type="checkbox"> (선택) 마케팅 정보 수신 동의</label>
+<label><input type="checkbox" checked> 로그인 상태 유지</label>
+<label><input type="checkbox" checked> 혜택 있는 모임만 보기</label>
+
+<!-- 소리를 끈 자동 재생, 멈춤 버튼이 있다 -->
+<video src="walk.mp4" autoplay muted loop playsinline width="320"></video>
+<button type="button">영상 멈춤</button>
+<audio src="guide.mp3" controls></audio>
+
+<!-- 닫혀 있는 창 -->
+<dialog aria-labelledby="d1"><h2 id="d1">가입을 그만둘까요?</h2><button type="button">계속 쓰기</button></dialog>
+<div role="dialog" aria-modal="true" hidden><h2>알림</h2></div>
+<div role="dialog" aria-modal="true" style="display: none"><h2>알림</h2></div>
+<div class="sheet closed" role="dialog" aria-modal="true"><h2>알림</h2></div>
+
+<!-- 이동은 링크, 버튼은 일을 한다 -->
+<p><a href="/terms">약관 전문 보기</a> · <a href="/login" onclick="track()">이미 계정이 있어요</a></p>
+<button type="button" onclick="history.back()">이전 단계</button>
+<button type="button" onclick="location.reload()">다시 불러오기</button>
+<button type="button" onclick="location.hash = '#terms'">약관으로 내려가기</button>
+<button type="submit" onclick="save()">가입하기</button>
+</body>
+</html>

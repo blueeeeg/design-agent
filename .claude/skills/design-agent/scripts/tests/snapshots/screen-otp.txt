@@ -1,0 +1,6 @@
+$ check-screen.mjs scripts/fixtures/otp.html
+[exit 0]
+검사: .claude/skills/design-agent/scripts/fixtures/otp.html
+해당하는 실패: 읽기·누르기 어려움 1 (이름 뜻과 고치는 순서: references/failures.md)
+- [고치기 권함 · 읽기·누르기 어려움] 인증번호 칸 설정 빠짐: 「인증번호」 type="number"(앞자리 0 소실, 붙여넣기·자동 채움 오류) / 「확인 번호」 autocomplete="one-time-code" 없음(SMS 자동 채움 불가). type="text" inputmode="numeric" autocomplete="one-time-code"로 두고 붙여넣기와 띄어쓰기를 막지 않는다(web.dev SMS OTP 폼 모범 사례, GOV.UK 전화번호 확인 패턴, KRDS 로그인)
+    위치: <input#otp1>, <input#otp2>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5">
+<title>동네 모임 가입</title>
+<!-- placeholder만 있는 입력, 미리 체크된 동의, 붙여넣기 막기, 링크가 아닌 이동, 확대 막기(maximum-scale 1.5)가 걸리는 화면(2026-11-11). 지어낸 가입 화면이다 -->
+<style>
+  body { font-family: "Pretendard", sans-serif; font-size: 16px; line-height: 1.6; color: #1f2328; background: #fff; margin: 0; padding: 24px; }
+  h1 { font-size: 28px; margin: 0 0 16px; }
+  h2 { font-size: 20px; margin: 24px 0 8px; }
+  input, textarea { display: block; width: 100%; font: inherit; padding: 10px 12px; border: 1px solid #8c959f; border-radius: 8px; margin-bottom: 12px; }
+  input[type="checkbox"] { display: inline; width: auto; margin: 0 8px 0 0; }
+  button { min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #d0d7de; background: #fff; font: inherit; }
+  .card { border: 1px solid #d0d7de; border-radius: 12px; padding: 16px; }
+</style>
+</head>
+<body>
+<h1>모임에 가입해요</h1>
+
+<!-- 이름표 없이 placeholder만 -->
+<input type="email" placeholder="이메일">
+<textarea placeholder="자기소개"></textarea>
+
+<!-- 붙여넣기를 막은 칸 -->
+<label for="pw">비밀번호</label>
+<input type="password" id="pw" onpaste="return false">
+<label for="code">문자로 받은 인증번호</label>
+<input id="code" inputmode="numeric" autocomplete="one-time-code" @paste.prevent="noop">
+
+<h2>약관</h2>
+<label><input type="checkbox" checked> [필수] 이용약관 동의</label>
+<label><input type="checkbox" checked> (선택) 마케팅 정보 수신 동의</label>
+<div><input type="checkbox" id="ev" checked><label for="ev">이벤트·혜택 알림 받기</label></div>
+<div><input type="checkbox" checked> 제3자 정보 제공 동의(선택)</div>
+
+<!-- 다른 페이지로 가는데 링크가 아니다 -->
+<button type="button" onclick="location.href='/terms'">약관 전문 보기</button>
+<div class="card" role="button" tabindex="0" onclick="window.open('/help')">도움말 보기</div>
+<p><span role="link" tabindex="0" onclick="router.push('/login')">이미 계정이 있어요</span></p>
+<button type="submit">가입하기</button>
+</body>
+</html>

@@ -65,7 +65,7 @@
     },
     {
       "name": "screen-speech-mixed",
-      "why": "ux-basics.md 말-2(2026-11-11). 안내는 해요체, 도움말은 한다체, 오류는 합니다체인 화면. 말투는 서비스가 정하니 「확인」이다",
+      "why": "ux-basics.md 글-2(2026-11-11). 안내는 해요체, 도움말은 한다체, 오류는 합니다체인 화면. 말투는 서비스가 정하니 「확인」이다",
       "run": ["check-screen.mjs", "scripts/fixtures/speech-mixed.html"],
       "exit": 0,
       "has": ["[확인 · 헷갈림] 말투가 섞임", "해요체 2문장", "합니다체 2문장", "한다체 2문장"]
@@ -77,6 +77,44 @@
       "exit": 0,
       "has": ["걸린 것 없음"],
       "not": ["키보드로 못 누르는 곳", "꺼진 이유가 title에만", "말투가 섞임"]
+    },
+    {
+      "name": "screen-form-traps",
+      "why": "2026-11-11 더한 입력·동의·이동 검사. 이름표 없는 칸, 처음부터 체크된 선택 동의(감싼 label·label for·이름표 없이 옆 글), onpaste return false와 @paste.prevent, 버튼·role 단 div·span의 onclick 이동, maximum-scale 1.5를 잡는다. [필수] 동의는 체크돼 있어도 잡지 않는다",
+      "run": ["check-screen.mjs", "scripts/fixtures/form-traps.html"],
+      "exit": 1,
+      "has": ["[고치기 권함 · 헷갈림] placeholder만 있는 입력: 2칸(「이메일」, 「자기소개」)", "[꼭 고칠 것 · 헷갈림] 미리 체크된 동의", "「(선택) 마케팅 정보 수신 동의」", "「이벤트·혜택 알림 받기」", "「제3자 정보 제공 동의(선택)」", "[꼭 고칠 것 · 읽기·누르기 어려움] 붙여넣기 막기: 「비밀번호」, 「문자로 받은 인증번호」", "[고치기 권함 · 헷갈림] 링크가 아닌 이동: 3곳", "확대 막기: viewport에 「width=device-width, initial-scale=1, maximum-scale=1.5」"],
+      "not": ["이용약관 동의」", "키보드로 못 누르는 곳"]
+    },
+    {
+      "name": "screen-load-interrupt",
+      "why": "2026-11-11 더한 검사. 소리를 켠 채 자동 재생하는 video·audio, 처음부터 열린 dialog와 role=dialog 시트를 잡는다",
+      "run": ["check-screen.mjs", "scripts/fixtures/load-interrupt.html"],
+      "exit": 1,
+      "has": ["[꼭 고칠 것 · 읽기·누르기 어려움] 소리 나는 자동 재생: 2개(<video autoplay>, <audio autoplay>)", "[고치기 권함 · 헷갈림] 처음부터 열린 창: 2개 창", "위치: <dialog>, <div.sheet>"]
+    },
+    {
+      "name": "screen-otp",
+      "why": "인증번호 칸에 type=number이거나 autocomplete·inputmode가 빠진 것을 잡는다. 전화번호·비밀번호 칸은 잡지 않는다(2026-11-12)",
+      "run": ["check-screen.mjs", "scripts/fixtures/otp.html"],
+      "exit": 0,
+      "has": ["[고치기 권함 · 읽기·누르기 어려움] 인증번호 칸 설정 빠짐", "앞자리 0 소실", "SMS 자동 채움 불가"]
+    },
+    {
+      "name": "screen-otp-ok",
+      "why": "올바른 인증번호 칸(type=text, inputmode=numeric, autocomplete=one-time-code)과 전화번호·비밀번호 칸은 잡지 않는다",
+      "run": ["check-screen.mjs", "scripts/fixtures/otp-ok.html"],
+      "exit": 0,
+      "has": ["걸린 것 없음"],
+      "not": ["인증번호 칸 설정 빠짐"]
+    },
+    {
+      "name": "screen-form-traps-ok",
+      "why": "label for·감싼 label·aria-label·aria-labelledby·for 없이 옆에 둔 label이 있는 칸, hidden 칸, 비워 둔 선택 동의, 동의가 아닌 체크(로그인 상태 유지, 혜택 있는 모임만 보기), 막지 않는 onpaste, muted 자동 재생, hidden·display:none(인라인·<style>)인 창, a href 이동, history.back·reload·hash 버튼, maximum-scale=2는 잡지 않는다",
+      "run": ["check-screen.mjs", "scripts/fixtures/form-traps-ok.html"],
+      "exit": 0,
+      "has": ["걸린 것 없음"],
+      "not": ["placeholder만 있는 입력", "미리 체크된 동의", "붙여넣기 막기", "소리 나는 자동 재생", "처음부터 열린 창", "링크가 아닌 이동", "확대 막기"]
     },
     {
       "name": "screen-ai-defaults",

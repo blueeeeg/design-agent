@@ -1,0 +1,4 @@
+$ check-screen.mjs scripts/fixtures/form-traps-ok.html
+[exit 0]
+검사: .claude/skills/design-agent/scripts/fixtures/form-traps-ok.html
+걸린 것 없음. 이 검사가 못 보는 것(실제 크기, 대비, 흐름)은 스크린샷으로 확인한다

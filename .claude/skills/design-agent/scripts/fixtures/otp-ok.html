@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>이메일 인증(맞게 만든 것)</title>
+<!-- 인증번호 칸 설정 빠짐이 걸리지 않는 화면(2026-11-12). 지어낸 인증 화면이다.
+     code: type="text" inputmode="numeric" autocomplete="one-time-code" — 올바른 OTP 칸
+     phone: 전화번호 칸 — OTP 말 없음
+     pw: 비밀번호 칸 — type=password라 제외 -->
+<style>
+  body { font-family: "Pretendard", sans-serif; font-size: 16px; line-height: 1.6; color: #1f2328; background: #fff; margin: 0; padding: 24px; }
+  h1 { font-size: 28px; margin: 0 0 16px; }
+  label { display: block; margin-bottom: 4px; }
+  input { display: block; width: 100%; font: inherit; padding: 10px 12px; border: 1px solid #8c959f; border-radius: 8px; margin-bottom: 16px; }
+  button { min-height: 44px; padding: 0 20px; border-radius: 8px; background: #1f6feb; color: #fff; border: none; font: inherit; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>이메일 인증을 완료해 주세요</h1>
+<p>가입하신 이메일로 6자리 인증번호를 보냈습니다.</p>
+
+<!-- 올바른 OTP 칸: type=text, inputmode=numeric, autocomplete=one-time-code -->
+<label for="code">인증번호 6자리</label>
+<input type="text" id="code" inputmode="numeric" autocomplete="one-time-code" placeholder="예: 123456">
+
+<!-- 전화번호 칸: OTP 키워드 없음, type=tel -->
+<label for="phone">전화번호</label>
+<input type="tel" id="phone" autocomplete="tel" placeholder="010-0000-0000">
+
+<!-- 비밀번호 칸: type=password라 제외 -->
+<label for="pw">비밀번호</label>
+<input type="password" id="pw" autocomplete="current-password">
+
+<button type="submit">인증 완료</button>
+</body>
+</html>

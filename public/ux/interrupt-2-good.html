@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>방해-2 거절한 것을 다시 묻기 · 이렇게 한다</title>
+<style>
+/* 공통 틀: 한 쌍(나쁜 예·좋은 예)은 이 틀과 내용이 같고 규칙에 걸린 곳만 다르다. 데모 속 서비스와 이름은 지어낸 것이다 */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; color: #14212b; background: #fff; }
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+.has-cap .app { padding-bottom: 52px; }
+.bar { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid #d8e0e5; font-weight: 600; }
+.bar small { font-weight: 400; color: #5a6974; }
+.bar .sp { flex: 1; }
+.main { flex: 1; padding: 12px 16px 16px; display: grid; gap: 8px; align-content: start; }
+button { font: inherit; padding: 6px 12px; border-radius: 6px; border: 1px solid #b9c4cc; background: #fff; color: #14212b; cursor: pointer; }
+button.primary { background: #0e6b6b; border-color: #0e6b6b; color: #fff; }
+button.danger { background: #b83a26; border-color: #b83a26; color: #fff; }
+button[disabled] { color: #6b7780; background: #f1f4f6; border-color: #d8e0e5; cursor: not-allowed; }
+button.reset { font-size: 12px; font-weight: 400; padding: 4px 8px; color: #5a6974; }
+:focus { outline: 3px solid #2563eb; outline-offset: 2px; }
+.row { display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 12px; border: 1px solid #e3e8ec; border-radius: 8px; }
+.row .name { flex: 1; min-width: 0; }
+.muted { color: #5a6974; font-size: 13px; }
+.result { margin: 0; font-size: 13px; }
+.result:empty { display: none; }
+label { display: grid; gap: 4px; font-size: 13px; color: #5a6974; }
+input[type="text"] { font: inherit; color: #14212b; padding: 6px 10px; border: 1px solid #7f8d97; border-radius: 6px; }
+.cap { position: fixed; left: 0; right: 0; bottom: 0; display: grid; gap: 2px; padding: 6px 12px; background: #14212b; color: #fff; font-size: 12px; z-index: 20; }
+.cap span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cap b { color: #ffd479; font-weight: 600; }
+.scrim { position: fixed; inset: 0; background: rgba(8, 14, 18, .35); z-index: 9; }
+dialog { position: fixed; inset: 0; margin: auto; height: fit-content; width: min(320px, calc(100% - 32px)); padding: 16px; border: 1px solid #b9c4cc; border-radius: 10px; box-shadow: 0 8px 24px rgba(20, 33, 43, .2); color: #14212b; background: #fff; z-index: 10; }
+dialog h2 { margin: 0 0 4px; font-size: 15px; }
+dialog p { margin: 0 0 12px; }
+.acts { display: flex; justify-content: flex-end; gap: 8px; }
+[hidden] { display: none !important; }
+.demo-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 12px; background: #f3f6f7; border-bottom: 1px dashed #b9c4cc; font-size: 12px; color: #5a6974; } .demo-ctl button { font-size: 12px; padding: 2px 10px; } .demo-ctl b { color: #14212b; }.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: grid; gap: 8px; padding: 14px 16px 16px; border-top: 1px solid #b9c4cc; border-radius: 12px 12px 0 0; background: #fff; box-shadow: 0 -6px 18px rgba(20, 33, 43, .15); } .sheet h2 { margin: 0; font-size: 15px; } .sheet p { margin: 0; } .sheet .acts { justify-content: flex-start; flex-wrap: wrap; } .tabs2 { display: flex; gap: 4px; } .tabs2 button[aria-pressed="true"] { background: #14212b; border-color: #14212b; color: #fff; }</style>
+</head>
+<body>
+<div class="demo-ctl" role="group" aria-label="데모 조작">같은 창이 뜬 횟수: <b id="cnt">0번</b></div>
+<div class="app" style="min-height:0">
+  <div class="bar">동네 빵집<span class="sp"></span><button type="button" class="reset">처음으로</button></div>
+  <div class="main">
+    <div class="tabs2" role="group" aria-label="빵 종류"><button type="button" aria-pressed="true">식빵</button><button type="button" aria-pressed="false">과자</button><button type="button" aria-pressed="false">케이크</button></div>
+    <p id="shelf">우유 식빵, 통밀 식빵이 있어요.</p>
+  </div>
+</div>
+<div class="sheet" id="sheet" role="dialog" aria-labelledby="sh-t" hidden>
+  <h2 id="sh-t">앱으로 보면 더 편해요</h2>
+  <p>앱에서는 주문 알림을 바로 받을 수 있어요.</p>
+  <div class="acts"><button type="button" class="primary" id="app">앱 열기</button><button type="button" id="week">7일간 보지 않기</button><button type="button" id="close">닫기</button></div>
+</div>
+<script>
+// 내용 높이를 부모(UX 기준 페이지)에 알린다. 틀이 100vh라 문서 높이 대신 고정 위치가 아닌 내용의 아래 끝을 잰다. 부모는 한 쌍을 같은 높이로 맞춘다
+function uxContentHeight() {
+  // 틀(.app)이 100vh라 최소 높이를 잠깐 풀고 틀의 아래 끝을 잰다. 틀 밖에 둔 것(상태 바꿔 보기 줄 등)도 본다. 부모 iframe 테두리 2px를 더한다
+  var m = 0, app = document.querySelector('.app'), prev = app ? app.style.minHeight : '';
+  if (app) app.style.minHeight = '0';
+  [].forEach.call(document.body.children, function (e) {
+    if (e.matches('script, style, dialog') || getComputedStyle(e).position === 'fixed') return;
+    m = Math.max(m, e.getBoundingClientRect().bottom + scrollY);
+  });
+  if (app) app.style.minHeight = prev;
+  return Math.ceil(m + 2);
+}
+function uxSendHeight() { parent.postMessage({ uxDemoHeight: Math.max(uxContentHeight(), 220) }, '*'); }
+addEventListener('load', uxSendHeight);
+// 내용 칸(.main)이 여럿이고 하나가 숨겨져 있어도(길-12의 탭) 늘어난 것을 놓치지 않게 모두 지켜본다
+if (window.ResizeObserver) { var uxRo = new ResizeObserver(uxSendHeight); [].forEach.call(document.querySelectorAll('.main'), function (m) { uxRo.observe(m); }); uxRo.observe(document.body); }
+var capB = document.querySelector('.cap .now'), capOpen = document.querySelector('.cap .at-open'), capTrail = document.querySelector('.cap .trail');
+var lastNow = '없음', trail = [];
+var scrim = document.querySelector('.scrim');
+var openDlg = null;
+// 받침에 따라 조사를 고른다(을/를, 으로/로)
+function jong(w) { var c = w.charCodeAt(w.length - 1) - 0xac00; return c >= 0 && c < 11172 ? c % 28 : 0; }
+function eul(w) { return '‘' + w + '’' + (jong(w) ? '을' : '를'); }
+function ro(w) { var j = jong(w); return '‘' + w + '’' + (j && j !== 8 ? '으로' : '로'); }
+function nameOf(el) { return el.getAttribute('data-name') || el.getAttribute('aria-label') || el.textContent.trim().replace(/\s+/g, ' ') || '이름 없는 버튼'; }
+function showFocus() {
+  if (!capB) return;
+  var a = document.activeElement;
+  if (!document.hasFocus()) { capB.textContent = lastNow + ' (데모 밖으로 나가 멈춤)'; return; }
+  if (!a || a === document.body || a === document.documentElement) lastNow = '없음 (문서 맨 앞으로 떨어짐)';
+  else lastNow = '「' + nameOf(a) + '」' + (a.closest('dialog') ? ' · 창 안' : openDlg ? ' · 창 뒤 가려진 곳' : '');
+  capB.textContent = lastNow;
+}
+document.addEventListener('focusin', function (e) {
+  if (capTrail) { trail.push(nameOf(e.target)); trail = trail.slice(-4); capTrail.textContent = trail.join(' → '); }
+  showFocus();
+});
+document.addEventListener('focusout', function () { setTimeout(showFocus, 0); });
+function focusables(d) { return Array.prototype.filter.call(d.querySelectorAll('button, input, [href]'), function (e) { return !e.disabled; }); }
+function openDialog(d, opener, o) {
+  o = o || {};
+  d._opener = opener; d._o = o;
+  d.show();
+  if (scrim) scrim.hidden = false;
+  openDlg = d;
+  var f = d.querySelector('[autofocus]') || focusables(d)[0];
+  if (f) f.focus();
+  showFocus();
+  if (capOpen) capOpen.textContent = lastNow.replace(' · 창 안', '');
+}
+function closeDialog(d, focusTo) {
+  d.close();
+  if (scrim) scrim.hidden = true;
+  openDlg = null;
+  var t = focusTo !== undefined ? focusTo : (d._o.restore !== false ? d._opener : null);
+  if (t && document.contains(t)) t.focus();
+  else if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+  setTimeout(showFocus, 0);
+}
+document.addEventListener('keydown', function (e) {
+  if (!openDlg) return;
+  var o = openDlg._o;
+  if (e.key === 'Escape') { e.preventDefault(); if (o.esc !== false) closeDialog(openDlg); return; }
+  if (e.key === 'Tab' && o.trap !== false) {
+    var f = focusables(openDlg), first = f[0], last = f[f.length - 1];
+    if (!openDlg.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+Array.prototype.forEach.call(document.querySelectorAll('.reset'), function (b) { b.addEventListener('click', function () { location.reload(); }); });
+
+var S = {"식빵":"우유 식빵, 통밀 식빵이 있어요.","과자":"버터 쿠키, 마들렌이 있어요.","케이크":"당근 케이크가 있어요."}, sheet = document.getElementById('sheet'), n = 0, refused = false, from = null;
+function ask(opener) { if (refused) return; from = opener; sheet.hidden = false; n++; document.getElementById('cnt').textContent = n + '번'; document.getElementById('app').focus(); }
+function close() { sheet.hidden = true; refused = true; if (from) from.focus(); }
+document.querySelector('.tabs2').addEventListener('click', function (e) {
+  var b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('.tabs2 button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+  document.getElementById('shelf').textContent = S[b.textContent];
+  ask(b);
+});
+document.getElementById('close').addEventListener('click', close);
+document.getElementById('app').addEventListener('click', function () { document.getElementById('shelf').textContent = '앱 열기를 눌렀어요.'; close(); });
+document.getElementById('week').addEventListener('click', close);</script>
+</body>
+</html>

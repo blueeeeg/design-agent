@@ -835,3 +835,45 @@ pre { font-size: 12px; }
 .dropzone svg { width: 24px; height: 24px; color: var(--accent); }
 .hint.warn { background: var(--warn-soft); color: var(--ink); }
 .hint.warn svg { color: var(--warn); }
+
+/* ===== UX 기준(/ux/, 2026-11-11): 규칙 카드마다 데모 한 쌍. 카드는 한 줄에 하나, 데모 둘은 같은 틀로 나란히 ===== */
+.ux { word-break: keep-all; }
+/* 표시 뜻: 묶음 페이지마다 한 줄로 접어 둔다. 읽는 사람이 가져갈 것(규칙 카드)이 먼저다 */
+.ux-legend { margin-top: 12px; max-width: 68rem; font-size: 14px; color: var(--muted); }
+.ux-legend summary { cursor: pointer; display: inline-flex; align-items: center; min-height: 24px; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--muted) 45%, transparent); text-underline-offset: 3px; }
+.ux-legend summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.ux-legend[open] { display: grid; gap: 8px; padding-bottom: 4px; }
+.ux-legend ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; color: var(--ink); }
+.ux-legend li { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 8px; align-items: baseline; font-size: 16px; }
+.ux-legend li > .lv, .ux-legend li > .ours { justify-self: start; }
+.ux-levels-src { font-size: 14px; color: var(--muted); }
+.ux-levels-src a { color: var(--ink); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent); text-underline-offset: 3px; }
+.lv, .ours { display: inline-block; font-size: 12px; font-weight: 600; line-height: 20px; padding: 0 8px; border-radius: 4px; white-space: nowrap; }
+.lv-must { background: var(--ink); color: var(--surface); }
+.lv-should { background: color-mix(in srgb, var(--ink) 14%, transparent); color: var(--ink); font-weight: 500; }
+.lv-ask { background: color-mix(in srgb, var(--muted) 8%, transparent); color: var(--muted); font-weight: 500; }
+.ours { font-weight: 500; color: var(--warn); background: var(--warn-soft); }
+.ux-card { display: grid; gap: 12px; margin-top: 24px; padding: 20px; max-width: 1120px; border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); scroll-margin-top: calc(var(--topnav-h) + 16px); }
+.ux-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ux-id { font-size: 14px; color: var(--muted); }
+.ux-rule { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); line-height: 1.4; }
+.ux-detail { font-size: 16px; color: var(--ink); max-width: 68rem; }
+.ux code { font-family: var(--font-mono); font-size: 12px; padding: 0 4px; border-radius: 4px; background: var(--bg); }
+.ux-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ux-demo { margin: 0; display: grid; gap: 8px; min-width: 0; }
+.ux-demo figcaption { font-size: 14px; font-weight: 600; padding-top: 8px; border-top: 3px solid var(--line); }
+.ux-demo.bad figcaption { color: var(--warn); border-top-color: var(--warn); }
+.ux-demo.good figcaption { color: var(--ink); border-top-color: var(--ink); }
+.ux-demo iframe { display: block; width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.ux-try { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 12px 16px; border-radius: 8px; background: var(--bg); font-size: 16px; }
+.ux-try b { font-size: 12px; font-weight: 400; color: var(--muted); }
+.ux-kv { display: grid; gap: 4px; }
+.ux-kv .kv { grid-template-columns: 80px minmax(0, 1fr); font-size: 16px; }
+.ux-kv .kv.src > span:last-child { color: var(--ink); }
+.ux-kv .kv a { display: inline-flex; align-items: center; min-height: 24px; }
+.ux .detail-nav { max-width: 1120px; margin-top: 32px; }
+@media (max-width: 760px) {
+  .ux-pair { grid-template-columns: minmax(0, 1fr); }
+  .ux-card { padding: 16px; }
+  .ux-try { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 12px; }
+}

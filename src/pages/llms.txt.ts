@@ -3,6 +3,7 @@ import axesData from '../../data/axes.json';
 import elementsData from '../../data/elements.json';
 import antiData from '../../data/anti-defaults.json';
 import systemsData from '../../data/systems.json';
+import uxData from '../../data/ux.json';
 
 type Rule = [string, string, string, string?, string?];
 
@@ -41,6 +42,16 @@ export function GET() {
         ...(guidance[el.id] || []).filter(g => g.opt === o.id).map(g => `  - 디자인 시스템: ${guideLine(g)}`),
       ]),
       ...(guidance[el.id] || []).filter(g => !g.opt).map(g => `- 디자인 시스템 공통: ${guideLine(g)}`),
+    ]),
+    '',
+    // 쓰는 흐름 규칙. 페이지 /ux/와 스킬 문서 ux-basics.md도 data/ux.json에서 나온다
+    '## UX 기준 (쓰는 흐름)',
+    '',
+    `> 무엇을 누르면 무슨 일이 나고, 실수하면 어떻게 되고, 지금 무엇을 해야 하는지 보이는가. 수준: ${uxData.levels.map(l => `${l.id} = ${l.desc}`).join(' / ')}. 묶음마다 데모 페이지가 있다`,
+    ...uxData.groups.flatMap(g => [
+      '',
+      `### ${g.name} (데모: /ux/${g.id}/)`,
+      ...(uxData.rules as { id: string; group: string; level: string; rule: string; except?: string }[]).filter(r => r.group === g.id).map(r => `- ${r.id} (${r.level}) ${r.rule}.${r.except ? ` 예외: ${r.except}` : ''}`),
     ]),
     '',
   ];

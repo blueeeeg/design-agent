@@ -106,9 +106,21 @@
 
 - **UX 규칙을 어떻게 잡나** — NN/g 휴리스틱·심각도, GOV.UK 서비스 기준·Design System, KRDS(필수·권장·우수, 자체 검증), Baymard, WCAG 2.2·WAI-ARIA APG, Apple·Material·Carbon·Polaris·Atlassian·Fluent·Primer, 토스·당근 SEED, 린트와 AI 에이전트용 규칙 · 2026-11-11 · 서브에이전트 둘이 공개 문서를 읽음(Material 3은 검색 요약만)
   - 정리: `research/ux-rules.md`
-  - 가져온 것: 확인 창이 위험 버튼에 첫 초점을 두는 검사의 근거(APG, Carbon, Primer, NN/g)
-  - 남은 것: UX 확인 목록(사고 위험·키보드·할 일·누른 뒤·말)을 `references/failures.md`에 「규칙 한 문장 · 예외 · 눈으로 · 근거」 칸으로 넣기. KRDS 체크리스트 원문과 기본 패턴 「확인」「오류」 읽기
+  - 가져온 것: 확인 창이 위험 버튼에 첫 초점을 두는 검사의 근거(APG, Carbon, Primer, NN/g). 규칙 15개(사고 위험·키보드와 초점·할 일이 보이나·누른 뒤·말)를 KRDS 식 수준(꼭·권장·확인)과 「한 문장 · 예외 · 눈으로 · 검사 · 근거」 칸으로 `data/ux.json`에 두고, 스킬 문서 `references/ux-basics.md`와 사이트 `/ux/`(규칙마다 나쁜 예·좋은 예 데모), `/llms.txt`가 같이 쓴다(2026-11-11). 근거 링크는 `research/ux-rules.md` 「출처 주소」에 적은 주소만 건다
+  - 남은 것: 원문 주소가 없는 출처(Primer·Shopify를 묶어 부른 것, 토스 「해요체 필수」, 키보드-4(지금 누구나-4)의 Esc·버튼 순서 출처). KRDS 체크리스트 원문과 기본 패턴 「확인」「오류」 읽기
   - 다시 볼 곳: https://www.krds.go.kr/html/site/outline/outline_05.html (체크리스트), https://primer.style/accessibility/tools-and-resources/checklists/designer-checklist/ · 2026-11-11
+
+- **UX 기준을 어떤 갈래로 모으나** — 해외(NN/g, Laws of UX, A11y Project, Primer, Vercel, Built for Shopify, GOV.UK·Carbon·Apple 패턴, deceptive.design, FTC, W3C COGA)와 국내(KRDS 기본·서비스 패턴, KWCAG 2.2, 고령자 금융앱 지침, 앱인토스, 당근 SEED, 공정위 다크패턴 기준) · 2026-11-11 · 서브에이전트 둘이 공개 자료를 읽음(공정위·KWCAG 신규 항목은 기사로만)
+  - 정리: `research/ux-taxonomy.md`
+  - 가져온 것: UX 기준을 다섯 묶음에서 아홉 묶음으로(사고 위험, 할 일이 보이나, 누른 뒤, 입력, 길과 뒤로 가기, 누구나(예전 키보드와 초점), 끼어들지 않기, 속이지 않기, 화면 글) 늘리고 규칙 15개를 52개로(2026-11-11, `data/ux.json`). 2026-11-12에 흐름 규칙을 더해 67개. 공정위 다크패턴 기준은 원문을 못 열어 근거에 「간접」으로 단다
+  - 남은 것: 새 패턴 후보 8개(동의 받기, 권한 요청 시점, 세션 만료 알림 등)를 패턴으로 만들지 정하기. 앱인토스 블로그(점수의 뜻)·출시 체크리스트 원문 주소, KRDS 디지털 포용·KWCAG 2.2 원문, KRDS 체크리스트 HWP, 공정위 가이드라인 원문 읽기
+  - 다시 볼 곳: https://www.krds.go.kr/html/site/global/global_summary.html , https://www.deceptive.design/types , 공정위 보도자료 목록 · 2026-11-11
+
+- **화면을 오가는 흐름의 UX** — 로그인·로그아웃, 가입·본인 확인, 결제·제출, 여러 단계 폼, 목록·필터, 모바일 오버레이, 링크로 들어오기, 여러 탭, 오프라인, 새로 고침. KRDS 로그인·신청·검색 서비스 패턴, GOV.UK·DfE·DWP, NN/g, Baymard, web.dev·MDN, Android·Apple, OWASP, WCAG, 앱인토스, 당근 Stackflow, Google 검색 「뒤로 가기 가로채기」 · 2026-11-11 · 서브에이전트 하나가 읽음
+  - 정리: `research/ux-flows.md`
+  - 가져온 것: `data/ux.json`에 흐름 규칙 10개(사고-5·6, 입력-6·7, 길-5~10)와 방해-3의 가로채기(O6). 데모는 `tools/ux-demos.mjs`의 흉내 낸 브라우저(주소 줄·기록 띠·뒤로·새로 고침)로 그린다. 겹치는 누른 뒤-2·4는 「그 자리에 이유」로 좁히고 적은 값 지키기는 입력-6으로 모았다(2026-11-11). 2026-11-12에 15개를 더 넣었다: 사고-7(두 탭 충돌 T2, 확인), 할 일-4(결과 없음 S5), 누른 뒤-5~9(완료 화면 P5, 시간이 지난 링크 D3, 저장 실패 되돌리기 N1, 한 번만 보일 안내 R3, 연결 끊김 N2), 입력-8~12(인증번호 칸 J2, 번호가 안 올 때 J3, 임시 저장 F4, 앞 답이 뒤를 바꿀 때 F5, 확인 화면 「변경」 P6), 길-11·12(뒤로 가기와 「이전」 F2, 다른 탭 로그아웃 T1), 방해-5(로그인 권유 L8). 누구나-8에 L6의 「끝나도 이어 쓰기」를 합쳤다. 인증번호 칸은 검사 「인증번호 칸 설정 빠짐」(`check-screen.mjs`)도 만들었다. S4(필터 기록)는 길-7 본문에 있다
+  - 남은 것: 브라우저에서 흐름을 재는 스크립트(기록 수, 주소 쿼리, 스크롤, 재제출), L1·L2의 1차 출처. 넣지 않은 것: L2(로그인한 사람이 로그인 주소를 열 때), L7(소셜 로그인 돌아오기), O2·O3(시트 기록 정리·겹친 오버레이, 길-9 본문에 일부), O4(오버레이 안 입력, 입력-7과 닿음), O5(오버레이를 주소로, 확인), D2(알림으로 들어오기, 길-6·10과 닿음), R1(길-7과 겹침)
+  - 다시 볼 곳: https://www.krds.go.kr/html/site/service/service_03_01.html , https://baymard.com/blog/back-button-expectations · 2026-11-11
 
 ## 후보
 
